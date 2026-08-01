@@ -21,6 +21,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
+  html,body{overflow-x:hidden;}
   body{
     font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
     color:var(--navy);
@@ -126,6 +127,16 @@
     padding:12px 26px;
     font-size:0.9rem;
   }
+  .btn-outline{
+    background:#fff;
+    color:var(--navy);
+    border:1.5px solid var(--gray-mid);
+  }
+  .btn-outline:hover{
+    transform:translateY(-2px);
+    border-color:var(--royal);
+    box-shadow:0 12px 32px rgba(8,27,69,0.12);
+  }
 
   /* ===== HERO ===== */
   .hero{
@@ -152,6 +163,9 @@
     align-items:center;
     position:relative;
     z-index:2;
+  }
+  .hero-grid > *{
+    min-width:0;
   }
   .eyebrow{
     display:inline-flex;
@@ -208,113 +222,91 @@
     color:#9db2df;
   }
 
-  /* ===== 3D BOOKS ===== */
-  .books-stage{
+  /* ===== COVERS (photo-style, 3-up) ===== */
+  .cover-stage{
     position:relative;
-    height:520px;
     display:flex;
     align-items:center;
     justify-content:center;
-    perspective:1600px;
+    padding:30px 0 50px;
   }
-  .book-shadow{
+  .cover-shadow{
     position:absolute;
     bottom:20px;
-    width:320px;
-    height:50px;
-    background:radial-gradient(ellipse at center, rgba(0,0,0,0.55), transparent 70%);
+    width:340px;
+    height:46px;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0.5), transparent 70%);
     filter:blur(6px);
-    z-index:1;
+    z-index:0;
   }
-  .book{
-    position:absolute;
-    width:220px;
-    height:300px;
-    border-radius:10px 16px 16px 10px;
-    box-shadow:0 40px 70px rgba(0,0,0,0.45), inset -6px 0 12px rgba(0,0,0,0.25);
+  .cover{
+    position:relative;
+    border-radius:18px;
+    overflow:hidden;
     display:flex;
     flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
-    padding:22px;
-    transform-style:preserve-3d;
-  }
-  .book::before{
-    content:"";
-    position:absolute;
-    left:0;
-    top:0;
-    bottom:0;
-    width:14px;
-    background:rgba(0,0,0,0.18);
-    border-radius:10px 0 0 10px;
-  }
-  .book-main{
-    z-index:5;
-    width:250px;
-    height:340px;
-    background:linear-gradient(145deg,#1E5BFF,#0d3ac9);
-    transform:rotateY(-8deg) rotateZ(-2deg) translateZ(40px);
+    padding:24px 20px;
     color:#fff;
+    box-shadow:0 30px 60px rgba(0,0,0,0.4);
+    flex-shrink:0;
   }
-  .book-main .tag{
-    font-size:0.68rem;
+  .cover-kicker{
+    font-size:0.65rem;
     font-weight:800;
     letter-spacing:0.12em;
-    color:#bcd0ff;
-    margin-bottom:14px;
-  }
-  .book-main .title{
-    font-size:1.35rem;
-    font-weight:800;
-    line-height:1.2;
-    letter-spacing:-0.01em;
-    margin-bottom:16px;
-  }
-  .book-main .divider{
-    width:40px;
-    height:3px;
-    background:rgba(255,255,255,0.5);
-    border-radius:4px;
-    margin-bottom:16px;
-  }
-  .book-main .subtitle{
-    font-size:0.78rem;
-    color:#dbe5ff;
-    font-weight:600;
-    line-height:1.5;
-  }
-  .book-side{
-    background:linear-gradient(145deg,#ffffff,#dfe6f5);
-    color:var(--navy);
-    font-weight:800;
-    font-size:0.95rem;
-  }
-  .book-left{
-    left:12%;
-    transform:rotateY(30deg) rotateZ(-8deg) translateZ(-30px) translateX(10px);
-    z-index:3;
-    opacity:0.95;
-  }
-  .book-right{
-    right:10%;
-    transform:rotateY(-30deg) rotateZ(8deg) translateZ(-30px) translateX(-10px);
-    z-index:3;
-    opacity:0.95;
-  }
-  .book-behind{
-    top:8%;
-    z-index:2;
-    background:linear-gradient(145deg,#0c2358,#050f2b);
-    transform:rotateZ(4deg) translateZ(-60px) translateY(-10px);
-    opacity:0.85;
-  }
-  .book-tiny-label{
-    font-size:0.75rem;
-    letter-spacing:0.05em;
     text-transform:uppercase;
-    opacity:0.7;
+    color:#c3d3ff;
+    margin-bottom:10px;
+  }
+  .cover-title{
+    font-weight:800;
+    font-size:1.05rem;
+    letter-spacing:-0.01em;
+    line-height:1.15;
+  }
+  .cover-art{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.6rem;
+    filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+  }
+  .cover-before,
+  .cover-after{
+    width:150px;
+    height:250px;
+    z-index:1;
+    justify-content:flex-start;
+  }
+  .cover-before{
+    background:linear-gradient(160deg,#8b94ac,#4d5670);
+    transform:rotate(-9deg) translateX(28px);
+  }
+  .cover-after{
+    background:linear-gradient(160deg,#0d3ac9,#050f2b);
+    transform:rotate(9deg) translateX(-28px);
+  }
+  .cover-main{
+    width:230px;
+    height:320px;
+    z-index:2;
+    background:linear-gradient(160deg,#2f6bff,#0d3ac9);
+    justify-content:flex-start;
+    padding:28px 24px;
+  }
+  .cover-main .cover-title{
+    font-size:1.3rem;
+    margin-bottom:6px;
+  }
+  .cover-main .cover-art{
+    font-size:3.2rem;
+  }
+  .cover-subtitle{
+    font-size:0.75rem;
+    font-weight:600;
+    color:#dbe5ff;
+    line-height:1.5;
   }
 
   /* ===== WAVE ===== */
@@ -360,37 +352,63 @@
     gap:28px;
   }
   .card{
-    background:#fff;
+    position:relative;
+    height:290px;
     border-radius:var(--radius);
-    padding:36px 28px;
+    overflow:hidden;
     box-shadow:var(--shadow-soft);
-    border:1px solid var(--gray-mid);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:24px;
+    color:#fff;
     transition:transform .3s ease, box-shadow .3s ease;
+  }
+  .card::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top, rgba(5,15,43,0.9), rgba(5,15,43,0.15) 65%);
+    z-index:0;
   }
   .card:hover{
     transform:translateY(-10px);
-    box-shadow:0 30px 70px rgba(8,27,69,0.18);
+    box-shadow:0 30px 70px rgba(8,27,69,0.28);
   }
+  .card-1{background:linear-gradient(160deg,#2f6bff,#0d3ac9);}
+  .card-2{background:linear-gradient(160deg,#0d3ac9,#081B45);}
+  .card-3{background:linear-gradient(160deg,#2c4a94,#081B45);}
+  .card-4{background:linear-gradient(160deg,#081B45,#050f2b);}
   .card-icon{
-    width:64px;
-    height:64px;
-    border-radius:18px;
+    position:relative;
+    z-index:1;
+    width:56px;
+    height:56px;
+    border-radius:14px;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:1.8rem;
-    margin-bottom:24px;
-    background:linear-gradient(135deg,#eaf0ff,#dbe6ff);
+    font-size:1.6rem;
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(6px);
   }
   .card h3{
-    font-size:1.15rem;
+    position:relative;
+    z-index:1;
+    font-size:1.1rem;
     font-weight:800;
-    margin-bottom:10px;
+    margin-bottom:8px;
     letter-spacing:-0.01em;
   }
   .card p{
-    color:var(--text-muted);
-    font-size:0.95rem;
+    position:relative;
+    z-index:1;
+    color:#dbe4ff;
+    font-size:0.88rem;
+  }
+  .section-cta{
+    text-align:center;
+    margin-top:48px;
   }
 
   /* ===== TRANSFORMATION ===== */
@@ -447,51 +465,97 @@
     letter-spacing:-0.02em;
   }
 
-  /* ===== TESTIMONIALS ===== */
-  .testimonials-grid{
+  /* ===== TESTIMONIALS + CTA ===== */
+  .testimonials-cta{
+    background:var(--gray-light);
+  }
+  .testimonials-cta-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:40px;
+    align-items:stretch;
+  }
+  .testimonials-col .kicker{
+    display:inline-block;
+    color:var(--royal);
+    font-weight:800;
+    font-size:0.82rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .testimonials-col h2{
+    font-size:clamp(1.6rem,2.6vw,2.1rem);
+    font-weight:800;
+    letter-spacing:-0.02em;
+    color:var(--navy);
+    margin-bottom:28px;
+  }
+  .testimonials-compact-grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:28px;
+    gap:20px;
   }
-  .testimonial-card{
+  .testimonial-compact{
     background:#fff;
-    border-radius:var(--radius);
-    padding:36px 32px;
+    border-radius:16px;
+    padding:24px 22px;
     box-shadow:var(--shadow-soft);
     border:1px solid var(--gray-mid);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    gap:18px;
   }
-  .stars{
-    color:#ffb020;
-    font-size:1.1rem;
-    margin-bottom:18px;
-    letter-spacing:2px;
-  }
-  .testimonial-card p.quote{
-    font-size:1.1rem;
+  .testimonial-compact .quote{
+    font-size:1rem;
     font-weight:700;
     color:var(--navy);
-    margin-bottom:22px;
     letter-spacing:-0.01em;
   }
-  .testimonial-author{
+  .testimonial-meta{
     display:flex;
     align-items:center;
-    gap:12px;
+    justify-content:space-between;
+    font-size:0.82rem;
   }
-  .avatar{
-    width:44px;
-    height:44px;
-    border-radius:50%;
-    background:linear-gradient(135deg,var(--royal),var(--navy));
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  .testimonial-meta .stars{
+    color:#ffb020;
+    letter-spacing:1px;
+  }
+  .testimonial-meta .name{
+    color:var(--text-muted);
+    font-weight:600;
+  }
+  .cta-panel{
+    background:linear-gradient(160deg,var(--royal),var(--navy));
+    border-radius:var(--radius);
+    padding:40px 32px;
     color:#fff;
-    font-weight:800;
-    font-size:0.9rem;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    box-shadow:var(--shadow-strong);
   }
-  .testimonial-author div strong{display:block;font-size:0.92rem;}
-  .testimonial-author div span{font-size:0.8rem;color:var(--text-muted);}
+  .cta-panel h3{
+    font-size:1.5rem;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    margin-bottom:14px;
+  }
+  .cta-panel p{
+    color:#dbe4ff;
+    font-size:0.92rem;
+    margin-bottom:26px;
+  }
+  .cta-panel .btn-primary{
+    background:#fff;
+    color:var(--navy);
+    box-shadow:0 12px 28px rgba(0,0,0,0.2);
+  }
+  .cta-panel .btn-primary:hover{
+    background:#f0f4ff;
+  }
 
   /* ===== WHY CHOOSE ===== */
   .why{
@@ -688,10 +752,11 @@
   /* ===== RESPONSIVE ===== */
   @media (max-width:1024px){
     .hero-grid{grid-template-columns:1fr;}
-    .books-stage{height:420px;margin-top:20px;}
+    .cover-stage{transform:scale(0.85);margin-top:10px;}
     .cards-grid{grid-template-columns:repeat(2,1fr);}
     .why-grid{grid-template-columns:repeat(2,1fr);}
-    .testimonials-grid{grid-template-columns:1fr;}
+    .testimonials-cta-grid{grid-template-columns:1fr;}
+    .testimonials-compact-grid{grid-template-columns:repeat(3,1fr);}
   }
   @media (max-width:768px){
     .nav-links{display:none;}
@@ -701,6 +766,8 @@
     .section{padding:80px 0;}
     .price-card{padding:40px 24px;}
     .footer-top{flex-direction:column;}
+    .testimonials-compact-grid{grid-template-columns:1fr;}
+    .cover-stage{transform:scale(0.72);margin:-40px 0;}
   }
 </style>
 </head>
@@ -740,22 +807,23 @@
       </div>
     </div>
 
-    <div class="books-stage" id="ebook">
-      <div class="book-shadow"></div>
-      <div class="book book-behind">
-        <span class="book-tiny-label">Après</span>
+    <div class="cover-stage" id="ebook">
+      <div class="cover-shadow"></div>
+      <div class="cover cover-before">
+        <span class="cover-kicker">Étape 1</span>
+        <span class="cover-title">AVANT</span>
+        <div class="cover-art">🚶</div>
       </div>
-      <div class="book book-side book-left">
-        <span class="book-tiny-label" style="color:var(--navy)">Avant</span>
+      <div class="cover cover-main">
+        <span class="cover-kicker">FitBook Pro</span>
+        <span class="cover-title">LE GUIDE DE LA TRANSFORMATION</span>
+        <div class="cover-art">🏋️</div>
+        <span class="cover-subtitle">Perdre du gras • Construire du muscle • Garder la motivation</span>
       </div>
-      <div class="book book-side book-right">
-        <span class="book-tiny-label" style="color:var(--navy)">Pendant</span>
-      </div>
-      <div class="book book-main">
-        <div class="tag">FITBOOK PRO</div>
-        <div class="title">LE GUIDE DE LA TRANSFORMATION</div>
-        <div class="divider"></div>
-        <div class="subtitle">Perdre du gras • Construire du muscle • Garder la motivation</div>
+      <div class="cover cover-after">
+        <span class="cover-kicker">Étape 2</span>
+        <span class="cover-title">APRÈS</span>
+        <div class="cover-art">🔥</div>
       </div>
     </div>
   </div>
@@ -773,26 +841,37 @@
       <p>Un programme complet, clair et actionnable pour transformer ton corps sans te perdre dans des informations contradictoires.</p>
     </div>
     <div class="cards-grid">
-      <div class="card">
+      <div class="card card-1">
         <div class="card-icon">🔥</div>
-        <h3>Perdre du gras rapidement</h3>
-        <p>Des protocoles simples et efficaces pour brûler la graisse sans te priver ni t'épuiser.</p>
+        <div>
+          <h3>Perdre du gras rapidement</h3>
+          <p>Des protocoles simples et efficaces pour brûler la graisse sans te priver ni t'épuiser.</p>
+        </div>
       </div>
-      <div class="card">
+      <div class="card card-2">
         <div class="card-icon">💪</div>
-        <h3>Construire du muscle</h3>
-        <p>Des programmes d'entraînement progressifs pour sculpter un physique fort et athlétique.</p>
+        <div>
+          <h3>Construire du muscle</h3>
+          <p>Des programmes d'entraînement progressifs pour sculpter un physique fort et athlétique.</p>
+        </div>
       </div>
-      <div class="card">
+      <div class="card card-3">
         <div class="card-icon">🥗</div>
-        <h3>Nutrition simple</h3>
-        <p>Des repas healthy faciles à préparer, sans calcul compliqué ni régime restrictif.</p>
+        <div>
+          <h3>Nutrition simple</h3>
+          <p>Des repas healthy faciles à préparer, sans calcul compliqué ni régime restrictif.</p>
+        </div>
       </div>
-      <div class="card">
+      <div class="card card-4">
         <div class="card-icon">🧠</div>
-        <h3>Motivation</h3>
-        <p>Les clés mentales et la discipline pour tenir sur la durée et ne jamais abandonner.</p>
+        <div>
+          <h3>Motivation</h3>
+          <p>Les clés mentales et la discipline pour tenir sur la durée et ne jamais abandonner.</p>
+        </div>
       </div>
+    </div>
+    <div class="section-cta">
+      <a href="#prix" class="btn btn-outline">Voir le programme complet</a>
     </div>
   </div>
 </section>
@@ -824,38 +903,39 @@
   </div>
 </section>
 
-<section class="section" id="temoignages">
-  <div class="container">
-    <div class="section-header">
+<section class="section testimonials-cta" id="temoignages">
+  <div class="container testimonials-cta-grid">
+    <div class="testimonials-col">
       <span class="kicker">Ils l'ont fait</span>
-      <h2>Témoignages</h2>
-      <p>Des résultats concrets, racontés par ceux qui les ont vécus.</p>
+      <h2>Avis de nos clients</h2>
+      <div class="testimonials-compact-grid">
+        <div class="testimonial-compact">
+          <p class="quote">"J'ai perdu 18 kg."</p>
+          <div class="testimonial-meta">
+            <span class="stars">★★★★★</span>
+            <span class="name">Thomas M.</span>
+          </div>
+        </div>
+        <div class="testimonial-compact">
+          <p class="quote">"Je me sens enfin bien."</p>
+          <div class="testimonial-meta">
+            <span class="stars">★★★★★</span>
+            <span class="name">Sarah L.</span>
+          </div>
+        </div>
+        <div class="testimonial-compact">
+          <p class="quote">"Le meilleur investissement de ma vie."</p>
+          <div class="testimonial-meta">
+            <span class="stars">★★★★★</span>
+            <span class="name">Julien D.</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="testimonials-grid">
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p class="quote">"J'ai perdu 18 kg."</p>
-        <div class="testimonial-author">
-          <div class="avatar">TM</div>
-          <div><strong>Thomas M.</strong><span>Transformation en 4 mois</span></div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p class="quote">"Je me sens enfin bien."</p>
-        <div class="testimonial-author">
-          <div class="avatar">SL</div>
-          <div><strong>Sarah L.</strong><span>Confiance retrouvée</span></div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p class="quote">"Le meilleur investissement de ma vie."</p>
-        <div class="testimonial-author">
-          <div class="avatar">JD</div>
-          <div><strong>Julien D.</strong><span>Membre depuis 6 mois</span></div>
-        </div>
-      </div>
+    <div class="cta-panel">
+      <h3>Lisez dès aujourd'hui !</h3>
+      <p>Obtiens ton eBook instantanément et commence ta transformation en quelques clics.</p>
+      <a href="#prix" class="btn btn-primary">Télécharger maintenant</a>
     </div>
   </div>
 </section>
