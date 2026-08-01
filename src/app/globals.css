@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #081b45;
+  --color-navy-dark: #050f2b;
+  --color-royal: #1e5bff;
+  --color-royal-light: #4d7dff;
+  --color-gray-light: #f4f6fb;
+  --color-gray-mid: #e6eaf3;
+  --color-text-muted: #5b6785;
+
+  --shadow-soft: 0 20px 60px rgba(8, 27, 69, 0.12);
+  --shadow-strong: 0 30px 80px rgba(8, 27, 69, 0.35);
+
+  --radius-xl: 22px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--color-navy);
+  background: #ffffff;
+}
+
+.cover-theme-royal {
+  background: linear-gradient(160deg, #2f6bff, #0d3ac9);
+}
+.cover-theme-navy {
+  background: linear-gradient(160deg, #0d3ac9, #081b45);
+}
+.cover-theme-deep {
+  background: linear-gradient(160deg, #2c4a94, #081b45);
+}
+.cover-theme-dark {
+  background: linear-gradient(160deg, #081b45, #050f2b);
+}
+.cover-theme-steel {
+  background: linear-gradient(160deg, #8b94ac, #4d5670);
+}
+
+.card-scrim::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(5, 15, 43, 0.9),
+    rgba(5, 15, 43, 0.15) 65%
+  );
+  z-index: 0;
+}
