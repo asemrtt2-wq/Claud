@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitBook Pro — Transforme ton corps en 90 jours</title>
+<meta name="description" content="L'eBook de transformation physique qui a déjà aidé des milliers de personnes à perdre du poids, retrouver confiance en elles et construire un physique dont elles sont fières.">
+<style>
+  :root{
+    --navy:#081B45;
+    --navy-dark:#050f2b;
+    --royal:#1E5BFF;
+    --royal-light:#4d7dff;
+    --white:#ffffff;
+    --gray-light:#f4f6fb;
+    --gray-mid:#e6eaf3;
+    --text-muted:#5b6785;
+    --radius:22px;
+    --shadow-soft:0 20px 60px rgba(8,27,69,0.12);
+    --shadow-strong:0 30px 80px rgba(8,27,69,0.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    color:var(--navy);
+    background:var(--white);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block;}
+  a{text-decoration:none;color:inherit;}
+  ul{list-style:none;}
+  .container{
+    width:100%;
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+  section{position:relative;}
+
+  /* ===== HEADER ===== */
+  header{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(8,27,69,0.06);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 0;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:1.25rem;
+    letter-spacing:-0.02em;
+    color:var(--navy);
+  }
+  .logo-mark{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    background:linear-gradient(135deg,var(--royal),var(--navy));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:1.1rem;
+    box-shadow:0 8px 20px rgba(30,91,255,0.35);
+  }
+  .nav-links{
+    display:flex;
+    align-items:center;
+    gap:36px;
+  }
+  .nav-links a{
+    font-weight:600;
+    font-size:0.95rem;
+    color:var(--navy);
+    opacity:0.75;
+    transition:opacity .2s ease;
+    position:relative;
+  }
+  .nav-links a:hover{opacity:1;}
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-weight:700;
+    font-size:0.95rem;
+    padding:14px 28px;
+    border-radius:14px;
+    cursor:pointer;
+    border:none;
+    transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--royal),#3a6bff);
+    color:#fff;
+    box-shadow:0 12px 30px rgba(30,91,255,0.4);
+  }
+  .btn-primary:hover{
+    transform:translateY(-2px);
+    box-shadow:0 16px 40px rgba(30,91,255,0.5);
+  }
+  .btn-secondary{
+    background:#fff;
+    color:var(--navy);
+    box-shadow:0 8px 24px rgba(8,27,69,0.1);
+  }
+  .btn-secondary:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 32px rgba(8,27,69,0.16);
+  }
+  .btn-header{
+    padding:12px 26px;
+    font-size:0.9rem;
+  }
+
+  /* ===== HERO ===== */
+  .hero{
+    background:linear-gradient(135deg,var(--navy) 0%,#0c2358 45%,var(--navy-dark) 100%);
+    color:#fff;
+    padding:96px 0 160px;
+    overflow:hidden;
+    position:relative;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    top:-200px;
+    right:-200px;
+    width:600px;
+    height:600px;
+    background:radial-gradient(circle,rgba(30,91,255,0.35),transparent 70%);
+    border-radius:50%;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:60px;
+    align-items:center;
+    position:relative;
+    z-index:2;
+  }
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(255,255,255,0.1);
+    border:1px solid rgba(255,255,255,0.18);
+    padding:8px 18px;
+    border-radius:100px;
+    font-size:0.82rem;
+    font-weight:700;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    color:#bcd0ff;
+    margin-bottom:28px;
+  }
+  .hero h1{
+    font-size:clamp(2.6rem,5vw,4rem);
+    font-weight:800;
+    line-height:1.08;
+    letter-spacing:-0.03em;
+    margin-bottom:24px;
+  }
+  .hero h1 span{
+    background:linear-gradient(135deg,#7ea2ff,#ffffff);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .hero p.subtitle{
+    font-size:1.15rem;
+    color:#c3cee8;
+    max-width:520px;
+    margin-bottom:40px;
+  }
+  .hero-actions{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:48px;
+  }
+  .hero-stats{
+    display:flex;
+    gap:40px;
+    flex-wrap:wrap;
+  }
+  .hero-stats div strong{
+    display:block;
+    font-size:1.7rem;
+    font-weight:800;
+  }
+  .hero-stats div span{
+    font-size:0.85rem;
+    color:#9db2df;
+  }
+
+  /* ===== 3D BOOKS ===== */
+  .books-stage{
+    position:relative;
+    height:520px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    perspective:1600px;
+  }
+  .book-shadow{
+    position:absolute;
+    bottom:20px;
+    width:320px;
+    height:50px;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0.55), transparent 70%);
+    filter:blur(6px);
+    z-index:1;
+  }
+  .book{
+    position:absolute;
+    width:220px;
+    height:300px;
+    border-radius:10px 16px 16px 10px;
+    box-shadow:0 40px 70px rgba(0,0,0,0.45), inset -6px 0 12px rgba(0,0,0,0.25);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:22px;
+    transform-style:preserve-3d;
+  }
+  .book::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:14px;
+    background:rgba(0,0,0,0.18);
+    border-radius:10px 0 0 10px;
+  }
+  .book-main{
+    z-index:5;
+    width:250px;
+    height:340px;
+    background:linear-gradient(145deg,#1E5BFF,#0d3ac9);
+    transform:rotateY(-8deg) rotateZ(-2deg) translateZ(40px);
+    color:#fff;
+  }
+  .book-main .tag{
+    font-size:0.68rem;
+    font-weight:800;
+    letter-spacing:0.12em;
+    color:#bcd0ff;
+    margin-bottom:14px;
+  }
+  .book-main .title{
+    font-size:1.35rem;
+    font-weight:800;
+    line-height:1.2;
+    letter-spacing:-0.01em;
+    margin-bottom:16px;
+  }
+  .book-main .divider{
+    width:40px;
+    height:3px;
+    background:rgba(255,255,255,0.5);
+    border-radius:4px;
+    margin-bottom:16px;
+  }
+  .book-main .subtitle{
+    font-size:0.78rem;
+    color:#dbe5ff;
+    font-weight:600;
+    line-height:1.5;
+  }
+  .book-side{
+    background:linear-gradient(145deg,#ffffff,#dfe6f5);
+    color:var(--navy);
+    font-weight:800;
+    font-size:0.95rem;
+  }
+  .book-left{
+    left:12%;
+    transform:rotateY(30deg) rotateZ(-8deg) translateZ(-30px) translateX(10px);
+    z-index:3;
+    opacity:0.95;
+  }
+  .book-right{
+    right:10%;
+    transform:rotateY(-30deg) rotateZ(8deg) translateZ(-30px) translateX(-10px);
+    z-index:3;
+    opacity:0.95;
+  }
+  .book-behind{
+    top:8%;
+    z-index:2;
+    background:linear-gradient(145deg,#0c2358,#050f2b);
+    transform:rotateZ(4deg) translateZ(-60px) translateY(-10px);
+    opacity:0.85;
+  }
+  .book-tiny-label{
+    font-size:0.75rem;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    opacity:0.7;
+  }
+
+  /* ===== WAVE ===== */
+  .wave-divider{
+    display:block;
+    width:100%;
+    height:auto;
+    margin-top:-2px;
+  }
+
+  /* ===== LEARN SECTION ===== */
+  .section{
+    padding:120px 0;
+  }
+  .section-header{
+    text-align:center;
+    max-width:640px;
+    margin:0 auto 64px;
+  }
+  .section-header .kicker{
+    display:inline-block;
+    color:var(--royal);
+    font-weight:800;
+    font-size:0.82rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .section-header h2{
+    font-size:clamp(2rem,3.5vw,2.75rem);
+    font-weight:800;
+    letter-spacing:-0.02em;
+    color:var(--navy);
+    margin-bottom:16px;
+  }
+  .section-header p{
+    color:var(--text-muted);
+    font-size:1.05rem;
+  }
+  .cards-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:28px;
+  }
+  .card{
+    background:#fff;
+    border-radius:var(--radius);
+    padding:36px 28px;
+    box-shadow:var(--shadow-soft);
+    border:1px solid var(--gray-mid);
+    transition:transform .3s ease, box-shadow .3s ease;
+  }
+  .card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 30px 70px rgba(8,27,69,0.18);
+  }
+  .card-icon{
+    width:64px;
+    height:64px;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.8rem;
+    margin-bottom:24px;
+    background:linear-gradient(135deg,#eaf0ff,#dbe6ff);
+  }
+  .card h3{
+    font-size:1.15rem;
+    font-weight:800;
+    margin-bottom:10px;
+    letter-spacing:-0.01em;
+  }
+  .card p{
+    color:var(--text-muted);
+    font-size:0.95rem;
+  }
+
+  /* ===== TRANSFORMATION ===== */
+  .transformation{
+    background:var(--gray-light);
+  }
+  .transform-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-bottom:50px;
+  }
+  .transform-photo{
+    width:220px;
+    height:300px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-soft);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+    padding:20px;
+    color:#fff;
+    font-weight:800;
+    position:relative;
+    overflow:hidden;
+  }
+  .transform-photo span{
+    position:relative;
+    z-index:2;
+    background:rgba(8,27,69,0.55);
+    padding:8px 18px;
+    border-radius:100px;
+    font-size:0.85rem;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+  }
+  .photo-1{background:linear-gradient(160deg,#8a94a8,#5c6479);}
+  .photo-2{background:linear-gradient(160deg,#5479c9,#2c4a94);}
+  .photo-3{background:linear-gradient(160deg,#1E5BFF,#081B45);}
+  .transform-photo svg{position:absolute;inset:0;width:100%;height:100%;opacity:0.35;}
+  .arrow{
+    font-size:2rem;
+    color:var(--royal);
+    font-weight:800;
+  }
+  .transform-quote{
+    text-align:center;
+    font-size:1.6rem;
+    font-weight:800;
+    color:var(--navy);
+    letter-spacing:-0.02em;
+  }
+
+  /* ===== TESTIMONIALS ===== */
+  .testimonials-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:28px;
+  }
+  .testimonial-card{
+    background:#fff;
+    border-radius:var(--radius);
+    padding:36px 32px;
+    box-shadow:var(--shadow-soft);
+    border:1px solid var(--gray-mid);
+  }
+  .stars{
+    color:#ffb020;
+    font-size:1.1rem;
+    margin-bottom:18px;
+    letter-spacing:2px;
+  }
+  .testimonial-card p.quote{
+    font-size:1.1rem;
+    font-weight:700;
+    color:var(--navy);
+    margin-bottom:22px;
+    letter-spacing:-0.01em;
+  }
+  .testimonial-author{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .avatar{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--royal),var(--navy));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-weight:800;
+    font-size:0.9rem;
+  }
+  .testimonial-author div strong{display:block;font-size:0.92rem;}
+  .testimonial-author div span{font-size:0.8rem;color:var(--text-muted);}
+
+  /* ===== WHY CHOOSE ===== */
+  .why{
+    background:linear-gradient(135deg,var(--navy),var(--navy-dark));
+    color:#fff;
+  }
+  .why .section-header h2{color:#fff;}
+  .why .section-header p{color:#aebbdd;}
+  .why-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:24px;
+  }
+  .why-item{
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:var(--radius);
+    padding:32px 24px;
+    text-align:center;
+    transition:transform .3s ease, background .3s ease;
+  }
+  .why-item:hover{
+    transform:translateY(-6px);
+    background:rgba(255,255,255,0.1);
+  }
+  .why-item .check{
+    width:52px;
+    height:52px;
+    margin:0 auto 18px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--royal),#3a6bff);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3rem;
+    box-shadow:0 10px 24px rgba(30,91,255,0.4);
+  }
+  .why-item h4{
+    font-size:1rem;
+    font-weight:700;
+  }
+
+  /* ===== PRICING ===== */
+  .pricing{
+    background:var(--gray-light);
+  }
+  .price-card{
+    max-width:480px;
+    margin:0 auto;
+    background:#fff;
+    border-radius:28px;
+    padding:56px 48px;
+    text-align:center;
+    box-shadow:0 40px 100px rgba(8,27,69,0.18);
+    position:relative;
+    border:1px solid var(--gray-mid);
+  }
+  .price-badge{
+    position:absolute;
+    top:-18px;
+    right:32px;
+    background:linear-gradient(135deg,#ff3b3b,#c9192a);
+    color:#fff;
+    font-weight:800;
+    font-size:0.9rem;
+    padding:10px 20px;
+    border-radius:100px;
+    box-shadow:0 12px 28px rgba(201,25,42,0.4);
+  }
+  .price-card .plan-name{
+    font-weight:800;
+    color:var(--royal);
+    text-transform:uppercase;
+    font-size:0.82rem;
+    letter-spacing:0.08em;
+    margin-bottom:20px;
+  }
+  .price-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:14px;
+    margin-bottom:8px;
+  }
+  .old-price{
+    font-size:1.4rem;
+    color:#a7b1c9;
+    text-decoration:line-through;
+    font-weight:700;
+  }
+  .new-price{
+    font-size:3.5rem;
+    font-weight:800;
+    color:var(--navy);
+    letter-spacing:-0.03em;
+  }
+  .price-note{
+    color:var(--text-muted);
+    margin-bottom:36px;
+    font-size:0.95rem;
+  }
+  .price-features{
+    text-align:left;
+    margin-bottom:36px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .price-features li{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:600;
+    font-size:0.95rem;
+    color:var(--navy);
+  }
+  .price-features li .dot{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#e7efff;
+    color:var(--royal);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:0.75rem;
+    flex-shrink:0;
+  }
+  .price-card .btn-primary{
+    width:100%;
+    padding:18px;
+    font-size:1.05rem;
+  }
+  .price-guarantee{
+    margin-top:20px;
+    font-size:0.82rem;
+    color:var(--text-muted);
+  }
+
+  /* ===== FOOTER ===== */
+  footer{
+    background:var(--navy-dark);
+    color:#c3cee8;
+    padding:64px 0 32px;
+  }
+  .footer-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:40px;
+    padding-bottom:40px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    margin-bottom:28px;
+  }
+  .footer-logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:1.2rem;
+    color:#fff;
+  }
+  .footer-links{
+    display:flex;
+    gap:56px;
+    flex-wrap:wrap;
+  }
+  .footer-col h5{
+    color:#fff;
+    font-size:0.85rem;
+    font-weight:800;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    margin-bottom:16px;
+  }
+  .footer-col ul{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .footer-col a{
+    font-size:0.92rem;
+    color:#a9b6d6;
+    transition:color .2s ease;
+  }
+  .footer-col a:hover{color:#fff;}
+  .footer-bottom{
+    text-align:center;
+    font-size:0.85rem;
+    color:#7c88ab;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width:1024px){
+    .hero-grid{grid-template-columns:1fr;}
+    .books-stage{height:420px;margin-top:20px;}
+    .cards-grid{grid-template-columns:repeat(2,1fr);}
+    .why-grid{grid-template-columns:repeat(2,1fr);}
+    .testimonials-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:768px){
+    .nav-links{display:none;}
+    .cards-grid{grid-template-columns:1fr;}
+    .why-grid{grid-template-columns:1fr;}
+    .hero{padding:56px 0 120px;}
+    .section{padding:80px 0;}
+    .price-card{padding:40px 24px;}
+    .footer-top{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a href="#" class="logo">
+      <span class="logo-mark">F</span>
+      FitBook Pro
+    </a>
+    <nav class="nav-links">
+      <a href="#hero">Accueil</a>
+      <a href="#ebook">eBook</a>
+      <a href="#resultats">Résultats</a>
+      <a href="#temoignages">Témoignages</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="#prix" class="btn btn-primary btn-header">Télécharger</a>
+  </div>
+</header>
+
+<section class="hero" id="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">🔥 Plus de 12 000 vies transformées</span>
+      <h1>Transforme ton corps en <span>90 jours.</span></h1>
+      <p class="subtitle">Découvre la méthode simple qui a déjà aidé des milliers de personnes à perdre du poids, retrouver confiance en elles et construire un physique dont elles sont fières.</p>
+      <div class="hero-actions">
+        <a href="#prix" class="btn btn-primary">Télécharger maintenant</a>
+        <a href="#ebook" class="btn btn-secondary">Voir un aperçu</a>
+      </div>
+      <div class="hero-stats">
+        <div><strong>12 000+</strong><span>Lecteurs transformés</span></div>
+        <div><strong>4.9/5</strong><span>Note moyenne</span></div>
+        <div><strong>90 jours</strong><span>Programme complet</span></div>
+      </div>
+    </div>
+
+    <div class="books-stage" id="ebook">
+      <div class="book-shadow"></div>
+      <div class="book book-behind">
+        <span class="book-tiny-label">Après</span>
+      </div>
+      <div class="book book-side book-left">
+        <span class="book-tiny-label" style="color:var(--navy)">Avant</span>
+      </div>
+      <div class="book book-side book-right">
+        <span class="book-tiny-label" style="color:var(--navy)">Pendant</span>
+      </div>
+      <div class="book book-main">
+        <div class="tag">FITBOOK PRO</div>
+        <div class="title">LE GUIDE DE LA TRANSFORMATION</div>
+        <div class="divider"></div>
+        <div class="subtitle">Perdre du gras • Construire du muscle • Garder la motivation</div>
+      </div>
+    </div>
+  </div>
+
+  <svg class="wave-divider" viewBox="0 0 1440 120" preserveAspectRatio="none">
+    <path fill="#ffffff" d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+  </svg>
+</section>
+
+<section class="section" id="apprendre">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">Le contenu</span>
+      <h2>Ce que tu vas apprendre</h2>
+      <p>Un programme complet, clair et actionnable pour transformer ton corps sans te perdre dans des informations contradictoires.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-icon">🔥</div>
+        <h3>Perdre du gras rapidement</h3>
+        <p>Des protocoles simples et efficaces pour brûler la graisse sans te priver ni t'épuiser.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💪</div>
+        <h3>Construire du muscle</h3>
+        <p>Des programmes d'entraînement progressifs pour sculpter un physique fort et athlétique.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🥗</div>
+        <h3>Nutrition simple</h3>
+        <p>Des repas healthy faciles à préparer, sans calcul compliqué ni régime restrictif.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>Motivation</h3>
+        <p>Les clés mentales et la discipline pour tenir sur la durée et ne jamais abandonner.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section transformation" id="resultats">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">La preuve</span>
+      <h2>Avant / Après</h2>
+      <p>Une transformation réelle, étape par étape.</p>
+    </div>
+    <div class="transform-row">
+      <div class="transform-photo photo-1">
+        <svg viewBox="0 0 200 300"><circle cx="100" cy="90" r="55" fill="rgba(255,255,255,0.25)"/><rect x="55" y="150" width="90" height="130" rx="30" fill="rgba(255,255,255,0.2)"/></svg>
+        <span>Obèse</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="transform-photo photo-2">
+        <svg viewBox="0 0 200 300"><circle cx="100" cy="85" r="45" fill="rgba(255,255,255,0.25)"/><rect x="65" y="140" width="70" height="130" rx="26" fill="rgba(255,255,255,0.2)"/></svg>
+        <span>Plus mince</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="transform-photo photo-3">
+        <svg viewBox="0 0 200 300"><circle cx="100" cy="80" r="42" fill="rgba(255,255,255,0.3)"/><rect x="60" y="132" width="80" height="60" rx="18" fill="rgba(255,255,255,0.28)"/><rect x="68" y="188" width="30" height="90" rx="14" fill="rgba(255,255,255,0.22)"/><rect x="102" y="188" width="30" height="90" rx="14" fill="rgba(255,255,255,0.22)"/></svg>
+        <span>Musclé</span>
+      </div>
+    </div>
+    <p class="transform-quote">"Si lui l'a fait, toi aussi."</p>
+  </div>
+</section>
+
+<section class="section" id="temoignages">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">Ils l'ont fait</span>
+      <h2>Témoignages</h2>
+      <p>Des résultats concrets, racontés par ceux qui les ont vécus.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">"J'ai perdu 18 kg."</p>
+        <div class="testimonial-author">
+          <div class="avatar">TM</div>
+          <div><strong>Thomas M.</strong><span>Transformation en 4 mois</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">"Je me sens enfin bien."</p>
+        <div class="testimonial-author">
+          <div class="avatar">SL</div>
+          <div><strong>Sarah L.</strong><span>Confiance retrouvée</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">"Le meilleur investissement de ma vie."</p>
+        <div class="testimonial-author">
+          <div class="avatar">JD</div>
+          <div><strong>Julien D.</strong><span>Membre depuis 6 mois</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section why">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">Pourquoi nous</span>
+      <h2>Pourquoi choisir ce guide ?</h2>
+      <p>Un système complet pensé pour être suivi facilement, sans excuse possible.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-item">
+        <div class="check">✅</div>
+        <h4>Programme simple</h4>
+      </div>
+      <div class="why-item">
+        <div class="check">✅</div>
+        <h4>Nutrition facile</h4>
+      </div>
+      <div class="why-item">
+        <div class="check">✅</div>
+        <h4>Exercices expliqués</h4>
+      </div>
+      <div class="why-item">
+        <div class="check">✅</div>
+        <h4>Motivation quotidienne</h4>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section pricing" id="prix">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">Offre limitée</span>
+      <h2>Commence ta transformation aujourd'hui</h2>
+      <p>Accès immédiat à l'eBook complet, sur tous tes appareils.</p>
+    </div>
+    <div class="price-card">
+      <div class="price-badge">-75%</div>
+      <div class="plan-name">FitBook Pro — Accès complet</div>
+      <div class="price-row">
+        <span class="old-price">79 €</span>
+        <span class="new-price">19 €</span>
+      </div>
+      <p class="price-note">Paiement unique. Accès à vie.</p>
+      <ul class="price-features">
+        <li><span class="dot">✓</span> Programme de 90 jours complet</li>
+        <li><span class="dot">✓</span> Plan nutrition inclus</li>
+        <li><span class="dot">✓</span> Exercices détaillés en vidéo</li>
+        <li><span class="dot">✓</span> Accès immédiat en PDF</li>
+      </ul>
+      <a href="#" class="btn btn-primary">Télécharger immédiatement</a>
+      <p class="price-guarantee">🔒 Paiement sécurisé — Garantie satisfait ou remboursé 30 jours</p>
+    </div>
+  </div>
+</section>
+
+<footer id="faq">
+  <div class="container">
+    <div class="footer-top">
+      <a href="#" class="footer-logo">
+        <span class="logo-mark">F</span>
+        FitBook Pro
+      </a>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>Réseaux</h5>
+          <ul>
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">TikTok</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Support</h5>
+          <ul>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Légal</h5>
+          <ul>
+            <li><a href="#">Mentions légales</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <p class="footer-bottom">© 2026 FitBook Pro. Tous droits réservés.</p>
+  </div>
+</footer>
+
+</body>
+</html>
