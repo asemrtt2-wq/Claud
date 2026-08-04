@@ -13,6 +13,7 @@ model EBook {
   title       String
   subtitle    String
   description String
+  content     String   @default("")
   category    String
   coverEmoji  String
   coverTheme  String
@@ -22,22 +23,74 @@ model EBook {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   orders      Order[]
+  favorites   Favorite[]
+  progress    ReadingProgress[]
 }
 
 model Order {
-  id                    String   @id @default(cuid())
+  id                    String    @id @default(cuid())
   ebookId               String
-  ebook                 EBook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  ebook                 EBook     @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  customerId            String?
+  customer              Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   customerEmail         String
   amount                Float
-  status                String   @default("pending")
-  stripeSessionId       String?  @unique
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  status                String    @default("pending")
+  stripeSessionId       String?   @unique
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 }
 
 model Admin {
   id           String @id @default(cuid())
   email        String @unique
   passwordHash String
+}
+
+model Customer {
+  id            String            @id @default(cuid())
+  email         String            @unique
+  passwordHash  String
+  name          String
+  createdAt     DateTime          @default(now())
+  orders        Order[]
+  subscription  Subscription?
+  favorites     Favorite[]
+  progress      ReadingProgress[]
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  customerId           String    @unique
+  customer             Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  plan                 String
+  status               String    @default("incomplete")
+  stripeCustomerId     String?
+  stripeSubscriptionId String?   @unique
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  ebookId    String
+  ebook      EBook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([customerId, ebookId])
+}
+
+model ReadingProgress {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  ebookId    String
+  ebook      EBook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  page       Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([customerId, ebookId])
 }

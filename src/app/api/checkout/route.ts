@@ -1,19 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
-  const { ebookId, email } = await req.json();
-
-  if (!ebookId || !email) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== "customer" || !session.user.email) {
     return NextResponse.json(
-      { error: "ebookId et email sont requis." },
-      { status: 400 }
+      { error: "Connecte-toi pour acheter un eBook." },
+      { status: 401 }
     );
   }
 
-  const ebook = await prisma.eBook.findUnique({ where: { id: ebookId } });
-  if (!ebook) {
+  const { ebookId } = await req.json();
+  const email = session.user.email;
+
+  if (!ebookId) {
+    return NextResponse.json({ error: "ebookId est requis." }, { status: 400 });
+  }
+
+  const [ebook, customer] = await Promise.all([
+    prisma.eBook.findUnique({ where: { id: ebookId } }),
+    prisma.customer.findUnique({ where: { email } }),
+  ]);
+
+  if (!ebook || !customer) {
     return NextResponse.json({ error: "eBook introuvable." }, { status: 404 });
   }
 
@@ -30,6 +42,7 @@ export async function POST(req: NextRequest) {
   const order = await prisma.order.create({
     data: {
       ebookId: ebook.id,
+      customerId: customer.id,
       customerEmail: email,
       amount: ebook.price,
       status: "pending",
@@ -38,7 +51,7 @@ export async function POST(req: NextRequest) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? req.nextUrl.origin;
 
-  const session = await stripe.checkout.sessions.create({
+  const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: email,
     line_items: [
@@ -61,8 +74,8 @@ export async function POST(req: NextRequest) {
 
   await prisma.order.update({
     where: { id: order.id },
-    data: { stripeSessionId: session.id },
+    data: { stripeSessionId: checkoutSession.id },
   });
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ url: checkoutSession.url });
 }

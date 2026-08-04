@@ -10,7 +10,7 @@ export async function proxy(req: NextRequest) {
 
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  if (!token) {
+  if (!token || token.role !== "admin") {
     const loginUrl = new URL("/admin/login", req.url);
     return NextResponse.redirect(loginUrl);
   }
