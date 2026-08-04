@@ -46,6 +46,15 @@ body {
 .cover-theme-steel {
   background: linear-gradient(160deg, #8b94ac, #4d5670);
 }
+.cover-theme-aurora {
+  background: linear-gradient(160deg, #6d3fd6, #2a1a5e);
+}
+.cover-theme-ember {
+  background: linear-gradient(160deg, #d6693f, #5e2a4a);
+}
+.cover-theme-forest {
+  background: linear-gradient(160deg, #2f9e8f, #1a2a5e);
+}
 
 .lumina-shell {
   min-height: 100vh;
@@ -68,6 +77,32 @@ body {
 
 .lumina-progress-fill {
   background: linear-gradient(90deg, var(--color-lumina-purple), var(--color-lumina-purple-light));
+}
+
+@keyframes mascot-bounce {
+  0%, 100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(4deg);
+  }
+}
+
+.mascot-bounce {
+  animation: mascot-bounce 1.1s ease-in-out;
+}
+
+@keyframes mascot-idle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.mascot-idle {
+  animation: mascot-idle 2.4s ease-in-out infinite;
 }
 
 .card-scrim::after {

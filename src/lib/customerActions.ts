@@ -32,3 +32,15 @@ export async function saveReadingProgress(ebookId: string, page: number) {
     create: { customerId: customer.id, ebookId, page },
   });
 }
+
+export async function setReadingReminder(time: string | null) {
+  const customer = await getCurrentCustomer();
+  if (!customer) throw new Error("Non authentifié.");
+
+  await prisma.customer.update({
+    where: { id: customer.id },
+    data: { readingReminderTime: time },
+  });
+
+  revalidatePath("/account");
+}

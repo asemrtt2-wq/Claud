@@ -6,7 +6,7 @@ export default function LoginPage() {
   return (
     <>
       <Header />
-      <div className="flex min-h-[70vh] items-center justify-center bg-gray-light px-6 py-16">
+      <div className="lumina-shell flex min-h-[70vh] items-center justify-center px-6 py-16">
         <LoginForm />
       </div>
       <Footer />

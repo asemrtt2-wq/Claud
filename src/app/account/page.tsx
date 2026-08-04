@@ -5,12 +5,15 @@ import { getCurrentCustomer } from "@/lib/customerSession";
 import { paginateContent } from "@/lib/paginate";
 import AppBottomNav from "@/components/AppBottomNav";
 import SignOutButton from "@/components/SignOutButton";
+import ChildProfileManager from "@/components/ChildProfileManager";
+import ReadingReminderSetting from "@/components/ReadingReminderSetting";
+import BedtimeReminder from "@/components/BedtimeReminder";
 
 export default async function AccountPage() {
   const customer = await getCurrentCustomer();
   if (!customer) redirect("/login");
 
-  const [subscription, orders, favorites, progressEntries] = await Promise.all([
+  const [subscription, orders, favorites, progressEntries, childProfiles] = await Promise.all([
     prisma.subscription.findUnique({ where: { customerId: customer.id } }),
     prisma.order.findMany({
       where: { customerId: customer.id, status: "paid" },
@@ -25,6 +28,10 @@ export default async function AccountPage() {
       where: { customerId: customer.id },
       include: { ebook: true },
       orderBy: { updatedAt: "desc" },
+    }),
+    prisma.childProfile.findMany({
+      where: { parentId: customer.id },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
 
@@ -51,6 +58,10 @@ export default async function AccountPage() {
   const continueReading = progressEntries[0]
     ? libraryMap.get(progressEntries[0].ebookId)
     : null;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const hasReadToday = progressEntries.some(
+    (p) => p.updatedAt.toISOString().slice(0, 10) === todayStr
+  );
 
   return (
     <div className="lumina-shell pb-24">
@@ -71,11 +82,17 @@ export default async function AccountPage() {
 
       <main className="mx-auto max-w-5xl px-6 sm:px-10">
         <h1 className="mb-1 text-2xl font-extrabold tracking-tight">
-          Bonsoir, {customer.name.split(" ")[0]} 👋
+          {`Bonsoir, ${customer.name.split(" ")[0]} 👋`}
         </h1>
         <p className="mb-8 text-sm text-[color:var(--color-lumina-text-muted)]">
           Prêt pour une nouvelle aventure ?
         </p>
+
+        <BedtimeReminder
+          reminderTime={customer.readingReminderTime}
+          hasReadToday={hasReadToday}
+          name={customer.name.split(" ")[0]}
+        />
 
         {continueReading && (
           <Link
@@ -160,6 +177,15 @@ export default async function AccountPage() {
           )}
         </section>
 
+        <section id="parent" className="mb-12 scroll-mt-24">
+          <h2 className="mb-1 text-lg font-extrabold">Espace parent</h2>
+          <p className="mb-5 text-sm text-[color:var(--color-lumina-text-muted)]">
+            Crée un profil pour chaque enfant : histoires adaptées, limite de temps de lecture
+            et suivi de leur activité.
+          </p>
+          <ChildProfileManager profiles={childProfiles} />
+        </section>
+
         <section id="profil" className="lumina-card scroll-mt-24 rounded-[22px] p-6">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -186,6 +212,9 @@ export default async function AccountPage() {
               </Link>
             </div>
           )}
+          <div className="mt-5 border-t border-white/10 pt-5">
+            <ReadingReminderSetting initialReminderTime={customer.readingReminderTime} />
+          </div>
         </section>
       </main>
 

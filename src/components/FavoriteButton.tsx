@@ -33,7 +33,7 @@ export default function FavoriteButton({
       className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
         favorited
           ? "border-[#7c5cff] bg-[#7c5cff]/10 text-[#7c5cff]"
-          : "border-gray-mid text-navy hover:border-[#7c5cff]"
+          : "border-white/15 text-white hover:border-[#7c5cff]"
       }`}
     >
       <span>{favorited ? "❤️" : "🤍"}</span>

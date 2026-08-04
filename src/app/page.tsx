@@ -6,7 +6,10 @@ import HeroCovers from "@/components/HeroCovers";
 import EBookCard from "@/components/EBookCard";
 
 export default async function HomePage() {
-  const ebooks = await prisma.eBook.findMany({ orderBy: { createdAt: "asc" } });
+  const ebooks = await prisma.eBook.findMany({
+    where: { audience: "adults" },
+    orderBy: { createdAt: "asc" },
+  });
   const featured = ebooks.filter((e) => e.featured).slice(0, 3);
   const heroCovers = featured.length === 3 ? featured : ebooks.slice(0, 3);
 
@@ -56,22 +59,22 @@ export default async function HomePage() {
           preserveAspectRatio="none"
         >
           <path
-            fill="#ffffff"
+            fill="#0a0918"
             d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"
           />
         </svg>
       </section>
 
-      <section id="catalogue" className="px-6 py-28">
+      <section id="catalogue" className="bg-[#0a0918] px-6 py-28 text-white">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto mb-16 max-w-xl text-center">
-            <span className="mb-3.5 inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-royal">
+            <span className="mb-3.5 inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#a78bfa]">
               Le catalogue
             </span>
-            <h2 className="mb-4 text-[2rem] font-extrabold tracking-tight text-navy md:text-[2.75rem]">
+            <h2 className="mb-4 text-[2rem] font-extrabold tracking-tight text-white md:text-[2.75rem]">
               Nos eBooks populaires
             </h2>
-            <p className="text-[1.05rem] text-text-muted">
+            <p className="text-[1.05rem] text-[color:var(--color-lumina-text-muted)]">
               Explorez notre collection d&apos;eBooks pour tous les goûts et toutes les passions.
             </p>
           </div>
@@ -92,13 +95,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="avis" className="bg-gray-light px-6 py-28">
+      <section id="avis" className="bg-[#0d0b22] px-6 py-28 text-white">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[2fr_1fr]">
           <div>
-            <span className="mb-3.5 inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-royal">
+            <span className="mb-3.5 inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#a78bfa]">
               Ils l&apos;ont fait
             </span>
-            <h2 className="mb-7 text-[1.6rem] font-extrabold tracking-tight text-navy md:text-[2.1rem]">
+            <h2 className="mb-7 text-[1.6rem] font-extrabold tracking-tight text-white md:text-[2.1rem]">
               Avis de nos clients
             </h2>
             <div className="grid gap-5 sm:grid-cols-3">
@@ -109,22 +112,22 @@ export default async function HomePage() {
               ].map((t) => (
                 <div
                   key={t.name}
-                  className="flex flex-col justify-between gap-4.5 rounded-2xl border border-gray-mid bg-white p-6 shadow-soft"
+                  className="lumina-card flex flex-col justify-between gap-4.5 rounded-2xl p-6"
                 >
-                  <p className="text-base font-bold tracking-tight text-navy">&quot;{t.quote}&quot;</p>
+                  <p className="text-base font-bold tracking-tight text-white">&quot;{t.quote}&quot;</p>
                   <div className="flex items-center justify-between text-[0.82rem]">
                     <span className="tracking-wide text-[#ffb020]">★★★★★</span>
-                    <span className="font-semibold text-text-muted">{t.name}</span>
+                    <span className="font-semibold text-[color:var(--color-lumina-text-muted)]">{t.name}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="flex flex-col justify-center rounded-[22px] bg-gradient-to-br from-royal to-navy p-10 text-white shadow-strong">
+          <div className="flex flex-col justify-center rounded-[22px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] p-10 text-white shadow-strong">
             <h3 className="mb-3.5 text-2xl font-extrabold tracking-tight">
               Lisez dès aujourd&apos;hui !
             </h3>
-            <p className="mb-6.5 text-[0.92rem] text-[#dbe4ff]">
+            <p className="mb-6.5 text-[0.92rem] text-[#e4defc]">
               Obtenez vos eBooks instantanément et commencez à lire en quelques clics.
             </p>
             <Link

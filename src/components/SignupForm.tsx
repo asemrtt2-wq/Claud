@@ -50,34 +50,33 @@ export default function SignupForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-sm rounded-[22px] border border-gray-mid bg-white p-9 shadow-soft"
+      className="lumina-card w-full max-w-sm rounded-[22px] p-9"
     >
-      <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-navy">
+      <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-white">
         Créer un compte
       </h1>
-      <p className="mb-7 text-sm text-text-muted">
-        Rejoins EBookstore pour lire, sauvegarder tes favoris et t&apos;abonner à
-        Premium.
+      <p className="mb-7 text-sm text-[color:var(--color-lumina-text-muted)]">
+        Rejoins Lumina pour lire, sauvegarder tes favoris et t&apos;abonner à Premium.
       </p>
 
-      <label className="mb-1.5 block text-sm font-semibold text-navy">Nom</label>
+      <label className="mb-1.5 block text-sm font-semibold text-white">Nom</label>
       <input
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="mb-4 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-[#7c5cff]"
+        className="mb-4 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-[#7c5cff]"
       />
 
-      <label className="mb-1.5 block text-sm font-semibold text-navy">Email</label>
+      <label className="mb-1.5 block text-sm font-semibold text-white">Email</label>
       <input
         type="email"
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="mb-4 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-[#7c5cff]"
+        className="mb-4 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-[#7c5cff]"
       />
 
-      <label className="mb-1.5 block text-sm font-semibold text-navy">
+      <label className="mb-1.5 block text-sm font-semibold text-white">
         Mot de passe
       </label>
       <input
@@ -86,10 +85,10 @@ export default function SignupForm() {
         minLength={8}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="mb-6 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-[#7c5cff]"
+        className="mb-6 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-[#7c5cff]"
       />
 
-      {error && <p className="mb-4 text-sm font-semibold text-red-600">{error}</p>}
+      {error && <p className="mb-4 text-sm font-semibold text-[#ff8a8a]">{error}</p>}
 
       <button
         type="submit"
@@ -99,9 +98,9 @@ export default function SignupForm() {
         {loading ? "Création..." : "Créer mon compte"}
       </button>
 
-      <p className="mt-5 text-center text-sm text-text-muted">
+      <p className="mt-5 text-center text-sm text-[color:var(--color-lumina-text-muted)]">
         Déjà un compte ?{" "}
-        <Link href="/login" className="font-semibold text-[#7c5cff] hover:underline">
+        <Link href="/login" className="font-semibold text-[#a78bfa] hover:underline">
           Se connecter
         </Link>
       </p>

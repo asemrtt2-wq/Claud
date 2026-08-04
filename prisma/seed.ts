@@ -125,10 +125,95 @@ const ebooks = [
     oldPrice: 22,
     featured: false,
   },
+  {
+    slug: "epargner-sans-effort",
+    title: "Épargner Sans Effort",
+    subtitle: "Un système simple pour mettre de l'argent de côté chaque mois",
+    description:
+      "Un guide concret de finances personnelles pour les familles occupées : budget automatique, pièges à éviter et petites habitudes qui font une vraie différence sur l'année.",
+    content: chapters([
+      "Chapitre 1 — Pourquoi épargner semble toujours difficile\n\nCe n'est presque jamais une question de revenu : c'est une question de système. Sans règle automatique, l'argent qui reste en fin de mois disparaît toujours, quel que soit le salaire.",
+      "Chapitre 2 — La règle du virement automatique\n\nMets en place un virement automatique vers un compte épargne le jour de ta paie, avant de voir l'argent sur ton compte courant. Ce que tu ne vois pas, tu ne le dépenses pas.",
+      "Chapitre 3 — Repérer les dépenses invisibles\n\nAbonnements oubliés, frais bancaires, petits achats répétés : ce chapitre te donne une méthode en 15 minutes pour repérer les fuites les plus courantes dans un budget familial.",
+      "Chapitre 4 — Un objectif concret change tout\n\nÉpargner \"pour épargner\" ne motive personne. Nous verrons comment fixer un objectif clair — vacances, matelas de sécurité, projet familial — pour que chaque virement automatique ait un sens.",
+    ]),
+    category: "Développement personnel",
+    coverEmoji: "🪙",
+    coverTheme: "steel",
+    price: 14,
+    oldPrice: 20,
+    featured: false,
+  },
+];
+
+const kidsEbooks = [
+  {
+    slug: "le-petit-dragon-curieux",
+    title: "Le Petit Dragon Curieux",
+    subtitle: "Une aventure pleine de découvertes",
+    description:
+      "Ignis le petit dragon n'a jamais vu au-delà de sa montagne. Une histoire douce sur la curiosité et le courage de découvrir le monde, parfaite pour l'heure du coucher.",
+    content: chapters([
+      "Ignis vivait tout en haut d'une montagne, dans une grotte tapissée de mousse douce. Chaque soir, il regardait les lumières de la vallée en bas et se demandait ce qu'il pouvait bien s'y passer.",
+      "\"Tu es trop petit pour voler si loin\", lui disait toujours sa maman dragonne. Mais une nuit, sous une lune ronde et brillante, Ignis déplia ses petites ailes et s'envola tout doucement vers la vallée.",
+      "Il découvrit une forêt qui chantait, une rivière qui scintillait comme des diamants, et un hibou très sage qui lui offrit une noisette dorée en cadeau de bienvenue.",
+      "Quand Ignis rentra chez lui, il n'avait plus peur du tout. Il avait appris que le monde était grand, mais qu'il était toujours assez courageux pour l'explorer, un petit vol à la fois.",
+      "Et chaque soir, en fermant les yeux, il rêvait déjà du prochain endroit qu'il irait découvrir.",
+    ]),
+    category: "Histoires pour enfants",
+    audience: "kids",
+    coverEmoji: "🐉",
+    coverTheme: "ember",
+    price: 0,
+    oldPrice: null,
+    featured: false,
+  },
+  {
+    slug: "letoile-qui-chante",
+    title: "L'Étoile qui Chante",
+    subtitle: "Une berceuse venue du ciel",
+    description:
+      "Une petite étoile a perdu sa chanson. Une histoire apaisante sur l'amitié et la musique, pensée pour accompagner en douceur le moment du coucher.",
+    content: chapters([
+      "Tout en haut du ciel, une petite étoile nommée Lyra avait l'habitude de chanter chaque nuit pour aider les enfants à s'endormir. Mais un soir, sa chanson avait disparu.",
+      "Lyra demanda de l'aide à la Lune, qui lui répondit doucement : \"Ta chanson n'est pas perdue, elle se cache simplement là où le ciel est le plus calme.\"",
+      "Alors Lyra voyagea de nuage en nuage, écoutant le vent, le silence, et le doux ronflement des enfants qui dormaient déjà. Petit à petit, la musique revint, note après note.",
+      "Quand sa chanson fut de nouveau complète, Lyra la chanta plus belle que jamais, et partout sur Terre, les enfants fermèrent les yeux avec un sourire.",
+      "Depuis ce jour, on dit que si tu écoutes très attentivement juste avant de t'endormir, tu peux encore entendre la douce mélodie de Lyra.",
+    ]),
+    category: "Histoires pour enfants",
+    audience: "kids",
+    coverEmoji: "⭐",
+    coverTheme: "aurora",
+    price: 0,
+    oldPrice: null,
+    featured: false,
+  },
+  {
+    slug: "la-foret-des-murmures",
+    title: "La Forêt des Murmures",
+    subtitle: "Le secret des arbres qui chuchotent",
+    description:
+      "Mia entend les arbres murmurer un secret magique. Une histoire sur l'écoute, la nature et la confiance en soi, pour les jeunes explorateurs.",
+    content: chapters([
+      "Mia adorait se promener dans la forêt derrière chez elle. Un jour, elle remarqua quelque chose d'étrange : les feuilles semblaient chuchoter entre elles, comme si elles se racontaient un secret.",
+      "Elle s'assit tout doucement au pied d'un grand chêne et ferma les yeux pour mieux écouter. \"Chuuut... suis le chemin de mousse... chuuut...\" murmuraient les feuilles.",
+      "Mia suivit le doux chemin de mousse verte, guidée par le murmure des arbres, jusqu'à une petite clairière où des centaines de lucioles dansaient dans la lumière du soir.",
+      "Un vieux hibou, gardien de la clairière, lui expliqua que seuls ceux qui prennent le temps d'écouter vraiment peuvent trouver cet endroit magique.",
+      "Mia rentra chez elle le cœur léger, en promettant de toujours prendre le temps d'écouter le monde autour d'elle, même les plus petits murmures.",
+    ]),
+    category: "Histoires pour enfants",
+    audience: "kids",
+    coverEmoji: "🦉",
+    coverTheme: "forest",
+    price: 0,
+    oldPrice: null,
+    featured: false,
+  },
 ];
 
 async function main() {
-  for (const ebook of ebooks) {
+  for (const ebook of [...ebooks, ...kidsEbooks]) {
     await prisma.eBook.upsert({
       where: { slug: ebook.slug },
       update: ebook,
@@ -153,7 +238,9 @@ async function main() {
     );
   }
 
-  console.log(`Seeded ${ebooks.length} eBooks.`);
+  console.log(
+    `Seeded ${ebooks.length} adult eBooks and ${kidsEbooks.length} kids eBooks.`
+  );
 }
 
 main()

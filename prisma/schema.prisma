@@ -15,6 +15,7 @@ model EBook {
   description String
   content     String   @default("")
   category    String
+  audience    String   @default("adults")
   coverEmoji  String
   coverTheme  String
   price       Float
@@ -25,6 +26,7 @@ model EBook {
   orders      Order[]
   favorites   Favorite[]
   progress    ReadingProgress[]
+  childProgress ChildReadingProgress[]
 }
 
 model Order {
@@ -48,15 +50,46 @@ model Admin {
 }
 
 model Customer {
-  id            String            @id @default(cuid())
-  email         String            @unique
-  passwordHash  String
-  name          String
-  createdAt     DateTime          @default(now())
-  orders        Order[]
-  subscription  Subscription?
-  favorites     Favorite[]
-  progress      ReadingProgress[]
+  id                  String            @id @default(cuid())
+  email               String            @unique
+  passwordHash        String
+  name                String
+  readingReminderTime String?
+  createdAt           DateTime          @default(now())
+  orders              Order[]
+  subscription        Subscription?
+  favorites           Favorite[]
+  progress            ReadingProgress[]
+  childProfiles       ChildProfile[]
+}
+
+model ChildProfile {
+  id                String                  @id @default(cuid())
+  parentId          String
+  parent            Customer                @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  name              String
+  avatarEmoji       String                  @default("🧒")
+  dailyLimitMinutes Int?
+  minutesReadToday  Int                     @default(0)
+  limitResetDate    String?
+  reminderTime      String?
+  createdAt         DateTime                @default(now())
+  progress          ChildReadingProgress[]
+}
+
+model ChildReadingProgress {
+  id                 String       @id @default(cuid())
+  childProfileId     String
+  childProfile       ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  ebookId            String
+  ebook              EBook        @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  page               Int          @default(0)
+  completed          Boolean      @default(false)
+  lastPageAt         DateTime?
+  avgSecondsPerPage  Float?
+  updatedAt          DateTime     @updatedAt
+
+  @@unique([childProfileId, ebookId])
 }
 
 model Subscription {

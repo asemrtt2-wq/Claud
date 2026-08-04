@@ -16,7 +16,7 @@ export default async function EBookPage({
   const { slug } = await params;
   const ebook = await prisma.eBook.findUnique({ where: { slug } });
 
-  if (!ebook) notFound();
+  if (!ebook || ebook.audience === "kids") notFound();
 
   const customer = await getCurrentCustomer();
   const isLoggedIn = Boolean(customer);
@@ -36,7 +36,7 @@ export default async function EBookPage({
   return (
     <>
       <Header />
-      <section className="px-6 py-20">
+      <section className="lumina-shell px-6 py-20">
         <div className="mx-auto grid max-w-5xl gap-14 md:grid-cols-2">
           <div
             className={`cover-theme-${ebook.coverTheme} relative flex h-[420px] flex-col justify-between rounded-[22px] p-9 text-white shadow-strong`}
@@ -54,7 +54,7 @@ export default async function EBookPage({
 
           <div>
             <div className="mb-3 flex items-center justify-between">
-              <span className="inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#7c5cff]">
+              <span className="inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#a78bfa]">
                 {ebook.category}
               </span>
               <FavoriteButton
@@ -64,19 +64,23 @@ export default async function EBookPage({
                 isLoggedIn={isLoggedIn}
               />
             </div>
-            <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-navy">
+            <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-white">
               {ebook.title}
             </h1>
-            <p className="mb-6 text-lg font-semibold text-text-muted">{ebook.subtitle}</p>
-            <p className="mb-8 leading-relaxed text-text-muted">{ebook.description}</p>
+            <p className="mb-6 text-lg font-semibold text-[color:var(--color-lumina-text-muted)]">
+              {ebook.subtitle}
+            </p>
+            <p className="mb-8 leading-relaxed text-[color:var(--color-lumina-text-muted)]">
+              {ebook.description}
+            </p>
 
             <div className="mb-8 flex items-baseline gap-3">
               {ebook.oldPrice && (
-                <span className="text-xl font-bold text-[#a7b1c9] line-through">
+                <span className="text-xl font-bold text-white/40 line-through">
                   {ebook.oldPrice} €
                 </span>
               )}
-              <span className="text-4xl font-extrabold tracking-tight text-navy">
+              <span className="text-4xl font-extrabold tracking-tight text-white">
                 {ebook.price} €
               </span>
               {discount && (
@@ -87,7 +91,7 @@ export default async function EBookPage({
             </div>
 
             {hasAccess ? (
-              <div className="max-w-sm rounded-[22px] border border-gray-mid bg-white p-6 shadow-soft">
+              <div className="lumina-card max-w-sm rounded-[22px] p-6">
                 <Link
                   href={`/read/${ebook.slug}`}
                   className="block rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-center text-sm font-bold text-white shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5"
@@ -96,15 +100,15 @@ export default async function EBookPage({
                 </Link>
               </div>
             ) : (
-              <div className="max-w-sm rounded-[22px] border border-gray-mid bg-white p-6 shadow-soft">
+              <div className="lumina-card max-w-sm rounded-[22px] p-6">
                 <BuyButton ebookId={ebook.id} isLoggedIn={isLoggedIn} />
                 <Link
                   href="/premium"
-                  className="mt-3 block rounded-2xl border border-gray-mid px-7 py-3 text-center text-sm font-bold text-navy transition hover:border-[#7c5cff]"
+                  className="mt-3 block rounded-2xl border border-white/15 px-7 py-3 text-center text-sm font-bold text-white transition hover:border-[#7c5cff]"
                 >
                   ✨ Lire gratuitement avec Premium
                 </Link>
-                <p className="mt-4 text-xs text-text-muted">
+                <p className="mt-4 text-xs text-[color:var(--color-lumina-text-muted)]">
                   🔒 Paiement sécurisé via Stripe — accès immédiat après paiement.
                 </p>
               </div>
