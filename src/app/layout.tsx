@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "EBookstore — Découvrez vos eBooks préférés",
+  title: "Lumina — Remplace les écrans par des histoires qui te transforment",
   description:
-    "Débloquez votre plein potentiel grâce aux meilleurs eBooks : fitness, développement personnel, cuisine, bien-être et plus encore.",
+    "L'application qui t'aide à reprendre le contrôle de ton temps grâce à des eBooks immersifs, interactifs et motivants.",
 };
 
 export default function RootLayout({

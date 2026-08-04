@@ -13,6 +13,13 @@
   --shadow-strong: 0 30px 80px rgba(8, 27, 69, 0.35);
 
   --radius-xl: 22px;
+
+  --color-lumina-bg: #0a0918;
+  --color-lumina-panel: #14122a;
+  --color-lumina-border: rgba(255, 255, 255, 0.08);
+  --color-lumina-purple: #7c5cff;
+  --color-lumina-purple-light: #a78bfa;
+  --color-lumina-text-muted: #9a95c9;
 }
 
 html {
@@ -38,6 +45,29 @@ body {
 }
 .cover-theme-steel {
   background: linear-gradient(160deg, #8b94ac, #4d5670);
+}
+
+.lumina-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(124, 92, 255, 0.25), transparent 55%),
+    radial-gradient(circle at 85% 20%, rgba(124, 92, 255, 0.12), transparent 45%),
+    var(--color-lumina-bg);
+  color: #ffffff;
+}
+
+.lumina-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-lumina-border);
+  backdrop-filter: blur(16px);
+}
+
+.lumina-progress-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lumina-progress-fill {
+  background: linear-gradient(90deg, var(--color-lumina-purple), var(--color-lumina-purple-light));
 }
 
 .card-scrim::after {

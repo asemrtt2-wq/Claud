@@ -8,17 +8,17 @@ export default async function Header() {
     <header className="sticky top-0 z-50 border-b border-navy/5 bg-white/85 backdrop-blur-lg">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2.5 text-xl font-extrabold tracking-tight text-navy">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-royal to-navy text-white shadow-[0_8px_20px_rgba(30,91,255,0.35)]">
-            E
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c5cff] to-navy text-white shadow-[0_8px_20px_rgba(124,92,255,0.35)]">
+            ✦
           </span>
-          EBookstore
+          LUMINA
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
           <Link href="/" className="text-sm font-semibold text-navy/75 transition hover:text-navy">
             Accueil
           </Link>
           <Link href="/#catalogue" className="text-sm font-semibold text-navy/75 transition hover:text-navy">
-            Nos eBooks
+            Bibliothèque
           </Link>
           <Link href="/premium" className="text-sm font-semibold text-navy/75 transition hover:text-navy">
             Premium
@@ -30,7 +30,7 @@ export default async function Header() {
         {customer ? (
           <Link
             href="/account"
-            className="rounded-xl border border-gray-mid bg-white px-6 py-2.5 text-sm font-bold text-navy shadow-[0_8px_24px_rgba(8,27,69,0.1)] transition hover:-translate-y-0.5 hover:border-royal"
+            className="rounded-xl border border-gray-mid bg-white px-6 py-2.5 text-sm font-bold text-navy shadow-[0_8px_24px_rgba(8,27,69,0.1)] transition hover:-translate-y-0.5 hover:border-[#7c5cff]"
           >
             👤 Mon compte
           </Link>
@@ -44,9 +44,9 @@ export default async function Header() {
             </Link>
             <Link
               href="/signup"
-              className="rounded-xl bg-gradient-to-br from-royal to-[#3a6bff] px-6 py-2.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(30,91,255,0.35)] transition hover:-translate-y-0.5"
+              className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-6 py-2.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(124,92,255,0.35)] transition hover:-translate-y-0.5"
             >
-              Créer un compte
+              Commencer gratuitement
             </Link>
           </div>
         )}

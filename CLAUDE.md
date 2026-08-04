@@ -4,11 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-EBookstore — a full-stack Next.js eBook platform. Public catalog of eBooks, individual eBook
-pages with one-time Stripe Checkout purchases, a recurring Stripe Premium subscription
-(monthly/yearly, unlocks the whole library), customer accounts (signup/login, favorites,
-reading progress), a simple in-browser reader, and a separate password-protected admin panel
-for managing the catalog.
+Lumina (formerly "EBookstore") — a full-stack Next.js eBook platform. Public catalog of
+eBooks, individual eBook pages with one-time Stripe Checkout purchases, a recurring Stripe
+Premium subscription (monthly/yearly, unlocks the whole library), customer accounts
+(signup/login, favorites, reading progress), a dark "app shell" account dashboard and
+in-browser reader modeled on the Lumina product design (dark navy/purple glassmorphism), and
+a separate password-protected admin panel for managing the catalog.
+
+The customer-facing brand is "Lumina" (logo: `✦`, purple `#7c5cff` → `#5b3df0` gradient). The
+public marketing pages (home hero, header/footer) use a dark purple gradient on top of the
+existing navy/white brand shell; the logged-in app experience (`/account`, `/read/[slug]`) uses
+a fully dark glassmorphic "app" look (`lumina-shell`/`lumina-card` utility classes in
+`globals.css`) with a mobile bottom nav (`AppBottomNav`). The admin panel keeps the original
+navy/royal-blue palette — it's an internal tool, not part of the Lumina brand surface.
 
 ## Stack
 
@@ -67,7 +75,11 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   import the async `Header`/`Footer` server components directly into a `"use client"` file,
   Next.js can't render a Server Component inside a Client Component that way.
 - `src/lib/customerSession.ts` — `getCurrentCustomer()` helper (server-only) used across pages.
-- `src/app/account/page.tsx` — subscription status, "continue reading", favorites.
+- `src/app/account/page.tsx` — the Lumina app dashboard (dark `lumina-shell`): a "continue
+  reading" hero card (last book read, progress bar, resume link), a unified "library" grid
+  deduplicating eBooks the customer purchased/favorited/has progress on, a favorites grid, and
+  a profile section (subscription status, sign out). Renders `AppBottomNav` below the fold for
+  mobile in-app navigation (anchors into the same page plus a link back to the catalogue).
 - `src/lib/access.ts` — `hasAccessToEbook()`: true if the customer has an active `Subscription`
   or a `paid` `Order` for that eBook.
 
@@ -75,9 +87,14 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 - `src/lib/paginate.ts` — splits an eBook's plain-text `content` into pages (~900 chars,
   paragraph-aware).
 - `src/app/read/[slug]/page.tsx` — server component that checks access (redirects to `/login`
-  or the eBook page otherwise), then renders the client `Reader` component (dark/light, font
-  size, prev/next, progress bar). Reading position is saved via the `saveReadingProgress`
-  server action in `src/lib/customerActions.ts`.
+  or the eBook page otherwise), then renders the client `Reader` component, passing the
+  eBook's `coverTheme` for the immersive background.
+- `src/components/Reader.tsx` — "immersive" (default) vs "clair" (light) toggle. Immersive mode
+  uses the eBook's `cover-theme-*` gradient as a full-page background with a dark overlay and a
+  glassmorphic content card; light mode is a plain white reader. Font size (A-/A+), prev/next,
+  and a purple progress bar work in both modes — border/background colors on the control buttons
+  branch on the `immersive` boolean so they stay visible in light mode too. Reading position is
+  saved via the `saveReadingProgress` server action in `src/lib/customerActions.ts`.
 
 ### Payments
 - `src/app/api/checkout/route.ts` — one-time purchase; requires a logged-in customer, creates
@@ -114,6 +131,17 @@ and `ReadingProgress` (join tables, unique on `[customerId, ebookId]`).
 - Cover art has no real images; each eBook has a `coverEmoji` + `coverTheme` (one of `royal`,
   `navy`, `deep`, `dark`, `steel` — CSS gradients defined in `globals.css` as
   `.cover-theme-*`). Keep new themes within the navy/royal-blue brand palette.
+- Lumina purple accent (`#7c5cff` → `#5b3df0`/`#a78bfa`) is the primary interactive color across
+  customer-facing CTAs (buy/subscribe/favorite buttons, links, focus rings) — it replaced the
+  old `text-royal`/`from-royal` blue accent on those elements. The `royal`/navy tokens remain
+  the base brand shell (header/footer background, body text, admin panel) and are still used
+  for structural chrome, not just left over from before the rebrand.
+- Lumina dark-app tokens live in `globals.css` under `@theme`: `--color-lumina-bg`,
+  `--color-lumina-panel`, `--color-lumina-border`, `--color-lumina-purple`,
+  `--color-lumina-purple-light`, `--color-lumina-text-muted`, plus utility classes
+  `.lumina-shell` (dark radial-gradient page background), `.lumina-card` (glassmorphic panel),
+  and `.lumina-progress-track`/`.lumina-progress-fill`. Use these for any new logged-in "app"
+  screen instead of the light navy/white marketing-page styles.
 - `next.config.mjs` sets `experimental.useTypeScriptCli: true` — required because the
   installed TypeScript version doesn't expose the compiler API Next's default type-checker
   expects. Don't remove it unless the TypeScript/Next versions change.

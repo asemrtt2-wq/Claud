@@ -13,7 +13,7 @@ export default async function PremiumPage() {
       <Header />
       <section className="px-6 py-24">
         <div className="mx-auto max-w-5xl text-center">
-          <span className="mb-3.5 inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-royal">
+          <span className="mb-3.5 inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#7c5cff]">
             Nos offres
           </span>
           <h1 className="mb-4 text-[2rem] font-extrabold tracking-tight text-navy md:text-[2.75rem]">
@@ -37,14 +37,14 @@ export default async function PremiumPage() {
               </ul>
               <Link
                 href={isLoggedIn ? "/account" : "/signup"}
-                className="rounded-2xl border border-gray-mid px-7 py-3.5 text-center text-sm font-bold text-navy transition hover:border-royal"
+                className="rounded-2xl border border-gray-mid px-7 py-3.5 text-center text-sm font-bold text-navy transition hover:border-[#7c5cff]"
               >
                 {isLoggedIn ? "Mon compte" : "Créer un compte"}
               </Link>
             </div>
 
-            <div className="flex flex-col rounded-[22px] border-2 border-royal bg-white p-8 text-left shadow-strong">
-              <span className="mb-2 text-xs font-extrabold uppercase tracking-wider text-royal">
+            <div className="flex flex-col rounded-[22px] border-2 border-[#7c5cff] bg-white p-8 text-left shadow-strong">
+              <span className="mb-2 text-xs font-extrabold uppercase tracking-wider text-[#7c5cff]">
                 Premium mensuel
               </span>
               <div className="mb-1 text-4xl font-extrabold text-navy">9,99 €</div>

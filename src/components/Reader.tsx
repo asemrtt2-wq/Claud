@@ -10,17 +10,19 @@ export default function Reader({
   ebookId,
   slug,
   title,
+  coverTheme,
   pages,
   initialPage,
 }: {
   ebookId: string;
   slug: string;
   title: string;
+  coverTheme: string;
   pages: string[];
   initialPage: number;
 }) {
   const [page, setPage] = useState(Math.min(initialPage, pages.length - 1));
-  const [dark, setDark] = useState(false);
+  const [immersive, setImmersive] = useState(true);
   const [fontSizeIndex, setFontSizeIndex] = useState(1);
 
   useEffect(() => {
@@ -30,74 +32,82 @@ export default function Reader({
   const progress = Math.round(((page + 1) / pages.length) * 100);
 
   return (
-    <div className={dark ? "min-h-screen bg-navy-dark text-white" : "min-h-screen bg-white text-navy"}>
-      <div
-        className={`flex items-center justify-between border-b px-6 py-4 ${
-          dark ? "border-white/10" : "border-gray-mid"
-        }`}
-      >
+    <div
+      className={
+        immersive
+          ? `cover-theme-${coverTheme} relative min-h-screen text-white`
+          : "min-h-screen bg-white text-navy"
+      }
+    >
+      {immersive && <div className="pointer-events-none absolute inset-0 bg-black/45" />}
+
+      <div className="relative z-10 flex items-center justify-between border-b border-white/10 px-6 py-4">
         <Link
           href={`/ebooks/${slug}`}
-          className={`text-sm font-semibold ${dark ? "text-white/70 hover:text-white" : "text-text-muted hover:text-navy"}`}
+          className={`text-sm font-semibold ${immersive ? "text-white/70 hover:text-white" : "text-text-muted hover:text-navy"}`}
         >
           ← {title}
         </Link>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setFontSizeIndex((i) => Math.max(0, i - 1))}
-            className={`h-8 w-8 rounded-lg border text-sm font-bold ${dark ? "border-white/20" : "border-gray-mid"}`}
+            className={`h-8 w-8 rounded-lg border text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
           >
             A-
           </button>
           <button
             onClick={() => setFontSizeIndex((i) => Math.min(FONT_SIZES.length - 1, i + 1))}
-            className={`h-8 w-8 rounded-lg border text-sm font-bold ${dark ? "border-white/20" : "border-gray-mid"}`}
+            className={`h-8 w-8 rounded-lg border text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
           >
             A+
           </button>
           <button
-            onClick={() => setDark((d) => !d)}
-            className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${dark ? "border-white/20" : "border-gray-mid"}`}
+            onClick={() => setImmersive((v) => !v)}
+            className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
           >
-            {dark ? "☀️ Clair" : "🌙 Sombre"}
+            {immersive ? "☀️ Clair" : "🌙 Immersif"}
           </button>
         </div>
       </div>
 
-      <div className={`h-1 w-full ${dark ? "bg-white/10" : "bg-gray-mid"}`}>
+      <div className={`relative z-10 h-1 w-full ${immersive ? "bg-white/10" : "bg-gray-mid"}`}>
         <div
-          className="h-1 bg-gradient-to-r from-royal to-[#3a6bff] transition-all"
+          className="h-1 bg-gradient-to-r from-[#7c5cff] to-[#a78bfa] transition-all"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="mx-auto max-w-2xl px-6 py-16">
-        <p
-          className={`whitespace-pre-line leading-relaxed ${FONT_SIZES[fontSizeIndex]}`}
+      <div className="relative z-10 mx-auto max-w-2xl px-6 py-16">
+        <div
+          className={`rounded-[22px] p-8 ${immersive ? "bg-black/40 backdrop-blur-sm" : ""}`}
         >
-          {pages[page]}
-        </p>
+          <p
+            className={`whitespace-pre-line leading-relaxed ${FONT_SIZES[fontSizeIndex]}`}
+          >
+            {pages[page]}
+          </p>
+        </div>
       </div>
 
       <div
-        className={`sticky bottom-0 flex items-center justify-between border-t px-6 py-4 ${
-          dark ? "border-white/10 bg-navy-dark" : "border-gray-mid bg-white"
+        className={`sticky bottom-0 z-10 flex items-center justify-between border-t px-6 py-4 ${
+          immersive ? "border-white/10 bg-black/50 backdrop-blur-sm" : "border-gray-mid bg-white"
         }`}
       >
         <button
           onClick={() => setPage((p) => Math.max(0, p - 1))}
           disabled={page === 0}
-          className="rounded-xl border border-gray-mid px-5 py-2.5 text-sm font-bold disabled:opacity-40"
+          className="rounded-xl border border-white/20 px-5 py-2.5 text-sm font-bold disabled:opacity-40"
         >
           ← Précédent
         </button>
-        <span className={`text-sm font-semibold ${dark ? "text-white/60" : "text-text-muted"}`}>
-          Page {page + 1} / {pages.length}
+        <span className="text-sm font-semibold opacity-70">
+          {page + 1} / {pages.length}
         </span>
         <button
           onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}
           disabled={page === pages.length - 1}
-          className="rounded-xl bg-gradient-to-br from-royal to-[#3a6bff] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
+          className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
         >
           Suivant →
         </button>

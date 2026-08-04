@@ -32,8 +32,8 @@ export default function FavoriteButton({
       disabled={isPending}
       className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
         favorited
-          ? "border-royal bg-royal/10 text-royal"
-          : "border-gray-mid text-navy hover:border-royal"
+          ? "border-[#7c5cff] bg-[#7c5cff]/10 text-[#7c5cff]"
+          : "border-gray-mid text-navy hover:border-[#7c5cff]"
       }`}
     >
       <span>{favorited ? "❤️" : "🤍"}</span>

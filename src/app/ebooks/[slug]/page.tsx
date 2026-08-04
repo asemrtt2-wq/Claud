@@ -54,7 +54,7 @@ export default async function EBookPage({
 
           <div>
             <div className="mb-3 flex items-center justify-between">
-              <span className="inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-royal">
+              <span className="inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#7c5cff]">
                 {ebook.category}
               </span>
               <FavoriteButton
@@ -90,7 +90,7 @@ export default async function EBookPage({
               <div className="max-w-sm rounded-[22px] border border-gray-mid bg-white p-6 shadow-soft">
                 <Link
                   href={`/read/${ebook.slug}`}
-                  className="block rounded-2xl bg-gradient-to-br from-royal to-[#3a6bff] px-7 py-3.5 text-center text-sm font-bold text-white shadow-[0_12px_30px_rgba(30,91,255,0.4)] transition hover:-translate-y-0.5"
+                  className="block rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-center text-sm font-bold text-white shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5"
                 >
                   📖 Lire maintenant
                 </Link>
@@ -100,7 +100,7 @@ export default async function EBookPage({
                 <BuyButton ebookId={ebook.id} isLoggedIn={isLoggedIn} />
                 <Link
                   href="/premium"
-                  className="mt-3 block rounded-2xl border border-gray-mid px-7 py-3 text-center text-sm font-bold text-navy transition hover:border-royal"
+                  className="mt-3 block rounded-2xl border border-gray-mid px-7 py-3 text-center text-sm font-bold text-navy transition hover:border-[#7c5cff]"
                 >
                   ✨ Lire gratuitement avec Premium
                 </Link>

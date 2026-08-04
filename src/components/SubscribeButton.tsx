@@ -44,7 +44,7 @@ export default function SubscribeButton({
     return (
       <Link
         href="/login"
-        className="block rounded-2xl bg-gradient-to-br from-royal to-[#3a6bff] px-7 py-3.5 text-center text-sm font-bold text-white shadow-[0_12px_30px_rgba(30,91,255,0.4)] transition hover:-translate-y-0.5"
+        className="block rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-center text-sm font-bold text-white shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5"
       >
         Connecte-toi pour t&apos;abonner
       </Link>
@@ -56,7 +56,7 @@ export default function SubscribeButton({
       <button
         onClick={handleSubscribe}
         disabled={loading}
-        className="w-full rounded-2xl bg-gradient-to-br from-royal to-[#3a6bff] px-7 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(30,91,255,0.4)] transition hover:-translate-y-0.5 disabled:opacity-60"
+        className="w-full rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5 disabled:opacity-60"
       >
         {loading ? "Redirection..." : label}
       </button>

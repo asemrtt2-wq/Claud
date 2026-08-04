@@ -65,7 +65,7 @@ export default function SignupForm() {
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="mb-4 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-royal"
+        className="mb-4 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-[#7c5cff]"
       />
 
       <label className="mb-1.5 block text-sm font-semibold text-navy">Email</label>
@@ -74,7 +74,7 @@ export default function SignupForm() {
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="mb-4 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-royal"
+        className="mb-4 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-[#7c5cff]"
       />
 
       <label className="mb-1.5 block text-sm font-semibold text-navy">
@@ -86,7 +86,7 @@ export default function SignupForm() {
         minLength={8}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="mb-6 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-royal"
+        className="mb-6 w-full rounded-xl border border-gray-mid px-4 py-3 text-sm outline-none focus:border-[#7c5cff]"
       />
 
       {error && <p className="mb-4 text-sm font-semibold text-red-600">{error}</p>}
@@ -94,14 +94,14 @@ export default function SignupForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-2xl bg-gradient-to-br from-royal to-[#3a6bff] px-7 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(30,91,255,0.4)] transition hover:-translate-y-0.5 disabled:opacity-60"
+        className="w-full rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5 disabled:opacity-60"
       >
         {loading ? "Création..." : "Créer mon compte"}
       </button>
 
       <p className="mt-5 text-center text-sm text-text-muted">
         Déjà un compte ?{" "}
-        <Link href="/login" className="font-semibold text-royal hover:underline">
+        <Link href="/login" className="font-semibold text-[#7c5cff] hover:underline">
           Se connecter
         </Link>
       </p>

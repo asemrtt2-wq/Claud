@@ -14,34 +14,35 @@ export default async function HomePage() {
     <>
       <Header />
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-navy via-[#0c2358] to-navy-dark px-6 pb-20 pt-16 text-white">
-        <div className="pointer-events-none absolute -right-52 -top-52 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(30,91,255,0.35),transparent_70%)]" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0a0918] via-[#150f2e] to-navy-dark px-6 pb-20 pt-16 text-white">
+        <div className="pointer-events-none absolute -right-52 -top-52 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(124,92,255,0.3),transparent_70%)]" />
         <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
           <div>
-            <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4.5 py-2 text-[0.82rem] font-bold uppercase tracking-wide text-[#bcd0ff]">
-              📚 Plus de 6 eBooks premium
+            <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4.5 py-2 text-[0.82rem] font-bold uppercase tracking-wide text-[#c9bdff]">
+              ✦ LUMINA
             </span>
             <h1 className="mb-6 text-[2.6rem] font-extrabold leading-[1.08] tracking-tight md:text-[3.5rem]">
-              Découvrez vos{" "}
-              <span className="bg-gradient-to-br from-[#7ea2ff] to-white bg-clip-text text-transparent">
-                eBooks préférés
+              Remplace les écrans par des{" "}
+              <span className="bg-gradient-to-br from-[#a78bfa] to-white bg-clip-text text-transparent">
+                histoires qui te transforment
               </span>
             </h1>
-            <p className="mb-10 max-w-lg text-lg text-[#c3cee8]">
-              Débloquez votre plein potentiel grâce aux meilleurs eBooks : fitness, développement personnel, cuisine, bien-être et plus encore. Une collection premium pour tous les goûts et toutes les passions.
+            <p className="mb-10 max-w-lg text-lg text-[#c3bfe8]">
+              L&apos;application qui t&apos;aide à reprendre le contrôle de ton temps grâce à des
+              eBooks immersifs, interactifs et motivants.
             </p>
             <div className="flex flex-wrap gap-4.5">
               <Link
-                href="#catalogue"
-                className="rounded-2xl bg-gradient-to-br from-royal to-[#3a6bff] px-7 py-3.5 text-sm font-bold shadow-[0_12px_30px_rgba(30,91,255,0.4)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(30,91,255,0.5)]"
+                href="/signup"
+                className="rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-sm font-bold shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(124,92,255,0.5)]"
               >
-                Découvrir les eBooks
+                Commencer gratuitement
               </Link>
               <Link
-                href="#avis"
+                href="#catalogue"
                 className="rounded-2xl border border-gray-mid bg-white px-7 py-3.5 text-sm font-bold text-navy shadow-[0_8px_24px_rgba(8,27,69,0.1)] transition hover:-translate-y-0.5"
               >
-                Voir les avis
+                En savoir plus
               </Link>
             </div>
           </div>

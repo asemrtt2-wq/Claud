@@ -31,6 +31,7 @@ export default async function ReadPage({
       ebookId={ebook.id}
       slug={ebook.slug}
       title={ebook.title}
+      coverTheme={ebook.coverTheme}
       pages={pages}
       initialPage={progress?.page ?? 0}
     />
