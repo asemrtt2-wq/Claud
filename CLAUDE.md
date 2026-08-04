@@ -43,7 +43,11 @@ than literally implemented, and future work should keep respecting these boundar
 - **Framework**: Next.js 16 (App Router), TypeScript, React 19
 - **Styling**: Tailwind CSS v4 (config lives in `src/app/globals.css` via `@theme`, not a
   `tailwind.config.js`)
-- **Database**: SQLite via Prisma (`prisma/schema.prisma`, file at `prisma/dev.db`)
+- **Database**: PostgreSQL via Prisma (`prisma/schema.prisma`). Any Postgres works locally or in
+  production (Vercel Postgres, Neon, Supabase, a local `postgresql-16` instance, etc.) — just
+  point `DATABASE_URL` at it. (Earlier versions of this project used SQLite; it was dropped
+  because Vercel's serverless functions can't write to a local file, which broke every
+  write — signup, checkout, favorites — the moment the app left a persistent dev machine.)
 - **Auth**: NextAuth (two Credentials providers — `admin-credentials` and
   `customer-credentials` — sharing one JWT session, distinguished by `token.role`)
 - **Payments**: Stripe Checkout, both one-time (`mode: "payment"`) and subscription
@@ -54,20 +58,26 @@ than literally implemented, and future work should keep respecting these boundar
 ```bash
 npm install          # install deps (also runs `prisma generate` via postinstall)
 npm run dev           # start dev server on :3000
-npm run build          # production build (also type-checks)
+npm run build          # runs `prisma migrate deploy` then production build (also type-checks)
 npm run start          # run the production build
-npm run db:migrate       # create/apply a Prisma migration (prisma migrate dev)
+npm run db:migrate       # create/apply a Prisma migration (prisma migrate dev) — needs a reachable Postgres
 npm run db:seed         # seed sample eBooks + the admin account from .env
 npm run db:studio        # open Prisma Studio to browse/edit data
 ```
 
 There is no test suite yet.
 
+`build` running `prisma migrate deploy` first means every deploy (Vercel or otherwise)
+auto-applies pending migrations against whatever `DATABASE_URL` is configured for that
+environment — convenient for a project this size, but worth knowing if you ever add a
+production environment where you'd rather migrate by hand.
+
 ## Environment variables
 
 Copy `.env.example` to `.env` before running anything. Required keys:
 
-- `DATABASE_URL` — SQLite file path (`file:./dev.db` by default)
+- `DATABASE_URL` — PostgreSQL connection string (e.g. from Vercel Postgres or Neon's free
+  tier, or a local `postgresql://postgres:postgres@localhost:5432/lumina_dev`)
 - `NEXTAUTH_SECRET` / `NEXTAUTH_URL` — required for admin and customer login sessions
 - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — used only by `prisma/seed.ts` to create the admin account
 - `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` — Stripe **test mode** keys from
