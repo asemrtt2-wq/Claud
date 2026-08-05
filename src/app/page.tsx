@@ -1,9 +1,19 @@
+import fs from "fs";
+import path from "path";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroCovers from "@/components/HeroCovers";
 import EBookCard from "@/components/EBookCard";
+
+const HERO_IMAGE_NAMES = ["hero.jpg", "hero.jpeg", "hero.png", "hero.webp"];
+
+function findHeroImage() {
+  return HERO_IMAGE_NAMES.find((name) =>
+    fs.existsSync(path.join(process.cwd(), "public", name))
+  );
+}
 
 export default async function HomePage() {
   const ebooks = await prisma.eBook.findMany({
@@ -12,6 +22,7 @@ export default async function HomePage() {
   });
   const featured = ebooks.filter((e) => e.featured).slice(0, 3);
   const heroCovers = featured.length === 3 ? featured : ebooks.slice(0, 3);
+  const heroImage = findHeroImage();
 
   return (
     <>
@@ -50,7 +61,15 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <HeroCovers ebooks={heroCovers} />
+          {heroImage ? (
+            <img
+              src={`/${heroImage}`}
+              alt="Lumina"
+              className="mx-auto w-full max-w-[420px] rounded-[28px] object-cover shadow-[0_30px_60px_rgba(0,0,0,0.4)]"
+            />
+          ) : (
+            <HeroCovers ebooks={heroCovers} />
+          )}
         </div>
 
         <svg

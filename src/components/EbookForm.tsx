@@ -6,6 +6,10 @@ type Defaults = {
   title?: string;
   subtitle?: string;
   description?: string;
+  content?: string;
+  author?: string;
+  publishedYear?: number | null;
+  audience?: string;
   category?: string;
   coverEmoji?: string;
   coverTheme?: string;
@@ -79,6 +83,37 @@ export default function EbookForm({
 
       <div className="grid grid-cols-3 gap-5">
         <div>
+          <label className="mb-1.5 block text-sm font-semibold text-navy">Auteur</label>
+          <input
+            name="author"
+            defaultValue={defaults?.author}
+            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-navy">Année de publication</label>
+          <input
+            type="number"
+            name="publishedYear"
+            defaultValue={defaults?.publishedYear ?? undefined}
+            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-navy">Public</label>
+          <select
+            name="audience"
+            defaultValue={defaults?.audience ?? "adults"}
+            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+          >
+            <option value="adults">Adultes</option>
+            <option value="kids">Enfants</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-5">
+        <div>
           <label className="mb-1.5 block text-sm font-semibold text-navy">Thème</label>
           <select
             name="coverTheme"
@@ -115,6 +150,22 @@ export default function EbookForm({
             className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-semibold text-navy">
+          Contenu du livre
+        </label>
+        <p className="mb-2 text-xs text-text-muted">
+          Texte intégral du livre. Pour que les chapitres soient détectés dans la fiche et le
+          lecteur, séparez-les avec une ligne du type « Chapitre 1 — Titre du chapitre ».
+        </p>
+        <textarea
+          name="content"
+          rows={16}
+          defaultValue={defaults?.content}
+          className="w-full rounded-xl border border-gray-mid px-4 py-2.5 font-mono text-sm outline-none focus:border-royal"
+        />
       </div>
 
       <label className="flex items-center gap-2 text-sm font-semibold text-navy">

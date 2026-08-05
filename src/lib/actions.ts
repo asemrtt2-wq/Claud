@@ -32,12 +32,18 @@ export async function createEbook(formData: FormData) {
   const price = Number(formData.get("price") ?? 0);
   const oldPriceRaw = formData.get("oldPrice");
 
+  const publishedYearRaw = formData.get("publishedYear");
+
   await prisma.eBook.create({
     data: {
       title,
       slug: slugify(title),
       subtitle: String(formData.get("subtitle") ?? ""),
       description: String(formData.get("description") ?? ""),
+      content: String(formData.get("content") ?? ""),
+      author: String(formData.get("author") ?? ""),
+      publishedYear: publishedYearRaw ? Number(publishedYearRaw) : null,
+      audience: String(formData.get("audience") ?? "adults"),
       category: String(formData.get("category") ?? ""),
       coverEmoji: String(formData.get("coverEmoji") ?? "📘"),
       coverTheme: String(formData.get("coverTheme") ?? "royal"),
@@ -57,6 +63,7 @@ export async function updateEbook(id: string, formData: FormData) {
 
   const title = String(formData.get("title") ?? "");
   const oldPriceRaw = formData.get("oldPrice");
+  const publishedYearRaw = formData.get("publishedYear");
 
   await prisma.eBook.update({
     where: { id },
@@ -65,6 +72,10 @@ export async function updateEbook(id: string, formData: FormData) {
       slug: slugify(title),
       subtitle: String(formData.get("subtitle") ?? ""),
       description: String(formData.get("description") ?? ""),
+      content: String(formData.get("content") ?? ""),
+      author: String(formData.get("author") ?? ""),
+      publishedYear: publishedYearRaw ? Number(publishedYearRaw) : null,
+      audience: String(formData.get("audience") ?? "adults"),
       category: String(formData.get("category") ?? ""),
       coverEmoji: String(formData.get("coverEmoji") ?? "📘"),
       coverTheme: String(formData.get("coverTheme") ?? "royal"),

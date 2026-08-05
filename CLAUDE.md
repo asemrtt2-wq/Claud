@@ -200,6 +200,21 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   after the configured time and there's no reading activity yet today for that profile. This is
   an in-app banner, not a real push notification (no service-worker/backend cron infra here).
 
+### Password reset
+- `PasswordResetToken` (customerId, unique `token`, `expiresAt`, `usedAt`) — a 1-hour, single-use
+  token. `src/lib/passwordReset.ts` exports `requestPasswordReset` (always returns a generic
+  `{ ok: true }` regardless of whether the email exists, to avoid account enumeration) and
+  `resetPassword` (validates the token is unused/unexpired, updates `Customer.passwordHash`,
+  marks the token used). **No email provider is configured in this app**, so the reset link is
+  `console.log`'d server-side instead of being emailed — it is deliberately never returned in the
+  HTTP response, since doing that would let anyone reset any account's password just by
+  submitting their email. `/forgot-password` (`ForgotPasswordForm`) and `/reset-password?token=`
+  (`ResetPasswordForm`) are real, working pages; wiring up an actual email provider (e.g. Resend)
+  is the one piece left to make delivery automatic — swap the `console.log` in
+  `requestPasswordReset` for a real send call once an API key is available. A "Mot de passe
+  oublié ?" link on `/login` (`LoginForm`) points here. This only covers customer accounts —
+  admin credentials are seed/env-managed by design (see Admin below), not self-service.
+
 ### Kids-mode catalog
 - `EBook.audience` (`"adults"` default, or `"kids"`) splits the catalog: the homepage/catalog
   flow only ever queries `audience: "adults"`; a `"kids"`-type profile's `/p/[id]` only ever
@@ -223,7 +238,15 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   under `src/` because the app lives under `src/app`), which redirects to `/admin/login`
   unless `token.role === "admin"` — a logged-in customer is not enough. Admin mutations go
   through Server Actions in `src/lib/actions.ts`, each of which independently re-checks the
-  session server-side (defense in depth beyond the proxy).
+  session server-side (defense in depth beyond the proxy). `EbookForm` covers every real field
+  on `EBook`, including `content` (the full book text — use `"Chapitre N — Title"` lines so
+  `src/lib/chapters.ts` picks up chapters), `author`, `publishedYear`, and `audience`
+  (`"adults"`/`"kids"`), so a real book with working chapters/reader access can be added entirely
+  through `/admin/ebooks/new` without touching `prisma/seed.ts`. The `Admin` account itself has
+  no self-service signup: it only exists via `prisma/seed.ts` reading `ADMIN_EMAIL`/
+  `ADMIN_PASSWORD` from the environment, which must be seeded once per database (local `.env` for
+  dev, or run `npm run db:seed` against the production `DATABASE_URL` once for a live deploy) —
+  this is intentional, not a gap: an internal tool shouldn't have a public account-creation path.
 
 ### Data model (`prisma/schema.prisma`)
 `EBook` (has a `content` text field used by the reader, `author`/`publishedYear` fields for the

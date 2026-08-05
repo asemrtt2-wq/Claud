@@ -54,9 +54,15 @@ export default function LoginForm() {
         className="mb-4 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-[#7c5cff]"
       />
 
-      <label className="mb-1.5 block text-sm font-semibold text-white">
-        Mot de passe
-      </label>
+      <div className="mb-1.5 flex items-center justify-between">
+        <label className="block text-sm font-semibold text-white">Mot de passe</label>
+        <Link
+          href="/forgot-password"
+          className="text-xs font-semibold text-[#a78bfa] hover:underline"
+        >
+          Mot de passe oublié ?
+        </Link>
+      </div>
       <input
         type="password"
         required
