@@ -9,10 +9,13 @@ import KidsReader from "@/components/KidsReader";
 
 export default async function ProfileReadPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; slug: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
   const { id, slug } = await params;
+  const { page: pageParam } = await searchParams;
   const customer = await getCurrentCustomer();
   if (!customer) redirect("/login");
 
@@ -59,6 +62,11 @@ export default async function ProfileReadPage({
   });
 
   const pages = paginateContent(ebook.content);
+  const requestedPage = pageParam ? Number(pageParam) : null;
+  const initialPage =
+    requestedPage !== null && !Number.isNaN(requestedPage)
+      ? Math.min(Math.max(requestedPage, 0), pages.length - 1)
+      : progress?.page ?? 0;
 
   return (
     <Reader
@@ -68,7 +76,7 @@ export default async function ProfileReadPage({
       title={ebook.title}
       coverTheme={ebook.coverTheme}
       pages={pages}
-      initialPage={progress?.page ?? 0}
+      initialPage={initialPage}
     />
   );
 }

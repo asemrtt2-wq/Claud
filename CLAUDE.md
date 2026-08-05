@@ -91,9 +91,20 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 ### Public storefront
 - `src/app/page.tsx` — home page (hero + dynamic catalog grid + testimonials), a server
   component that reads eBooks directly from Prisma.
-- `src/app/ebooks/[slug]/page.tsx` — eBook detail page. Shows a "Lire maintenant" link to
-  `/read/[slug]` if the current customer has access (owns it or has an active subscription),
-  otherwise a buy button + a link to `/premium`. Includes a favorite toggle.
+- `src/app/ebooks/[slug]/page.tsx` — eBook detail page: a Netflix/Apple-TV-style layout with a
+  large cover hero (gradient overlay, back/close buttons), title/author/year/page-count/category
+  metadata, a progress-aware CTA ("Commencer" vs "Reprendre" with page/percent/estimated time
+  remaining if `ReadingProgress` exists for the active profile), an expandable summary
+  (`ExpandableText`), an actions row (favorite, add-to-collection, share via
+  `ShareButton`/`navigator.share`), tabbed `Chapitres`/`Livres similaires`
+  (`BookDetailTabs` + `src/lib/chapters.ts`, which parses real `"Chapitre N — Title"` markers out
+  of `content` into a chapter list with per-chapter time estimates and a page index that lines up
+  exactly with `paginateContent`'s grouping — clicking a chapter deep-links to
+  `/p/[id]/read/[slug]?page=N`), a personalized "Recommandés pour vous" row, and an "Informations"
+  panel (author/category/pages/language/year/date added — deliberately **not** ISBN, publisher,
+  file size, or star ratings, since none of that data is real for this catalog and fabricating it
+  would be dishonest). Access still goes through a buy button + `/premium` link when the customer
+  doesn't have it.
 - `src/app/premium/page.tsx` — pricing page (free / one-time purchase / Premium monthly-yearly).
 
 ### Customer accounts & profiles
@@ -215,8 +226,9 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   session server-side (defense in depth beyond the proxy).
 
 ### Data model (`prisma/schema.prisma`)
-`EBook` (has a `content` text field used by the reader, an `author` field, and an `audience`
-field — `"adults"`/`"kids"`), `Order` (one-time purchases, optional `customerId`), `Admin`,
+`EBook` (has a `content` text field used by the reader, `author`/`publishedYear` fields for the
+detail page's metadata, and an `audience` field — `"adults"`/`"kids"`), `Order` (one-time
+purchases, optional `customerId`), `Admin`,
 `Customer` (just login/billing: email, passwordHash, name, `Order[]`, `Subscription?`,
 `Profile[]`), `Subscription` (one-to-one with `Customer`, account-wide), `Profile` (belongs to a
 `Customer`; `name`/`avatarEmoji`/`color`/`type` (`"adult"`/`"kids"`), optional `pinHash`,

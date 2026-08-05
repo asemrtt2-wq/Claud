@@ -17,6 +17,7 @@ model EBook {
   content     String   @default("")
   category    String
   author      String   @default("")
+  publishedYear Int?
   audience    String   @default("adults")
   coverEmoji  String
   coverTheme  String
