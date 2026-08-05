@@ -1,19 +1,9 @@
-import fs from "fs";
-import path from "path";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroCovers from "@/components/HeroCovers";
 import EBookCard from "@/components/EBookCard";
-
-const HERO_IMAGE_NAMES = ["hero.jpg", "hero.jpeg", "hero.png", "hero.webp"];
-
-function findHeroImage() {
-  return HERO_IMAGE_NAMES.find((name) =>
-    fs.existsSync(path.join(process.cwd(), "public", name))
-  );
-}
 
 export default async function HomePage() {
   const ebooks = await prisma.eBook.findMany({
@@ -22,7 +12,7 @@ export default async function HomePage() {
   });
   const featured = ebooks.filter((e) => e.featured).slice(0, 3);
   const heroCovers = featured.length === 3 ? featured : ebooks.slice(0, 3);
-  const heroImage = findHeroImage();
+  const categoryCount = new Set(ebooks.map((e) => e.category)).size;
 
   return (
     <>
@@ -59,26 +49,26 @@ export default async function HomePage() {
                 En savoir plus
               </Link>
             </div>
+
+            {ebooks.length > 0 && (
+              <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-2 text-sm font-semibold text-[#c3bfe8]">
+                <span className="flex items-center gap-2">
+                  <span className="text-lg">📚</span>
+                  {ebooks.length} eBook{ebooks.length > 1 ? "s" : ""} au catalogue
+                </span>
+                {categoryCount > 0 && (
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg">✦</span>
+                    {categoryCount} catégorie{categoryCount > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
-          {heroImage ? (
-            <div className="relative mx-auto flex w-full max-w-[440px] items-center justify-center">
-              <div className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(124,92,255,0.35),transparent_70%)] blur-3xl" />
-              <img
-                src={`/${heroImage}`}
-                alt="Lumina"
-                className="relative z-10 w-full object-contain"
-                style={{
-                  maskImage:
-                    "radial-gradient(ellipse 75% 75% at center, black 55%, transparent 90%)",
-                  WebkitMaskImage:
-                    "radial-gradient(ellipse 75% 75% at center, black 55%, transparent 90%)",
-                }}
-              />
-            </div>
-          ) : (
+          <div className="animate-float">
             <HeroCovers ebooks={heroCovers} />
-          )}
+          </div>
         </div>
 
         <svg
