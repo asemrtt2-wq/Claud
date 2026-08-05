@@ -22,10 +22,10 @@ export default async function EditEbookPage({
   const boundUpdate = updateEbook.bind(null, id);
 
   return (
-    <div className="min-h-screen bg-gray-light">
+    <div className="lumina-shell">
       <AdminNav email={session?.user?.email} />
       <div className="mx-auto max-w-2xl px-6 py-10">
-        <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-navy">
+        <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-white">
           Modifier « {ebook.title} »
         </h1>
         <EbookForm action={boundUpdate} defaults={ebook} submitLabel="Enregistrer" />

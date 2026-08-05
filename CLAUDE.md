@@ -20,8 +20,12 @@ customer-facing page — marketing pages, `/premium`, `/ebooks/[slug]`, `/login`
 utility classes in `globals.css`), so the whole site (not just the logged-in area) now reads as
 one dark product. The one deliberate exception is the reader (`/p/[id]/read/[slug]`): it uses
 each eBook's own `cover-theme-*` gradient as an immersive background instead of the generic dark
-shell. The admin panel keeps the original navy/royal-blue palette — it's an internal tool, not
-part of the Lumina brand surface.
+shell. The admin panel (`/admin/**`) also uses the dark `lumina-shell`/`lumina-card` look now
+(nav, stat tiles, tables, forms, login) with the purple accent for buttons/links — it used to keep
+a separate light navy/royal-blue palette as "just an internal tool," but that read as visibly
+unfinished next to the rest of the app, so it was brought in line. `next.config.mjs`,
+Prisma, and every other structural/backend piece are unaffected by this — it was a visual-only
+pass over the admin JSX/className strings.
 
 ### Parental controls — what's real vs. simulated
 

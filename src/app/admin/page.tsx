@@ -7,9 +7,9 @@ import DeleteEbookButton from "@/components/DeleteEbookButton";
 
 function EbookTable({ ebooks }: { ebooks: Awaited<ReturnType<typeof prisma.eBook.findMany>> }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-mid bg-white shadow-soft">
+    <div className="lumina-card overflow-hidden rounded-2xl">
       <table className="w-full text-left text-sm">
-        <thead className="bg-gray-light text-xs font-bold uppercase tracking-wide text-text-muted">
+        <thead className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
           <tr>
             <th className="px-5 py-3">Titre</th>
             <th className="px-5 py-3">Catégorie</th>
@@ -20,18 +20,20 @@ function EbookTable({ ebooks }: { ebooks: Awaited<ReturnType<typeof prisma.eBook
         </thead>
         <tbody>
           {ebooks.map((ebook) => (
-            <tr key={ebook.id} className="border-t border-gray-mid">
-              <td className="px-5 py-3 font-semibold text-navy">
+            <tr key={ebook.id} className="border-t border-white/10">
+              <td className="px-5 py-3 font-semibold text-white">
                 {ebook.coverEmoji} {ebook.title}
               </td>
-              <td className="px-5 py-3 text-text-muted">{ebook.category}</td>
-              <td className="px-5 py-3 text-navy">{ebook.price} €</td>
+              <td className="px-5 py-3 text-[color:var(--color-lumina-text-muted)]">
+                {ebook.category}
+              </td>
+              <td className="px-5 py-3 text-white">{ebook.price} €</td>
               <td className="px-5 py-3">{ebook.featured ? "✅" : "—"}</td>
               <td className="px-5 py-3 text-right">
                 <div className="flex justify-end gap-3">
                   <Link
                     href={`/admin/ebooks/${ebook.id}/edit`}
-                    className="font-semibold text-royal hover:underline"
+                    className="font-semibold text-[#a78bfa] hover:underline"
                   >
                     Modifier
                   </Link>
@@ -42,7 +44,10 @@ function EbookTable({ ebooks }: { ebooks: Awaited<ReturnType<typeof prisma.eBook
           ))}
           {ebooks.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-5 py-8 text-center text-text-muted">
+              <td
+                colSpan={5}
+                className="px-5 py-8 text-center text-[color:var(--color-lumina-text-muted)]"
+              >
                 Aucun eBook pour le moment.
               </td>
             </tr>
@@ -64,36 +69,44 @@ export default async function AdminDashboardPage() {
   const kidsEbooks = ebooks.filter((e) => e.audience === "kids");
 
   return (
-    <div className="min-h-screen bg-gray-light">
+    <div className="lumina-shell">
       <AdminNav email={session?.user?.email} />
       <div className="mx-auto max-w-5xl px-6 py-10">
-        <div className="mb-8 grid grid-cols-4 gap-5">
-          <div className="rounded-2xl border border-gray-mid bg-white p-5 shadow-soft">
-            <p className="text-xs font-bold uppercase tracking-wide text-text-muted">Adultes</p>
-            <p className="text-2xl font-extrabold text-navy">{adultEbooks.length}</p>
+        <div className="mb-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
+          <div className="lumina-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+              Adultes
+            </p>
+            <p className="text-2xl font-extrabold text-white">{adultEbooks.length}</p>
           </div>
-          <div className="rounded-2xl border border-gray-mid bg-white p-5 shadow-soft">
-            <p className="text-xs font-bold uppercase tracking-wide text-text-muted">Enfants</p>
-            <p className="text-2xl font-extrabold text-navy">{kidsEbooks.length}</p>
+          <div className="lumina-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+              Enfants
+            </p>
+            <p className="text-2xl font-extrabold text-white">{kidsEbooks.length}</p>
           </div>
-          <div className="rounded-2xl border border-gray-mid bg-white p-5 shadow-soft">
-            <p className="text-xs font-bold uppercase tracking-wide text-text-muted">Commandes</p>
-            <p className="text-2xl font-extrabold text-navy">{orderCount}</p>
+          <div className="lumina-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+              Commandes
+            </p>
+            <p className="text-2xl font-extrabold text-white">{orderCount}</p>
           </div>
-          <div className="rounded-2xl border border-gray-mid bg-white p-5 shadow-soft">
-            <p className="text-xs font-bold uppercase tracking-wide text-text-muted">Payées</p>
-            <p className="text-2xl font-extrabold text-navy">{paidOrders}</p>
+          <div className="lumina-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+              Payées
+            </p>
+            <p className="text-2xl font-extrabold text-white">{paidOrders}</p>
           </div>
         </div>
 
         <section id="adultes" className="mb-12 scroll-mt-24">
           <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-extrabold tracking-tight text-navy">
+            <h1 className="text-2xl font-extrabold tracking-tight text-white">
               📚 Catalogue Adultes
             </h1>
             <Link
               href="/admin/ebooks/new?audience=adults"
-              className="rounded-xl bg-gradient-to-br from-royal to-[#3a6bff] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(30,91,255,0.35)] transition hover:-translate-y-0.5"
+              className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(124,92,255,0.35)] transition hover:-translate-y-0.5"
             >
               + Nouvel eBook
             </Link>
@@ -103,12 +116,12 @@ export default async function AdminDashboardPage() {
 
         <section id="enfants" className="scroll-mt-24">
           <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-extrabold tracking-tight text-navy">
+            <h1 className="text-2xl font-extrabold tracking-tight text-white">
               🧒 Catalogue Enfants
             </h1>
             <Link
               href="/admin/ebooks/new?audience=kids"
-              className="rounded-xl bg-gradient-to-br from-royal to-[#3a6bff] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(30,91,255,0.35)] transition hover:-translate-y-0.5"
+              className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(124,92,255,0.35)] transition hover:-translate-y-0.5"
             >
               + Nouvel eBook
             </Link>
