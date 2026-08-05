@@ -14,6 +14,12 @@ export default function AdminNav({ email }: { email?: string | null }) {
           <Link href="/" className="text-sm font-semibold text-text-muted hover:text-navy">
             Voir le site
           </Link>
+          <Link
+            href="/admin/settings"
+            className="text-sm font-semibold text-text-muted hover:text-navy"
+          >
+            Réglages
+          </Link>
         </div>
         <div className="flex items-center gap-4">
           {email && <span className="text-sm text-text-muted">{email}</span>}

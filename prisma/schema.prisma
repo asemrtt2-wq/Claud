@@ -8,6 +8,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model SiteSettings {
+  id           Int      @id @default(1)
+  heroTitle    String?
+  heroSubtitle String?
+  updatedAt    DateTime @updatedAt
+}
+
 model EBook {
   id          String   @id @default(cuid())
   slug        String   @unique

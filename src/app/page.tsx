@@ -4,12 +4,16 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroCovers from "@/components/HeroCovers";
 import EBookCard from "@/components/EBookCard";
+import { getSiteSettings } from "@/lib/siteSettings";
 
 export default async function HomePage() {
-  const ebooks = await prisma.eBook.findMany({
-    where: { audience: "adults" },
-    orderBy: { createdAt: "asc" },
-  });
+  const [ebooks, settings] = await Promise.all([
+    prisma.eBook.findMany({
+      where: { audience: "adults" },
+      orderBy: { createdAt: "asc" },
+    }),
+    getSiteSettings(),
+  ]);
   const featured = ebooks.filter((e) => e.featured).slice(0, 3);
   const heroCovers = featured.length === 3 ? featured : ebooks.slice(0, 3);
   const categoryCount = new Set(ebooks.map((e) => e.category)).size;
@@ -26,14 +30,20 @@ export default async function HomePage() {
               ✦ LUMINA
             </span>
             <h1 className="mb-6 text-[2.6rem] font-extrabold leading-[1.08] tracking-tight md:text-[3.5rem]">
-              Remplace les écrans par des{" "}
-              <span className="bg-gradient-to-br from-[#a78bfa] to-white bg-clip-text text-transparent">
-                histoires qui te transforment
-              </span>
+              {settings?.heroTitle ? (
+                settings.heroTitle
+              ) : (
+                <>
+                  Remplace les écrans par des{" "}
+                  <span className="bg-gradient-to-br from-[#a78bfa] to-white bg-clip-text text-transparent">
+                    histoires qui te transforment
+                  </span>
+                </>
+              )}
             </h1>
             <p className="mb-10 max-w-lg text-lg text-[#c3bfe8]">
-              L&apos;application qui t&apos;aide à reprendre le contrôle de ton temps grâce à des
-              eBooks immersifs, interactifs et motivants.
+              {settings?.heroSubtitle ??
+                "L'application qui t'aide à reprendre le contrôle de ton temps grâce à des eBooks immersifs, interactifs et motivants."}
             </p>
             <div className="flex flex-wrap gap-4.5">
               <Link

@@ -254,6 +254,17 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   seeding. Env var names are case-sensitive on Vercel — they must be exactly `ADMIN_EMAIL` and
   `ADMIN_PASSWORD` (uppercase with underscore), not `admin_email`/`admin_password`.
 
+### Site settings
+- `SiteSettings` — a singleton row (`id: 1`, upserted) holding `heroTitle`/`heroSubtitle` overrides
+  for the homepage hero. `src/lib/siteSettings.ts` exports `getSiteSettings()` and the
+  `updateSiteSettings` server action (admin-session-gated, like everything in `actions.ts`).
+  `/admin/settings` (linked from `AdminNav`) is the only editor. When a field is empty/unset,
+  `src/app/page.tsx` falls back to the original hardcoded hero copy (including its two-tone
+  gradient styling on the title) — a custom title loses that gradient split since it's rendered
+  as one plain string. This intentionally does not extend to colors/theme: the purple accent is
+  hardcoded as literal hex values across dozens of components rather than only the `--color-
+  lumina-purple` CSS variable, so a real site-wide color picker would need that centralized first.
+
 ### Data model (`prisma/schema.prisma`)
 `EBook` (has a `content` text field used by the reader, `author`/`publishedYear` fields for the
 detail page's metadata, and an `audience` field — `"adults"`/`"kids"`), `Order` (one-time
