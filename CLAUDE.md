@@ -244,13 +244,15 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   (`"adults"`/`"kids"`), so a real book with working chapters/reader access can be added entirely
   through `/admin/ebooks/new` without touching `prisma/seed.ts`. The `Admin` account itself has
   no self-service signup — `scripts/ensure-admin.ts` runs on every `build` (right after
-  `prisma migrate deploy`, before `next build`) and creates exactly one `Admin` row from
-  `ADMIN_EMAIL`/`ADMIN_PASSWORD` if the `Admin` table is still empty, then no-ops on every
-  subsequent build. This isn't a public account-creation path (nothing end-user-facing triggers
-  it, only the project owner's own env vars on their own deploy), it just means setting those two
-  env vars in Vercel and redeploying is enough to get a working admin login — no manual
-  `npm run db:seed` against production needed. `prisma/seed.ts` still upserts an admin the same
-  way for local dev seeding.
+  `prisma migrate deploy`, before `next build`) and upserts (by email) an `Admin` row from
+  `ADMIN_EMAIL`/`ADMIN_PASSWORD`, so a redeploy always makes those exact env vars a working
+  login, even if they're changed later or an `Admin` row already exists under a different email.
+  This isn't a public account-creation path (nothing end-user-facing triggers it, only the
+  project owner's own env vars on their own deploy) — it just means setting those two env vars in
+  Vercel and redeploying is enough to get (or reset) a working admin login, no manual
+  `npm run db:seed` against production needed. `prisma/seed.ts` does the same upsert for local dev
+  seeding. Env var names are case-sensitive on Vercel — they must be exactly `ADMIN_EMAIL` and
+  `ADMIN_PASSWORD` (uppercase with underscore), not `admin_email`/`admin_password`.
 
 ### Data model (`prisma/schema.prisma`)
 `EBook` (has a `content` text field used by the reader, `author`/`publishedYear` fields for the

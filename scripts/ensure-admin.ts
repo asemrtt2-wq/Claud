@@ -14,15 +14,13 @@ async function main() {
     return;
   }
 
-  const existing = await prisma.admin.count();
-  if (existing > 0) {
-    console.log("An admin account already exists — skipping bootstrap.");
-    return;
-  }
-
   const passwordHash = await bcrypt.hash(password, 10);
-  await prisma.admin.create({ data: { email, passwordHash } });
-  console.log(`Admin account created: ${email}`);
+  await prisma.admin.upsert({
+    where: { email },
+    update: { passwordHash },
+    create: { email, passwordHash },
+  });
+  console.log(`Admin account ready: ${email}`);
 }
 
 main()
