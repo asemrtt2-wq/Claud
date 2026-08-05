@@ -2,6 +2,11 @@
 
 const THEMES = ["royal", "navy", "deep", "dark", "steel"];
 
+const inputClass =
+  "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#a78bfa]";
+const labelClass = "mb-1.5 block text-sm font-semibold text-white";
+const helpClass = "mb-2 text-xs text-[color:var(--color-lumina-text-muted)]";
+
 type Defaults = {
   title?: string;
   subtitle?: string;
@@ -29,135 +34,122 @@ export default function EbookForm({
   submitLabel: string;
 }) {
   return (
-    <form action={action} className="grid gap-5 rounded-2xl border border-gray-mid bg-white p-7 shadow-soft">
+    <form action={action} className="lumina-card grid gap-5 rounded-2xl p-7">
       <div>
-        <label className="mb-1.5 block text-sm font-semibold text-navy">Titre</label>
-        <input
-          name="title"
-          required
-          defaultValue={defaults?.title}
-          className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
-        />
+        <label className={labelClass}>Titre</label>
+        <input name="title" required defaultValue={defaults?.title} className={inputClass} />
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-semibold text-navy">Sous-titre</label>
+        <label className={labelClass}>Sous-titre</label>
         <input
           name="subtitle"
           required
           defaultValue={defaults?.subtitle}
-          className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-semibold text-navy">Description</label>
+        <label className={labelClass}>Description</label>
         <textarea
           name="description"
           required
           rows={4}
           defaultValue={defaults?.description}
-          className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+          className={inputClass}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-5">
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-navy">Catégorie</label>
+          <label className={labelClass}>Catégorie</label>
           <input
             name="category"
             required
             defaultValue={defaults?.category}
-            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-navy">Emoji de couverture</label>
+          <label className={labelClass}>Emoji de couverture</label>
           <input
             name="coverEmoji"
             required
             defaultValue={defaults?.coverEmoji ?? "📘"}
-            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-5">
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-navy">Auteur</label>
-          <input
-            name="author"
-            defaultValue={defaults?.author}
-            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
-          />
+          <label className={labelClass}>Auteur</label>
+          <input name="author" defaultValue={defaults?.author} className={inputClass} />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-navy">Année de publication</label>
+          <label className={labelClass}>Année de publication</label>
           <input
             type="number"
             name="publishedYear"
             defaultValue={defaults?.publishedYear ?? undefined}
-            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-navy">Public</label>
+          <label className={labelClass}>Public</label>
           <select
             name="audience"
             defaultValue={defaults?.audience ?? "adults"}
-            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+            className={inputClass}
           >
-            <option value="adults">Adultes</option>
-            <option value="kids">Enfants</option>
+            <option value="adults" className="bg-navy-dark">Adultes</option>
+            <option value="kids" className="bg-navy-dark">Enfants</option>
           </select>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-5">
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-navy">Thème</label>
+          <label className={labelClass}>Thème</label>
           <select
             name="coverTheme"
             defaultValue={defaults?.coverTheme ?? "royal"}
-            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+            className={inputClass}
           >
             {THEMES.map((theme) => (
-              <option key={theme} value={theme}>
+              <option key={theme} value={theme} className="bg-navy-dark">
                 {theme}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-navy">Prix (€)</label>
+          <label className={labelClass}>Prix (€)</label>
           <input
             type="number"
             step="0.01"
             name="price"
             required
             defaultValue={defaults?.price}
-            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-navy">
-            Ancien prix (€, optionnel)
-          </label>
+          <label className={labelClass}>Ancien prix (€, optionnel)</label>
           <input
             type="number"
             step="0.01"
             name="oldPrice"
             defaultValue={defaults?.oldPrice ?? undefined}
-            className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-semibold text-navy">
-          Lien PDF (optionnel)
-        </label>
-        <p className="mb-2 text-xs text-text-muted">
+        <label className={labelClass}>Lien PDF (optionnel)</label>
+        <p className={helpClass}>
           Colle ici l&apos;URL publique d&apos;un PDF déjà hébergé quelque part (ex : un lien
           Google Drive/Dropbox partagé publiquement, ou un fichier hébergé sur ton propre
           serveur). <strong>Un chemin de fichier local sur ton ordinateur</strong> (du genre{" "}
@@ -171,15 +163,13 @@ export default function EbookForm({
           name="pdfUrl"
           placeholder="https://..."
           defaultValue={defaults?.pdfUrl ?? ""}
-          className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-semibold text-navy">
-          Contenu du livre
-        </label>
-        <p className="mb-2 text-xs text-text-muted">
+        <label className={labelClass}>Contenu du livre</label>
+        <p className={helpClass}>
           Texte intégral du livre (ignoré si un lien PDF est renseigné ci-dessus). Pour que les
           chapitres soient détectés dans la fiche et le lecteur, séparez-les avec une ligne du
           type « Chapitre 1 — Titre du chapitre ».
@@ -188,18 +178,18 @@ export default function EbookForm({
           name="content"
           rows={16}
           defaultValue={defaults?.content}
-          className="w-full rounded-xl border border-gray-mid px-4 py-2.5 font-mono text-sm outline-none focus:border-royal"
+          className={`${inputClass} font-mono`}
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm font-semibold text-navy">
+      <label className="flex items-center gap-2 text-sm font-semibold text-white">
         <input type="checkbox" name="featured" defaultChecked={defaults?.featured} />
         Mettre en vedette (affiché dans le hero)
       </label>
 
       <button
         type="submit"
-        className="mt-2 w-full rounded-2xl bg-gradient-to-br from-royal to-[#3a6bff] px-7 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(30,91,255,0.4)] transition hover:-translate-y-0.5"
+        className="mt-2 w-full rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5"
       >
         {submitLabel}
       </button>

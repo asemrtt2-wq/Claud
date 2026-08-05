@@ -17,7 +17,7 @@ export default function DeleteEbookButton({ id, title }: { id: string; title: st
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="font-semibold text-red-600 hover:underline disabled:opacity-50"
+      className="font-semibold text-[#ff8a8a] hover:underline disabled:opacity-50"
     >
       {isPending ? "..." : "Supprimer"}
     </button>
