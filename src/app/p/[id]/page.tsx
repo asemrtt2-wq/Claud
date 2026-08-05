@@ -210,6 +210,16 @@ export default async function ProfilePage({
   const continueReading = progressEntries[0] ? libraryMap.get(progressEntries[0].ebookId) : null;
   const recommendations = await getRecommendations(id, Array.from(libraryMap.keys()));
 
+  const billboardBook = continueReading?.ebook ?? recommendations.newest[0] ?? library[0]?.ebook ?? null;
+  const billboardHref = continueReading
+    ? `/p/${id}/read/${continueReading.ebook.slug}`
+    : billboardBook
+      ? `/ebooks/${billboardBook.slug}`
+      : null;
+  const billboardPercent = continueReading
+    ? Math.round(((continueReading.page + 1) / continueReading.totalPages) * 100)
+    : null;
+
   const booksCompletedThisMonth = progressEntries.filter((p) => {
     const now = new Date();
     return (
@@ -252,27 +262,32 @@ export default async function ProfilePage({
           name={profile.name}
         />
 
-        {continueReading && (
+        {billboardBook && billboardHref && (
           <Link
-            href={`/p/${id}/read/${continueReading.ebook.slug}`}
-            className={`lumina-card cover-theme-${continueReading.ebook.coverTheme} relative mb-10 flex h-48 flex-col justify-end overflow-hidden rounded-[22px] p-6 transition hover:-translate-y-1`}
+            href={billboardHref}
+            className={`cover-theme-${billboardBook.coverTheme} relative mb-12 flex h-[300px] flex-col justify-end overflow-hidden rounded-[26px] p-7 transition hover:-translate-y-1 sm:h-[360px] sm:p-10`}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/10" />
-            <div className="relative z-10">
-              <span className="text-xs font-bold uppercase tracking-wider text-white/70">
-                Continuer la lecture
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute right-8 top-8 text-7xl opacity-80 sm:text-8xl">
+              {billboardBook.coverEmoji}
+            </div>
+            <div className="relative z-10 max-w-md">
+              <span className="mb-2 inline-block text-xs font-bold uppercase tracking-wider text-white/70">
+                {continueReading ? "Continuer la lecture" : "Notre sélection pour toi"}
               </span>
-              <h2 className="mb-2 text-xl font-extrabold">{continueReading.ebook.title}</h2>
-              <div className="mb-2 h-1.5 w-48 overflow-hidden rounded-full lumina-progress-track">
-                <div
-                  className="h-full lumina-progress-fill"
-                  style={{
-                    width: `${Math.round(((continueReading.page + 1) / continueReading.totalPages) * 100)}%`,
-                  }}
-                />
-              </div>
-              <span className="inline-block rounded-xl bg-white px-4 py-2 text-xs font-bold text-navy">
-                Reprendre ▶
+              <h2 className="mb-3 text-2xl font-extrabold leading-tight sm:text-3xl">
+                {billboardBook.title}
+              </h2>
+              {!continueReading && (
+                <p className="mb-4 line-clamp-2 text-sm text-white/80">{billboardBook.subtitle}</p>
+              )}
+              {billboardPercent !== null && (
+                <div className="mb-4 h-1.5 w-48 overflow-hidden rounded-full lumina-progress-track">
+                  <div className="h-full lumina-progress-fill" style={{ width: `${billboardPercent}%` }} />
+                </div>
+              )}
+              <span className="inline-block rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-navy">
+                {continueReading ? "Reprendre ▶" : "Découvrir →"}
               </span>
             </div>
           </Link>

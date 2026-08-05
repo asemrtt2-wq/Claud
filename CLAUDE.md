@@ -106,6 +106,9 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   would be dishonest). Access still goes through a buy button + `/premium` link when the customer
   doesn't have it.
 - `src/app/premium/page.tsx` — pricing page (free / one-time purchase / Premium monthly-yearly).
+- `src/components/HeroCarousel.tsx` — an auto-rotating billboard (Prime Video-style) in the
+  homepage hero, cycling through featured (or first-N) catalog books every 6s with dot
+  navigation; replaced the old static three-cover `HeroCovers` stack.
 
 ### Customer accounts & profiles
 - `src/lib/auth.ts` — NextAuth config with `admin-credentials` and `customer-credentials`
@@ -131,7 +134,13 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   adult eBook grouped by its real `category` field — always shown, so there's something to browse
   even before a profile has any favorites/history/personalization), "Recommandé pour toi", "Ma
   bibliothèque" (via `hrefBase` pointing at the reader instead of the detail page, plus a
-  `progressByEbookId` map for the per-card progress bar), and "Mes favoris".
+  `progressByEbookId` map for the per-card progress bar), and "Mes favoris". Also reused on
+  `/ebooks/[slug]` ("Recommandés pour vous" and the "Livres similaires" tab in
+  `BookDetailTabs.tsx`) so both pages share one horizontal-row style instead of a grid.
+- The `/p/[id]` adult dashboard opens with a full-width "billboard" hero (Netflix-style) instead
+  of a small card: the in-progress book if there is one ("Reprendre ▶", with its progress bar),
+  otherwise a top pick from recommendations/library ("Découvrir →") — falls back gracefully to
+  nothing shown if the profile has no reading history and the catalog query returns nothing.
 - `src/app/profiles/page.tsx` + `src/components/ProfilePicker.tsx` — the "Qui lit aujourd'hui ?"
   picker: square rounded avatar cards in a row, click switches into `/p/[id]`. A "Gérer les
   profils" toggle switches every card into edit mode (pencil badge) instead of switching profile;

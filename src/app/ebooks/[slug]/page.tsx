@@ -16,6 +16,7 @@ import ExpandableText from "@/components/ExpandableText";
 import ShareButton from "@/components/ShareButton";
 import BackButton from "@/components/BackButton";
 import BookDetailTabs from "@/components/BookDetailTabs";
+import BookRow from "@/components/BookRow";
 
 function formatDuration(minutes: number) {
   if (minutes < 60) return `${minutes} min`;
@@ -230,23 +231,7 @@ export default async function EBookPage({
               <h2 className="mb-5 text-lg font-extrabold text-white">Recommandés pour vous</h2>
               <div className="flex flex-col gap-8">
                 {recommendedRows.map((row) => (
-                  <div key={row.label}>
-                    <p className="mb-3 text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
-                      {row.label}
-                    </p>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                      {row.books.map((book) => (
-                        <Link key={book.id} href={`/ebooks/${book.slug}`} className="group">
-                          <div
-                            className={`cover-theme-${book.coverTheme} mb-2 flex h-28 items-center justify-center rounded-2xl text-2xl shadow-lg transition group-hover:-translate-y-1`}
-                          >
-                            {book.coverEmoji}
-                          </div>
-                          <p className="truncate text-xs font-bold text-white">{book.title}</p>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
+                  <BookRow key={row.label} label={row.label} books={row.books} />
                 ))}
               </div>
             </section>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { ChapterInfo } from "@/lib/chapters";
+import BookRow from "@/components/BookRow";
 
 type SimilarBook = {
   id: string;
@@ -93,23 +94,7 @@ export default function BookDetailTabs({
           Aucun livre similaire pour l&apos;instant.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {similarBooks.map((book) => (
-            <Link key={book.id} href={`/ebooks/${book.slug}`} className="group">
-              <div
-                className={`cover-theme-${book.coverTheme} mb-2 flex h-32 items-center justify-center rounded-2xl text-3xl shadow-lg transition group-hover:-translate-y-1`}
-              >
-                {book.coverEmoji}
-              </div>
-              <p className="truncate text-xs font-bold">{book.title}</p>
-              {book.author && (
-                <p className="truncate text-xs text-[color:var(--color-lumina-text-muted)]">
-                  {book.author}
-                </p>
-              )}
-            </Link>
-          ))}
-        </div>
+        <BookRow label="" books={similarBooks} />
       )}
     </div>
   );

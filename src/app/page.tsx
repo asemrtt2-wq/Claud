@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import HeroCovers from "@/components/HeroCovers";
+import HeroCarousel from "@/components/HeroCarousel";
 import EBookCard from "@/components/EBookCard";
 import { getSiteSettings } from "@/lib/siteSettings";
 
@@ -14,8 +14,8 @@ export default async function HomePage() {
     }),
     getSiteSettings(),
   ]);
-  const featured = ebooks.filter((e) => e.featured).slice(0, 3);
-  const heroCovers = featured.length === 3 ? featured : ebooks.slice(0, 3);
+  const featured = ebooks.filter((e) => e.featured);
+  const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
   const categoryCount = new Set(ebooks.map((e) => e.category)).size;
 
   return (
@@ -76,8 +76,8 @@ export default async function HomePage() {
             )}
           </div>
 
-          <div className="animate-float">
-            <HeroCovers ebooks={heroCovers} />
+          <div className="flex justify-center md:justify-end">
+            <HeroCarousel ebooks={heroCovers} />
           </div>
         </div>
 
