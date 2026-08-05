@@ -243,10 +243,14 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   `src/lib/chapters.ts` picks up chapters), `author`, `publishedYear`, and `audience`
   (`"adults"`/`"kids"`), so a real book with working chapters/reader access can be added entirely
   through `/admin/ebooks/new` without touching `prisma/seed.ts`. The `Admin` account itself has
-  no self-service signup: it only exists via `prisma/seed.ts` reading `ADMIN_EMAIL`/
-  `ADMIN_PASSWORD` from the environment, which must be seeded once per database (local `.env` for
-  dev, or run `npm run db:seed` against the production `DATABASE_URL` once for a live deploy) —
-  this is intentional, not a gap: an internal tool shouldn't have a public account-creation path.
+  no self-service signup — `scripts/ensure-admin.ts` runs on every `build` (right after
+  `prisma migrate deploy`, before `next build`) and creates exactly one `Admin` row from
+  `ADMIN_EMAIL`/`ADMIN_PASSWORD` if the `Admin` table is still empty, then no-ops on every
+  subsequent build. This isn't a public account-creation path (nothing end-user-facing triggers
+  it, only the project owner's own env vars on their own deploy), it just means setting those two
+  env vars in Vercel and redeploying is enough to get a working admin login — no manual
+  `npm run db:seed` against production needed. `prisma/seed.ts` still upserts an admin the same
+  way for local dev seeding.
 
 ### Data model (`prisma/schema.prisma`)
 `EBook` (has a `content` text field used by the reader, `author`/`publishedYear` fields for the
