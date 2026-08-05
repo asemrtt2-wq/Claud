@@ -126,6 +126,12 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   (`Favorite`, `ReadingProgress`, `Collection`, reading goal, reading-time stats, streak). A
   customer can have any number of profiles, including multiple `"adult"` ones — there is no
   cap and no assumption that the first profile is special. Data never crosses between profiles.
+- `src/components/BookRow.tsx` — a horizontal, snap-scrolling row of book cards (Netflix-style
+  "genre row"), used throughout the adult `/p/[id]` dashboard for "Parcourir par catégorie" (every
+  adult eBook grouped by its real `category` field — always shown, so there's something to browse
+  even before a profile has any favorites/history/personalization), "Recommandé pour toi", "Ma
+  bibliothèque" (via `hrefBase` pointing at the reader instead of the detail page, plus a
+  `progressByEbookId` map for the per-card progress bar), and "Mes favoris".
 - `src/app/profiles/page.tsx` + `src/components/ProfilePicker.tsx` — the "Qui lit aujourd'hui ?"
   picker: square rounded avatar cards in a row, click switches into `/p/[id]`. A "Gérer les
   profils" toggle switches every card into edit mode (pencil badge) instead of switching profile;
@@ -141,7 +147,11 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   (`switchProfile.bind(null, id)` or a direct call), never a plain `<Link>`.
 - `src/components/ProfileSwitcher.tsx` — the header dropdown (used on `/p/[id]`) listing every
   profile on the account with an avatar/color swatch; picking one calls `switchProfile()`
-  directly (locked profiles instead route to `/profiles`, where the PIN gate lives).
+  directly (locked profiles instead route to `/profiles`, where the PIN gate lives). Below the
+  profile list it has "Gérer les profils", "Compte" (anchors to the `#profil` section on the
+  current dashboard), and "Se déconnecter" — modeled after a Netflix-style profile menu, but
+  deliberately without a "Transférer un profil" or "Centre d'aide" entry, since neither is a real
+  feature in this app and adding either would just be a dead button.
 - **PIN lock** (`src/lib/profileUnlock.ts`, `src/components/PinGate.tsx`): a profile with
   `pinHash` set requires the PIN before `/p/[id]` renders its dashboard — `verifyProfilePin()`
   checks it and, on success, adds the profile id to an httpOnly `unlockedProfiles` cookie

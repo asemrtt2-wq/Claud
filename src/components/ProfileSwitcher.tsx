@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { profileGradient } from "@/lib/profileColors";
 import { switchProfile } from "@/lib/profileActions";
 
@@ -98,6 +99,22 @@ export default function ProfileSwitcher({
           >
             ⚙️ Gérer les profils
           </Link>
+          <Link
+            href={`/p/${activeProfileId}#profil`}
+            onClick={() => setOpen(false)}
+            className="block rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/5"
+          >
+            👤 Compte
+          </Link>
+
+          <div className="my-1 border-t border-white/10" />
+
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-white transition hover:bg-white/5"
+          >
+            ↪ Se déconnecter
+          </button>
         </div>
       )}
     </div>

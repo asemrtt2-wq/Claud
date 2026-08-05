@@ -6,6 +6,7 @@ import { paginateContent } from "@/lib/paginate";
 import { isProfileUnlocked } from "@/lib/profileUnlock";
 import { getRecommendations } from "@/lib/recommendations";
 import AppBottomNav from "@/components/AppBottomNav";
+import BookRow from "@/components/BookRow";
 import ProfileSwitcher from "@/components/ProfileSwitcher";
 import CollectionsManager from "@/components/CollectionsManager";
 import ReadingReminderSetting from "@/components/ReadingReminderSetting";
@@ -154,28 +155,38 @@ export default async function ProfilePage({
   }
 
   // Adult profile dashboard
-  const [subscription, orders, favorites, progressEntries, collections] = await Promise.all([
-    prisma.subscription.findUnique({ where: { customerId: customer.id } }),
-    prisma.order.findMany({
-      where: { customerId: customer.id, status: "paid" },
-      include: { ebook: true },
-    }),
-    prisma.favorite.findMany({
-      where: { profileId: id },
-      include: { ebook: true },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.readingProgress.findMany({
-      where: { profileId: id },
-      include: { ebook: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.collection.findMany({
-      where: { profileId: id },
-      include: { items: { include: { ebook: true } } },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+  const [subscription, orders, favorites, progressEntries, collections, catalog] =
+    await Promise.all([
+      prisma.subscription.findUnique({ where: { customerId: customer.id } }),
+      prisma.order.findMany({
+        where: { customerId: customer.id, status: "paid" },
+        include: { ebook: true },
+      }),
+      prisma.favorite.findMany({
+        where: { profileId: id },
+        include: { ebook: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.readingProgress.findMany({
+        where: { profileId: id },
+        include: { ebook: true },
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.collection.findMany({
+        where: { profileId: id },
+        include: { items: { include: { ebook: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.eBook.findMany({ where: { audience: "adults" }, orderBy: { category: "asc" } }),
+    ]);
+
+  const categoriesMap = new Map<string, typeof catalog>();
+  for (const book of catalog) {
+    const list = categoriesMap.get(book.category) ?? [];
+    list.push(book);
+    categoriesMap.set(book.category, list);
+  }
+  const categoryRows = Array.from(categoriesMap.entries());
 
   const progressByEbookId = new Map(progressEntries.map((p) => [p.ebookId, p]));
   const libraryMap = new Map<
@@ -267,6 +278,17 @@ export default async function ProfilePage({
           </Link>
         )}
 
+        {categoryRows.length > 0 && (
+          <section id="parcourir" className="mb-12 scroll-mt-24">
+            <h2 className="mb-5 text-lg font-extrabold">Parcourir par catégorie</h2>
+            <div className="flex flex-col gap-8">
+              {categoryRows.map(([category, books]) => (
+                <BookRow key={category} label={category} books={books} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {(recommendations.byCategory.length > 0 ||
           recommendations.byAuthor.length > 0 ||
           recommendations.newest.length > 0 ||
@@ -290,23 +312,7 @@ export default async function ProfilePage({
               ]
                 .filter((row) => row.books.length > 0)
                 .map((row) => (
-                  <div key={row.label}>
-                    <p className="mb-3 text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
-                      {row.label}
-                    </p>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                      {row.books.map((book) => (
-                        <Link key={book.id} href={`/ebooks/${book.slug}`} className="group">
-                          <div
-                            className={`cover-theme-${book.coverTheme} mb-2 flex h-32 items-center justify-center rounded-2xl text-3xl shadow-lg transition group-hover:-translate-y-1`}
-                          >
-                            {book.coverEmoji}
-                          </div>
-                          <p className="truncate text-xs font-bold">{book.title}</p>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
+                  <BookRow key={row.label} label={row.label} books={row.books} />
                 ))}
             </div>
           </section>
@@ -322,24 +328,19 @@ export default async function ProfilePage({
               </Link>
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {library.map(({ ebook, page, totalPages }) => (
-                <Link key={ebook.id} href={`/p/${id}/read/${ebook.slug}`} className="group">
-                  <div
-                    className={`cover-theme-${ebook.coverTheme} mb-2 flex h-40 items-center justify-center rounded-2xl text-4xl shadow-lg transition group-hover:-translate-y-1`}
-                  >
-                    {ebook.coverEmoji}
-                  </div>
-                  <p className="mb-1 truncate text-sm font-bold">{ebook.title}</p>
-                  <div className="h-1 w-full overflow-hidden rounded-full lumina-progress-track">
-                    <div
-                      className="h-full lumina-progress-fill"
-                      style={{ width: `${Math.round(((page + 1) / totalPages) * 100)}%` }}
-                    />
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <BookRow
+              label=""
+              books={library.map(({ ebook }) => ebook)}
+              hrefBase={`/p/${id}/read`}
+              progressByEbookId={
+                new Map(
+                  library.map(({ ebook, page, totalPages }) => [
+                    ebook.id,
+                    Math.round(((page + 1) / totalPages) * 100),
+                  ])
+                )
+              }
+            />
           )}
         </section>
 
@@ -350,18 +351,7 @@ export default async function ProfilePage({
               Tu n&apos;as pas encore de favoris.
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {favorites.map((f) => (
-                <Link key={f.id} href={`/ebooks/${f.ebook.slug}`} className="group">
-                  <div
-                    className={`cover-theme-${f.ebook.coverTheme} mb-2 flex h-40 items-center justify-center rounded-2xl text-4xl shadow-lg transition group-hover:-translate-y-1`}
-                  >
-                    {f.ebook.coverEmoji}
-                  </div>
-                  <p className="truncate text-sm font-bold">{f.ebook.title}</p>
-                </Link>
-              ))}
-            </div>
+            <BookRow label="" books={favorites.map((f) => f.ebook)} />
           )}
         </section>
 
