@@ -29,7 +29,19 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcrypt.hash(password, 10);
   await prisma.customer.create({
-    data: { name, email, passwordHash },
+    data: {
+      name,
+      email,
+      passwordHash,
+      profiles: {
+        create: {
+          name,
+          avatarEmoji: "🙂",
+          color: "purple",
+          type: "adult",
+        },
+      },
+    },
   });
 
   return NextResponse.json({ ok: true });

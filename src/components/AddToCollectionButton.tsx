@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { addToCollection, createCollection } from "@/lib/customerActions";
+import Link from "next/link";
+import { addToCollection, createCollection } from "@/lib/profileActions";
 
 type CollectionOption = { id: string; name: string; hasBook: boolean };
 
 export default function AddToCollectionButton({
   ebookId,
   collections,
-  isLoggedIn,
+  profileId,
 }: {
   ebookId: string;
   collections: CollectionOption[];
-  isLoggedIn: boolean;
+  profileId: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -28,7 +29,16 @@ export default function AddToCollectionButton({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  if (!isLoggedIn) return null;
+  if (!profileId) {
+    return (
+      <Link
+        href="/profiles"
+        className="flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:border-[#7c5cff]"
+      >
+        📁 Choisir un profil
+      </Link>
+    );
+  }
 
   function handleAdd(collectionId: string) {
     setAdded((a) => ({ ...a, [collectionId]: true }));
@@ -39,9 +49,9 @@ export default function AddToCollectionButton({
 
   function handleCreateAndAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!newName.trim()) return;
+    if (!newName.trim() || !profileId) return;
     startTransition(async () => {
-      const id = await createCollection(newName.trim());
+      const id = await createCollection(profileId, newName.trim());
       await addToCollection(id, ebookId);
       setNewName("");
       setOpen(false);

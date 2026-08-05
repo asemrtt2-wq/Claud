@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { setReadingReminder } from "@/lib/customerActions";
+import { setReadingReminder } from "@/lib/profileActions";
 
 export default function ReadingReminderSetting({
+  profileId,
   initialReminderTime,
 }: {
+  profileId: string;
   initialReminderTime: string | null;
 }) {
   const [time, setTime] = useState(initialReminderTime ?? "");
@@ -14,7 +16,7 @@ export default function ReadingReminderSetting({
 
   function handleSave() {
     startTransition(async () => {
-      await setReadingReminder(time || null);
+      await setReadingReminder(profileId, time || null);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });

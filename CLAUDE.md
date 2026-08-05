@@ -6,29 +6,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Lumina (formerly "EBookstore") — a full-stack Next.js eBook platform. Public catalog of
 eBooks, individual eBook pages with one-time Stripe Checkout purchases, a recurring Stripe
-Premium subscription (monthly/yearly, unlocks the whole library), customer accounts
-(signup/login, favorites, reading progress), a dark "app shell" account dashboard and
-in-browser reader modeled on the Lumina product design (dark navy/purple glassmorphism), a
-parental-controls layer (child profiles, daily reading-time limits, a kids-only reader with
-read-aloud and a parent monitoring dashboard), and a separate password-protected admin panel
-for managing the catalog.
+Premium subscription (monthly/yearly, unlocks the whole library), customer accounts with a
+**Netflix-style multi-profile system** (any number of independent profiles per account, each
+with its own name/avatar/color/type, favorites, collections, reading history, goals, and an
+optional PIN lock), a dark "app shell" profile dashboard and in-browser reader modeled on the
+Lumina product design (dark navy/purple glassmorphism), a kids-mode profile type (curated
+catalog, daily reading-time limits, a kids-only reader with read-aloud and mascot), and a
+separate password-protected admin panel for managing the catalog.
 
 The customer-facing brand is "Lumina" (logo: `✦`, purple `#7c5cff` → `#5b3df0` gradient). Every
 customer-facing page — marketing pages, `/premium`, `/ebooks/[slug]`, `/login`, `/signup`,
-`/account`, `/kids/**` — uses the same dark glassmorphic "app" look (`lumina-shell`/`lumina-card`
+`/profiles`, `/p/[id]` — uses the same dark glassmorphic "app" look (`lumina-shell`/`lumina-card`
 utility classes in `globals.css`), so the whole site (not just the logged-in area) now reads as
-one dark product. The one deliberate exception is the reader (`/read/[slug]`,
-`/kids/[id]/read/[slug]`): it uses each eBook's own `cover-theme-*` gradient as an immersive
-background instead of the generic dark shell. The admin panel keeps the original navy/royal-blue
-palette — it's an internal tool, not part of the Lumina brand surface.
+one dark product. The one deliberate exception is the reader (`/p/[id]/read/[slug]`): it uses
+each eBook's own `cover-theme-*` gradient as an immersive background instead of the generic dark
+shell. The admin panel keeps the original navy/royal-blue palette — it's an internal tool, not
+part of the Lumina brand surface.
 
 ### Parental controls — what's real vs. simulated
 
 This is a web app, so a few things from the original feature request are approximated rather
 than literally implemented, and future work should keep respecting these boundaries:
 - **Reading-time limits are in-app, not OS-level.** A website cannot lock a phone's screen.
-  `ChildProfile.dailyLimitMinutes` gates the *Lumina reader itself* (see Kids mode below) —
-  it does not touch device screen time.
+  `Profile.dailyLimitMinutes` gates the *Lumina reader itself* (see Reader below) — it does
+  not touch device screen time.
 - **Read-aloud voice "characters" (Femme/Homme/Robot/Alien/Loup/Ours) are the browser's
   built-in `SpeechSynthesis` voice with pitch/rate presets per character**, not distinct
   synthesized voice models — output quality depends on the voices the browser/OS ships.
@@ -95,53 +96,78 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   otherwise a buy button + a link to `/premium`. Includes a favorite toggle.
 - `src/app/premium/page.tsx` — pricing page (free / one-time purchase / Premium monthly-yearly).
 
-### Customer accounts
+### Customer accounts & profiles
 - `src/lib/auth.ts` — NextAuth config with `admin-credentials` and `customer-credentials`
   providers; `token.role` / `session.user.role` distinguish which one signed in (see
   `src/types/next-auth.d.ts` for the module augmentation).
 - `src/app/signup/page.tsx` + `src/app/api/auth/signup/route.ts` — customer signup (creates a
-  `Customer` row, then signs in). `src/app/login/page.tsx` — customer login. Both pages are
-  server components that render a client form component (`SignupForm`/`LoginForm`) — **never**
-  import the async `Header`/`Footer` server components directly into a `"use client"` file,
-  Next.js can't render a Server Component inside a Client Component that way.
+  `Customer` row **plus one default `Profile`** named after the signup name, then signs in).
+  `src/app/login/page.tsx` — customer login. Both redirect to `/profiles`, not straight into an
+  app screen. Both pages are server components that render a client form component
+  (`SignupForm`/`LoginForm`) — **never** import the async `Header`/`Footer` server components
+  directly into a `"use client"` file, Next.js can't render a Server Component inside a Client
+  Component that way.
 - `src/lib/customerSession.ts` — `getCurrentCustomer()` helper (server-only) used across pages.
-- `src/app/account/page.tsx` — the Lumina app dashboard (dark `lumina-shell`), sections in
-  order: continue-reading hero card, recommendations, unified "library" grid, favorites,
-  collections, reading history, the parental-controls area, reading goal + time stats, and a
-  profile section (subscription status, sign out, reminder). Renders `AppBottomNav` below the
-  fold for mobile in-app navigation and `ProfileSwitcher` in the header (see below).
-- `src/components/ProfileSwitcher.tsx` — a Netflix-style dropdown (used in the `/account` and
-  `/kids/[id]` headers) listing the parent's own account plus every `ChildProfile`, linking to
-  `/account` or `/kids/[id]` respectively. There is only ever one "adult" profile per login
-  (the `Customer` itself) — the switcher does not support multiple adult profiles on one
-  account, only parent ↔ child.
+- **`Customer` vs `Profile`**: `Customer` is the login/billing identity only (email, password,
+  Stripe `Order`/`Subscription` — purchases and Premium are account-wide, shared by every
+  profile, matching how streaming services bill). `Profile` is "who's reading" — name, avatar,
+  color, `type` (`"adult"` or `"kids"`), optional `pinHash`, and **all** per-reader data
+  (`Favorite`, `ReadingProgress`, `Collection`, reading goal, reading-time stats, streak). A
+  customer can have any number of profiles, including multiple `"adult"` ones — there is no
+  cap and no assumption that the first profile is special. Data never crosses between profiles.
+- `src/app/profiles/page.tsx` + `src/components/ProfilePicker.tsx` — the "Qui lit aujourd'hui ?"
+  picker: square rounded avatar cards in a row, click switches into `/p/[id]`. A "Gérer les
+  profils" toggle switches every card into edit mode (pencil badge) instead of switching profile;
+  clicking a card then opens `src/components/ProfileForm.tsx` (shared create/edit form: name,
+  avatar, color, adult/kids type, kids daily limit, PIN). Deleting a profile is blocked if it's
+  the account's last one.
+- **Active profile**: since the shared catalog pages (`/`, `/ebooks/[slug]`, `/premium`) aren't
+  under `/p/[id]`, they can't read the profile id from the URL. `src/lib/activeProfile.ts` sets
+  an httpOnly `activeProfileId` cookie whenever `switchProfile()` (`src/lib/profileActions.ts`)
+  runs — from the picker or `ProfileSwitcher` — and `getActiveProfile()` reads it back
+  (re-verifying ownership) for those shared pages. Cookies can only be set from a Server Action
+  or Route Handler, not during a page render, which is why switching profile is always an action
+  (`switchProfile.bind(null, id)` or a direct call), never a plain `<Link>`.
+- `src/components/ProfileSwitcher.tsx` — the header dropdown (used on `/p/[id]`) listing every
+  profile on the account with an avatar/color swatch; picking one calls `switchProfile()`
+  directly (locked profiles instead route to `/profiles`, where the PIN gate lives).
+- **PIN lock** (`src/lib/profileUnlock.ts`, `src/components/PinGate.tsx`): a profile with
+  `pinHash` set requires the PIN before `/p/[id]` renders its dashboard — `verifyProfilePin()`
+  checks it and, on success, adds the profile id to an httpOnly `unlockedProfiles` cookie
+  (2h expiry) via `markProfileUnlocked()`. This is a "keep a curious kid out of the parent
+  profile" gate, not real security against someone editing cookies directly — don't oversell it.
 - `src/lib/recommendations.ts` — `getRecommendations()`: a simple rule-based engine (no ML) —
-  "because you like X" from the customer's most-common favorited/read/purchased `category`,
-  plus "nouveautés" (newest by `createdAt`) and "les plus populaires" (most-ordered), each
-  excluding books already in the customer's library. The catalog has no author/series fields,
-  so "continuez votre série" / "auteurs similaires" style recommendations aren't implemented.
-- Collections (`Collection`/`CollectionItem` in the schema) are customer-created shelves —
-  `src/components/CollectionsManager.tsx` (create/delete a collection, remove a book) on
-  `/account`, and `src/components/AddToCollectionButton.tsx` on `/ebooks/[slug]` to add the
-  current book to an existing or brand-new collection. Server actions live in
-  `src/lib/customerActions.ts`.
-- Reading goals and time tracking: `Customer.monthlyBookGoal` (set via
-  `src/components/ReadingGoalSetting.tsx`, progress computed from `ReadingProgress.completed`
-  rows in the current month) and `Customer.totalMinutesRead`/`minutesReadToday` (incremented by
-  `incrementAdultReadingMinutes()`, called every 60s from `Reader.tsx` while a book is open —
-  mirrors the kids reading-time tracking, but with no daily limit for adults).
+  "because you like X" from the profile's most-common favorited/read `category`, "auteurs
+  favoris" from the most-common `author`, "nouveautés" (newest by `createdAt`), and "les plus
+  populaires" (most-ordered), each excluding books already in the profile's library. The catalog
+  has no series/saga data, so "continuez votre série" style recommendations aren't implemented.
+- Collections (`Collection`/`CollectionItem`, profile-scoped) — `src/components/CollectionsManager.tsx`
+  (create/delete a collection, remove a book) on `/p/[id]`, and
+  `src/components/AddToCollectionButton.tsx` on `/ebooks/[slug]` to add the current book to an
+  existing or brand-new collection, using the active-profile cookie. Server actions live in
+  `src/lib/profileActions.ts` (this file replaced the old `customerActions.ts`/`childActions.ts`
+  split — every action takes a `profileId` and re-verifies `profile.customerId === customer.id`
+  server-side before touching data, the same defense-in-depth pattern used everywhere else).
+- Reading goals, time tracking, streak: `Profile.monthlyBookGoal`
+  (`src/components/ReadingGoalSetting.tsx`, progress from `ReadingProgress.completed` rows this
+  month), `Profile.totalMinutesRead`/`minutesReadToday` (incremented every 60s from `Reader.tsx`
+  / `KidsReader.tsx` while a book is open), and `Profile.readingStreak`/`lastReadDate`
+  (consecutive-day counter, updated in `incrementReadingMinutes()` via `updateStreak()` in
+  `src/lib/profiles.ts` — resets to 1 unless the profile also read yesterday).
 - **"Downloads" / offline reading is intentionally not implemented.** A plain web app has no
   reliable way to cache a book for offline use without a service-worker/PWA layer, which this
-  project doesn't have — don't add a fake "download" button that doesn't actually work offline.
-- `src/lib/access.ts` — `hasAccessToEbook()`: true if the customer has an active `Subscription`
-  or a `paid` `Order` for that eBook.
+  project doesn't have. The `/p/[id]` "Téléchargements" section says so plainly instead of
+  showing a button that doesn't work.
+- `src/lib/access.ts` — `hasAccessToEbook()`: true if the **customer** (not the profile) has an
+  active `Subscription` or a `paid` `Order` for that eBook — access is account-wide by design.
 
 ### Reader
 - `src/lib/paginate.ts` — splits an eBook's plain-text `content` into pages (~900 chars,
   paragraph-aware).
-- `src/app/read/[slug]/page.tsx` — server component that checks access (redirects to `/login`
-  or the eBook page otherwise), then renders the client `Reader` component, passing the
-  eBook's `coverTheme` for the immersive background.
+- `src/app/p/[id]/read/[slug]/page.tsx` — the one reader route for every profile. Verifies the
+  profile belongs to the logged-in customer, then branches on `profile.type`: `"kids"` renders
+  `KidsReader` (and 404s unless `ebook.audience === "kids"`), `"adult"` checks
+  `hasAccessToEbook()` and renders `Reader` (and 404s unless `ebook.audience === "adults"`).
 - `src/components/Reader.tsx` — "immersive" (default) vs "clair" (light) toggle, plus a
   "pages" (click-through, default) vs "scroll" (continuous, all pages concatenated) mode toggle.
   Immersive mode uses the eBook's `cover-theme-*` gradient as a full-page background with a dark
@@ -149,43 +175,25 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   prev/next, and a purple progress bar work in both modes — border/background colors on the
   control buttons branch on the `immersive` boolean so they stay visible in light mode too.
   In scroll mode, progress is derived from scroll position (debounced) instead of button clicks.
-  Reading position is saved via the `saveReadingProgress` server action in
-  `src/lib/customerActions.ts`.
+  Reading position is saved via `saveReadingProgress(profileId, ebookId, page)` in
+  `src/lib/profileActions.ts`; reading time via `incrementReadingMinutes(profileId)` every 60s.
+- `src/components/KidsReader.tsx` — adds on top of that pattern: a bouncing mascot emoji on page
+  turn, a `SpeechSynthesis`-based read-aloud voice picker (Femme/Homme/Robot/Alien/Loup/Ours —
+  pitch/rate presets on the browser's built-in voice, not distinct synthesized models), and a
+  daily-limit lock screen once `Profile.dailyLimitMinutes` is hit for the day (checked on load
+  via `getReadingStatus()` so an already-over-limit kid sees it immediately, not after a minute).
+  `Profile.dailyLimitMinutes` gates the *Lumina reader itself* — a website cannot lock a phone's
+  screen, so this is in-app only, not OS-level.
+- `src/components/BedtimeReminder.tsx` — client component, used on both adult and kids `/p/[id]`
+  dashboards, keyed off `Profile.reminderTime`; shows a banner if `now` is within ~90 minutes
+  after the configured time and there's no reading activity yet today for that profile. This is
+  an in-app banner, not a real push notification (no service-worker/backend cron infra here).
 
-### Kids mode / parental controls
-- `ChildProfile` (`prisma/schema.prisma`) belongs to a `Customer` (the parent) — there is no
-  separate login for children; a "profile" is just a scoped view reachable only from the
-  parent's own authenticated session (like Netflix profiles, not a second account). Every
-  server action and page under `/kids/**` and `/account/kids/**` re-checks
-  `childProfile.parentId === customer.id` before returning data — never trust the `id` route
-  param alone.
-- `EBook.audience` (`"adults"` default, or `"kids"`) splits the catalog: the homepage/`/ebooks`
-  flow only ever queries `audience: "adults"`; `/kids/[id]` only ever queries `audience: "kids"`.
-  Kids eBooks are free/bundled (no Order/Subscription needed) — access is just "this parent has
-  a child profile," not a purchase.
-- `src/lib/childActions.ts` (`"use server"`) — CRUD for `ChildProfile`, plus:
-  - `saveChildReadingProgress` — upserts `ChildReadingProgress`, marks `completed` when the
-    last page is reached, and maintains a running exponential-moving-average
-    `avgSecondsPerPage` (used by the parent dashboard to flag "very fast"/"posé" reading pace).
-  - `incrementReadingMinutes` — called every 60s from `KidsReader` while a story is open;
-    resets `minutesReadToday` on a new calendar day (`limitResetDate`) and reports back whether
-    the child just hit `dailyLimitMinutes`.
-  - `getReadingStatus` — read-only version of the same limit check, used on page load so a
-    child who already hit today's limit sees the lock screen immediately instead of after a
-    minute of reading.
-- `src/components/ChildProfileManager.tsx` / `ChildSettingsForm.tsx` — parent-facing UI on
-  `/account` (create/delete profiles, set daily limit + bedtime reminder) and on the per-child
-  dashboard.
-- `src/app/account/kids/[id]/page.tsx` — parent dashboard for one child: books started/finished,
-  total pages read, per-book progress + pace badge, last-active date.
-- `src/app/kids/[id]/page.tsx` + `.../read/[slug]/page.tsx` + `src/components/KidsReader.tsx` —
-  the kid-facing home/catalog and reader. `KidsReader` adds on top of the adult `Reader`
-  pattern: a bouncing mascot emoji on page turn, a `SpeechSynthesis`-based read-aloud voice
-  picker, and the daily-limit lock screen (see "what's real vs. simulated" above).
-- `src/components/BedtimeReminder.tsx` — client component, reused on both `/account` (parent,
-  keyed off `Customer.readingReminderTime`) and `/kids/[id]` (child, keyed off
-  `ChildProfile.reminderTime`); shows a banner if `now` is within ~90 minutes after the
-  configured time and there's no reading activity yet today.
+### Kids-mode catalog
+- `EBook.audience` (`"adults"` default, or `"kids"`) splits the catalog: the homepage/catalog
+  flow only ever queries `audience: "adults"`; a `"kids"`-type profile's `/p/[id]` only ever
+  queries `audience: "kids"`. Kids eBooks are free/bundled (no Order/Subscription needed) —
+  access is just "this profile is kids-type," not a purchase.
 
 ### Payments
 - `src/app/api/checkout/route.ts` — one-time purchase; requires a logged-in customer, creates
@@ -207,20 +215,31 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   session server-side (defense in depth beyond the proxy).
 
 ### Data model (`prisma/schema.prisma`)
-`EBook` (has a `content` text field used by the reader, and an `audience` field —
-`"adults"`/`"kids"`), `Order` (one-time purchases, optional `customerId`), `Admin`, `Customer`
-(has `readingReminderTime`, `monthlyBookGoal`, `totalMinutesRead`/`minutesReadToday`/
-`readingDate` for reading-time tracking), `Subscription` (one-to-one with `Customer`),
-`Favorite` and `ReadingProgress` (join tables, unique on `[customerId, ebookId]`;
-`ReadingProgress.completed` flags a finished book), `ChildProfile` (belongs to a `Customer`;
-carries `avatarEmoji`/`color`, `dailyLimitMinutes`/`minutesReadToday`/`limitResetDate` and
-`reminderTime`), `ChildReadingProgress` (join table, unique on `[childProfileId, ebookId]`,
-also tracks `completed` and `avgSecondsPerPage`), and `Collection`/`CollectionItem`
-(customer-created book shelves, unique on `[collectionId, ebookId]`).
+`EBook` (has a `content` text field used by the reader, an `author` field, and an `audience`
+field — `"adults"`/`"kids"`), `Order` (one-time purchases, optional `customerId`), `Admin`,
+`Customer` (just login/billing: email, passwordHash, name, `Order[]`, `Subscription?`,
+`Profile[]`), `Subscription` (one-to-one with `Customer`, account-wide), `Profile` (belongs to a
+`Customer`; `name`/`avatarEmoji`/`color`/`type` (`"adult"`/`"kids"`), optional `pinHash`,
+`dailyLimitMinutes`/`minutesReadToday`/`limitResetDate` (kids reading-time limit),
+`reminderTime`, `monthlyBookGoal`, `totalMinutesRead`, `readingStreak`/`lastReadDate`),
+`Favorite` and `ReadingProgress` (profile-scoped join tables, unique on `[profileId, ebookId]`;
+`ReadingProgress` also carries `completed`, `lastPageAt`, `avgSecondsPerPage` — the same
+pace-tracking fields used to flag "very fast"/"posé" reading pace apply to any profile now, not
+just kids), and `Collection`/`CollectionItem` (profile-scoped book shelves, unique on
+`[collectionId, ebookId]`).
 
-- `prisma/seed.ts` — sample adult catalog (with placeholder chapter content for the reader) plus
-  three short kids storybooks (`audience: "kids"`, free) + admin account bootstrap. Does not
-  seed a demo customer — use `/signup` locally.
+There used to be a separate `ChildProfile`/`ChildReadingProgress` pair and `Customer` doubled as
+the implicit single "adult profile" — that was replaced by the unified `Profile` model above so
+an account can hold any number of independent adult *and* kids profiles with fully isolated data,
+matching a real streaming-service profile switcher. If you see references to `ChildProfile`,
+`customerActions.ts`, `childActions.ts`, `/account`, or `/kids/[id]` in old notes/PRs, they're
+stale — the current routes are `/profiles` (picker) and `/p/[id]` (dashboard, both profile
+types) / `/p/[id]/read/[slug]` (reader, both profile types).
+
+- `prisma/seed.ts` — sample adult catalog (with placeholder chapter content for the reader,
+  and an `author` per title) plus three short kids storybooks (`audience: "kids"`, free) +
+  admin account bootstrap. Does not seed a demo customer — use `/signup` locally, which
+  auto-creates that account's first `Profile`.
 
 ## Conventions
 
@@ -231,10 +250,11 @@ also tracks `completed` and `avgSecondsPerPage`), and `Collection`/`CollectionIt
   `navy`, `deep`, `dark`, `steel` for adult titles — CSS gradients defined in `globals.css` as
   `.cover-theme-*` — kept within the navy/royal-blue brand palette; `aurora`, `ember`, `forest`
   are additional darker/warmer gradients reserved for kids storybooks).
-- `src/lib/profileColors.ts` — the 4-color palette (`yellow`/`blue`/`green`/`purple`) used for
-  `ChildProfile.color`; `profileGradient(color)` returns a CSS gradient string for inline
-  `style` use (avatar backgrounds in `ChildProfileManager`, `ProfileSwitcher`, parent dashboard,
-  kids header) — not Tailwind classes, since the color is dynamic/user-chosen.
+- `src/lib/profileColors.ts` — `PROFILE_COLORS` (4-color palette: `yellow`/`blue`/`green`/`purple`)
+  and `PROFILE_AVATARS` (the emoji picker list) used by `Profile.color`/`avatarEmoji`;
+  `profileGradient(color)` returns a CSS gradient string for inline `style` use (avatar
+  backgrounds in `ProfileForm`, `ProfilePicker`, `ProfileSwitcher`, `/p/[id]` headers) — not
+  Tailwind classes, since the color is dynamic/user-chosen.
 - Lumina purple accent (`#7c5cff` → `#5b3df0`/`#a78bfa`) is the primary interactive color across
   customer-facing CTAs (buy/subscribe/favorite buttons, links, focus rings) — it replaced the
   old `text-royal`/`from-royal` blue accent on those elements. The `royal`/navy tokens remain

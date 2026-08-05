@@ -29,7 +29,7 @@ export default async function Header() {
         </nav>
         {customer ? (
           <Link
-            href="/account"
+            href="/profiles"
             className="rounded-xl border border-white/15 bg-white/5 px-6 py-2.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:border-[#a78bfa]"
           >
             👤 Mon compte

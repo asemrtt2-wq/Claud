@@ -36,7 +36,7 @@ export default async function PremiumPage() {
                 <li>✅ Ajouter des favoris</li>
               </ul>
               <Link
-                href={isLoggedIn ? "/account" : "/signup"}
+                href={isLoggedIn ? "/profiles" : "/signup"}
                 className="rounded-2xl border border-white/15 px-7 py-3.5 text-center text-sm font-bold text-white transition hover:border-[#7c5cff]"
               >
                 {isLoggedIn ? "Mon compte" : "Créer un compte"}

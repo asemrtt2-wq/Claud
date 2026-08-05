@@ -16,6 +16,7 @@ model EBook {
   description String
   content     String   @default("")
   category    String
+  author      String   @default("")
   audience    String   @default("adults")
   coverEmoji  String
   coverTheme  String
@@ -27,7 +28,6 @@ model EBook {
   orders      Order[]
   favorites   Favorite[]
   progress    ReadingProgress[]
-  childProgress ChildReadingProgress[]
   collectionItems CollectionItem[]
 }
 
@@ -52,43 +52,44 @@ model Admin {
 }
 
 model Customer {
-  id                  String            @id @default(cuid())
-  email               String            @unique
-  passwordHash        String
-  name                String
-  readingReminderTime String?
-  monthlyBookGoal     Int?
-  totalMinutesRead    Int               @default(0)
-  minutesReadToday    Int               @default(0)
-  readingDate         String?
-  createdAt           DateTime          @default(now())
-  orders              Order[]
-  subscription        Subscription?
-  favorites           Favorite[]
-  progress            ReadingProgress[]
-  childProfiles       ChildProfile[]
-  collections         Collection[]
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime      @default(now())
+  orders       Order[]
+  subscription Subscription?
+  profiles     Profile[]
 }
 
-model ChildProfile {
-  id                String                  @id @default(cuid())
-  parentId          String
-  parent            Customer                @relation(fields: [parentId], references: [id], onDelete: Cascade)
+model Profile {
+  id                String   @id @default(cuid())
+  customerId        String
+  customer          Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   name              String
-  avatarEmoji       String                  @default("🧒")
-  color             String                  @default("purple")
+  avatarEmoji       String   @default("🙂")
+  color             String   @default("purple")
+  type              String   @default("adult")
+  pinHash           String?
   dailyLimitMinutes Int?
-  minutesReadToday  Int                     @default(0)
+  minutesReadToday  Int      @default(0)
   limitResetDate    String?
   reminderTime      String?
-  createdAt         DateTime                @default(now())
-  progress          ChildReadingProgress[]
+  monthlyBookGoal   Int?
+  totalMinutesRead  Int      @default(0)
+  readingStreak     Int      @default(0)
+  lastReadDate      String?
+  createdAt         DateTime @default(now())
+
+  favorites   Favorite[]
+  progress    ReadingProgress[]
+  collections Collection[]
 }
 
 model Collection {
   id         String           @id @default(cuid())
-  customerId String
-  customer   Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  profileId  String
+  profile    Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
   name       String
   createdAt  DateTime         @default(now())
   items      CollectionItem[]
@@ -105,21 +106,6 @@ model CollectionItem {
   @@unique([collectionId, ebookId])
 }
 
-model ChildReadingProgress {
-  id                 String       @id @default(cuid())
-  childProfileId     String
-  childProfile       ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
-  ebookId            String
-  ebook              EBook        @relation(fields: [ebookId], references: [id], onDelete: Cascade)
-  page               Int          @default(0)
-  completed          Boolean      @default(false)
-  lastPageAt         DateTime?
-  avgSecondsPerPage  Float?
-  updatedAt          DateTime     @updatedAt
-
-  @@unique([childProfileId, ebookId])
-}
-
 model Subscription {
   id                   String    @id @default(cuid())
   customerId           String    @unique
@@ -134,25 +120,27 @@ model Subscription {
 }
 
 model Favorite {
-  id         String   @id @default(cuid())
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  ebookId    String
-  ebook      EBook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  ebookId   String
+  ebook     EBook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
-  @@unique([customerId, ebookId])
+  @@unique([profileId, ebookId])
 }
 
 model ReadingProgress {
-  id         String   @id @default(cuid())
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  ebookId    String
-  ebook      EBook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
-  page       Int      @default(0)
-  completed  Boolean  @default(false)
-  updatedAt  DateTime @updatedAt
+  id                String    @id @default(cuid())
+  profileId         String
+  profile           Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  ebookId           String
+  ebook             EBook     @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  page              Int       @default(0)
+  completed         Boolean   @default(false)
+  lastPageAt        DateTime?
+  avgSecondsPerPage Float?
+  updatedAt         DateTime  @updatedAt
 
-  @@unique([customerId, ebookId])
+  @@unique([profileId, ebookId])
 }

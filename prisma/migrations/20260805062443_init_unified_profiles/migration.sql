@@ -7,6 +7,7 @@ CREATE TABLE "EBook" (
     "description" TEXT NOT NULL,
     "content" TEXT NOT NULL DEFAULT '',
     "category" TEXT NOT NULL,
+    "author" TEXT NOT NULL DEFAULT '',
     "audience" TEXT NOT NULL DEFAULT 'adults',
     "coverEmoji" TEXT NOT NULL,
     "coverTheme" TEXT NOT NULL,
@@ -49,39 +50,51 @@ CREATE TABLE "Customer" (
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "readingReminderTime" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Customer_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "ChildProfile" (
+CREATE TABLE "Profile" (
     "id" TEXT NOT NULL,
-    "parentId" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "avatarEmoji" TEXT NOT NULL DEFAULT '🧒',
+    "avatarEmoji" TEXT NOT NULL DEFAULT '🙂',
+    "color" TEXT NOT NULL DEFAULT 'purple',
+    "type" TEXT NOT NULL DEFAULT 'adult',
+    "pinHash" TEXT,
     "dailyLimitMinutes" INTEGER,
     "minutesReadToday" INTEGER NOT NULL DEFAULT 0,
     "limitResetDate" TEXT,
     "reminderTime" TEXT,
+    "monthlyBookGoal" INTEGER,
+    "totalMinutesRead" INTEGER NOT NULL DEFAULT 0,
+    "readingStreak" INTEGER NOT NULL DEFAULT 0,
+    "lastReadDate" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ChildProfile_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "ChildReadingProgress" (
+CREATE TABLE "Collection" (
     "id" TEXT NOT NULL,
-    "childProfileId" TEXT NOT NULL,
-    "ebookId" TEXT NOT NULL,
-    "page" INTEGER NOT NULL DEFAULT 0,
-    "completed" BOOLEAN NOT NULL DEFAULT false,
-    "lastPageAt" TIMESTAMP(3),
-    "avgSecondsPerPage" DOUBLE PRECISION,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "profileId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ChildReadingProgress_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Collection_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CollectionItem" (
+    "id" TEXT NOT NULL,
+    "collectionId" TEXT NOT NULL,
+    "ebookId" TEXT NOT NULL,
+    "addedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "CollectionItem_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -102,7 +115,7 @@ CREATE TABLE "Subscription" (
 -- CreateTable
 CREATE TABLE "Favorite" (
     "id" TEXT NOT NULL,
-    "customerId" TEXT NOT NULL,
+    "profileId" TEXT NOT NULL,
     "ebookId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -112,9 +125,12 @@ CREATE TABLE "Favorite" (
 -- CreateTable
 CREATE TABLE "ReadingProgress" (
     "id" TEXT NOT NULL,
-    "customerId" TEXT NOT NULL,
+    "profileId" TEXT NOT NULL,
     "ebookId" TEXT NOT NULL,
     "page" INTEGER NOT NULL DEFAULT 0,
+    "completed" BOOLEAN NOT NULL DEFAULT false,
+    "lastPageAt" TIMESTAMP(3),
+    "avgSecondsPerPage" DOUBLE PRECISION,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "ReadingProgress_pkey" PRIMARY KEY ("id")
@@ -133,7 +149,7 @@ CREATE UNIQUE INDEX "Admin_email_key" ON "Admin"("email");
 CREATE UNIQUE INDEX "Customer_email_key" ON "Customer"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ChildReadingProgress_childProfileId_ebookId_key" ON "ChildReadingProgress"("childProfileId", "ebookId");
+CREATE UNIQUE INDEX "CollectionItem_collectionId_ebookId_key" ON "CollectionItem"("collectionId", "ebookId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Subscription_customerId_key" ON "Subscription"("customerId");
@@ -142,10 +158,10 @@ CREATE UNIQUE INDEX "Subscription_customerId_key" ON "Subscription"("customerId"
 CREATE UNIQUE INDEX "Subscription_stripeSubscriptionId_key" ON "Subscription"("stripeSubscriptionId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Favorite_customerId_ebookId_key" ON "Favorite"("customerId", "ebookId");
+CREATE UNIQUE INDEX "Favorite_profileId_ebookId_key" ON "Favorite"("profileId", "ebookId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ReadingProgress_customerId_ebookId_key" ON "ReadingProgress"("customerId", "ebookId");
+CREATE UNIQUE INDEX "ReadingProgress_profileId_ebookId_key" ON "ReadingProgress"("profileId", "ebookId");
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_ebookId_fkey" FOREIGN KEY ("ebookId") REFERENCES "EBook"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -154,25 +170,28 @@ ALTER TABLE "Order" ADD CONSTRAINT "Order_ebookId_fkey" FOREIGN KEY ("ebookId") 
 ALTER TABLE "Order" ADD CONSTRAINT "Order_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ChildProfile" ADD CONSTRAINT "ChildProfile_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Customer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Profile" ADD CONSTRAINT "Profile_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ChildReadingProgress" ADD CONSTRAINT "ChildReadingProgress_childProfileId_fkey" FOREIGN KEY ("childProfileId") REFERENCES "ChildProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Collection" ADD CONSTRAINT "Collection_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ChildReadingProgress" ADD CONSTRAINT "ChildReadingProgress_ebookId_fkey" FOREIGN KEY ("ebookId") REFERENCES "EBook"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "CollectionItem" ADD CONSTRAINT "CollectionItem_collectionId_fkey" FOREIGN KEY ("collectionId") REFERENCES "Collection"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CollectionItem" ADD CONSTRAINT "CollectionItem_ebookId_fkey" FOREIGN KEY ("ebookId") REFERENCES "EBook"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Favorite" ADD CONSTRAINT "Favorite_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Favorite" ADD CONSTRAINT "Favorite_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Favorite" ADD CONSTRAINT "Favorite_ebookId_fkey" FOREIGN KEY ("ebookId") REFERENCES "EBook"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ReadingProgress" ADD CONSTRAINT "ReadingProgress_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "ReadingProgress" ADD CONSTRAINT "ReadingProgress_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ReadingProgress" ADD CONSTRAINT "ReadingProgress_ebookId_fkey" FOREIGN KEY ("ebookId") REFERENCES "EBook"("id") ON DELETE CASCADE ON UPDATE CASCADE;

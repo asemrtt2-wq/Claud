@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { saveReadingProgress, incrementAdultReadingMinutes } from "@/lib/customerActions";
+import { saveReadingProgress, incrementReadingMinutes } from "@/lib/profileActions";
 
 const FONT_SIZES = ["text-base", "text-lg", "text-xl"];
 
 export default function Reader({
+  profileId,
   ebookId,
   slug,
   title,
@@ -14,6 +15,7 @@ export default function Reader({
   pages,
   initialPage,
 }: {
+  profileId: string;
   ebookId: string;
   slug: string;
   title: string;
@@ -29,15 +31,15 @@ export default function Reader({
   const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    saveReadingProgress(ebookId, page);
-  }, [ebookId, page]);
+    saveReadingProgress(profileId, ebookId, page);
+  }, [profileId, ebookId, page]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      incrementAdultReadingMinutes();
+      incrementReadingMinutes(profileId);
     }, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [profileId]);
 
   function handleScroll() {
     const el = scrollRef.current;
@@ -62,7 +64,7 @@ export default function Reader({
 
       <div className="relative z-10 flex items-center justify-between border-b border-white/10 px-6 py-4">
         <Link
-          href={`/ebooks/${slug}`}
+          href={`/p/${profileId}`}
           className={`text-sm font-semibold ${immersive ? "text-white/70 hover:text-white" : "text-text-muted hover:text-navy"}`}
         >
           ← {title}

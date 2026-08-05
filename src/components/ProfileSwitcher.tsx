@@ -1,27 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { profileGradient } from "@/lib/profileColors";
+import { switchProfile } from "@/lib/profileActions";
 
-type ChildProfileSummary = {
+type ProfileSummary = {
   id: string;
   name: string;
   avatarEmoji: string;
   color: string;
+  hasPin: boolean;
 };
 
 export default function ProfileSwitcher({
-  customerName,
-  childProfiles,
-  activeLabel,
+  profiles,
+  activeProfileId,
 }: {
-  customerName: string;
-  childProfiles: ChildProfileSummary[];
-  activeLabel: string;
+  profiles: ProfileSummary[];
+  activeProfileId: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  const active = profiles.find((p) => p.id === activeProfileId) ?? profiles[0];
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -31,14 +36,30 @@ export default function ProfileSwitcher({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  function handleSelect(profile: ProfileSummary) {
+    setOpen(false);
+    if (profile.id === activeProfileId) return;
+    if (profile.hasPin) {
+      router.push("/profiles");
+      return;
+    }
+    startTransition(() => {
+      switchProfile(profile.id);
+    });
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
+        disabled={isPending}
         className="flex items-center gap-2 rounded-full transition hover:opacity-80"
       >
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#7c5cff] to-[#a78bfa] text-sm font-bold text-white">
-          {activeLabel.charAt(0).toUpperCase()}
+        <span
+          className="flex h-9 w-9 items-center justify-center rounded-full text-base"
+          style={{ background: profileGradient(active?.color ?? "purple") }}
+        >
+          {active?.avatarEmoji ?? "🙂"}
         </span>
         <span className="hidden text-xs text-white/70 sm:inline">▾</span>
       </button>
@@ -49,23 +70,13 @@ export default function ProfileSwitcher({
             Changer de profil
           </p>
 
-          <Link
-            href="/account"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-white/5"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#7c5cff] to-[#a78bfa] text-sm font-bold text-white">
-              {customerName.charAt(0).toUpperCase()}
-            </span>
-            <span className="text-sm font-semibold text-white">{customerName}</span>
-          </Link>
-
-          {childProfiles.map((p) => (
-            <Link
+          {profiles.map((p) => (
+            <button
               key={p.id}
-              href={`/kids/${p.id}`}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-white/5"
+              onClick={() => handleSelect(p)}
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-white/5 ${
+                p.id === activeProfileId ? "bg-white/5" : ""
+              }`}
             >
               <span
                 className="flex h-8 w-8 items-center justify-center rounded-full text-base"
@@ -73,18 +84,19 @@ export default function ProfileSwitcher({
               >
                 {p.avatarEmoji}
               </span>
-              <span className="text-sm font-semibold text-white">{p.name}</span>
-            </Link>
+              <span className="flex-1 text-sm font-semibold text-white">{p.name}</span>
+              {p.hasPin && <span className="text-xs">🔒</span>}
+            </button>
           ))}
 
           <div className="my-1 border-t border-white/10" />
 
           <Link
-            href="/account#parent"
+            href="/profiles"
             onClick={() => setOpen(false)}
             className="block rounded-xl px-3 py-2 text-sm font-semibold text-[#a78bfa] transition hover:bg-white/5"
           >
-            + Ajouter un profil
+            ⚙️ Gérer les profils
           </Link>
         </div>
       )}

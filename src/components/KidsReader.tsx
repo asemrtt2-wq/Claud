@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { saveChildReadingProgress, incrementReadingMinutes } from "@/lib/childActions";
+import { saveReadingProgress, incrementReadingMinutes } from "@/lib/profileActions";
 
 const FONT_SIZES = ["text-lg", "text-xl", "text-2xl"];
 
@@ -16,7 +16,7 @@ const VOICES: Record<string, { emoji: string; label: string; pitch: number; rate
 };
 
 export default function KidsReader({
-  childId,
+  profileId,
   ebookId,
   kidsHomeHref,
   title,
@@ -26,7 +26,7 @@ export default function KidsReader({
   initialLimitReached,
   dailyLimitMinutes,
 }: {
-  childId: string;
+  profileId: string;
   ebookId: string;
   kidsHomeHref: string;
   title: string;
@@ -53,21 +53,21 @@ export default function KidsReader({
 
   useEffect(() => {
     if (locked) return;
-    saveChildReadingProgress(childId, ebookId, page);
+    saveReadingProgress(profileId, ebookId, page);
     setMascotBounce((n) => n + 1);
-  }, [childId, ebookId, page, locked]);
+  }, [profileId, ebookId, page, locked]);
 
   useEffect(() => {
     if (locked) return;
     const interval = setInterval(async () => {
-      const status = await incrementReadingMinutes(childId);
+      const status = await incrementReadingMinutes(profileId);
       if (status.limitReached) {
         setLocked(true);
         window.speechSynthesis?.cancel();
       }
     }, 60000);
     return () => clearInterval(interval);
-  }, [childId, locked]);
+  }, [profileId, locked]);
 
   useEffect(() => {
     return () => {

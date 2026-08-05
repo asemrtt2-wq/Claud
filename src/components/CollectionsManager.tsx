@@ -6,7 +6,7 @@ import {
   createCollection,
   deleteCollection,
   removeFromCollection,
-} from "@/lib/customerActions";
+} from "@/lib/profileActions";
 
 type CollectionSummary = {
   id: string;
@@ -17,8 +17,10 @@ type CollectionSummary = {
 };
 
 export default function CollectionsManager({
+  profileId,
   collections,
 }: {
+  profileId: string;
   collections: CollectionSummary[];
 }) {
   const [showForm, setShowForm] = useState(false);
@@ -30,7 +32,7 @@ export default function CollectionsManager({
     e.preventDefault();
     if (!name.trim()) return;
     startTransition(async () => {
-      await createCollection(name.trim());
+      await createCollection(profileId, name.trim());
       setName("");
       setShowForm(false);
     });

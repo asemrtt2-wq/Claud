@@ -9,3 +9,9 @@ export function profileGradient(color: string) {
   const c = PROFILE_COLORS[color] ?? PROFILE_COLORS.purple;
   return `linear-gradient(135deg, ${c.from}, ${c.to})`;
 }
+
+export const PROFILE_AVATARS = [
+  "🙂", "😀", "😎", "🤓", "🥳", "🧑", "👩", "👨",
+  "🧒", "👦", "👧", "🦊", "🐻", "🐱", "🐼", "🐰",
+  "📖", "⚔️", "🚀", "🎨",
+];

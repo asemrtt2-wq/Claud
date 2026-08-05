@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { setMonthlyBookGoal } from "@/lib/customerActions";
+import { setMonthlyBookGoal } from "@/lib/profileActions";
 
 export default function ReadingGoalSetting({
+  profileId,
   initialGoal,
   booksCompletedThisMonth,
 }: {
+  profileId: string;
   initialGoal: number | null;
   booksCompletedThisMonth: number;
 }) {
@@ -16,7 +18,7 @@ export default function ReadingGoalSetting({
 
   function handleSave() {
     startTransition(async () => {
-      await setMonthlyBookGoal(goal ? Number(goal) : null);
+      await setMonthlyBookGoal(profileId, goal ? Number(goal) : null);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });

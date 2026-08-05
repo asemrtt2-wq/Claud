@@ -1,29 +1,34 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getRecommendations(customerId: string, excludeIds: string[]) {
-  const [favorites, progress, orders] = await Promise.all([
-    prisma.favorite.findMany({ where: { customerId }, include: { ebook: true } }),
-    prisma.readingProgress.findMany({ where: { customerId }, include: { ebook: true } }),
-    prisma.order.findMany({
-      where: { customerId, status: "paid" },
-      include: { ebook: true },
-    }),
+export async function getRecommendations(profileId: string, excludeIds: string[]) {
+  const [favorites, progress] = await Promise.all([
+    prisma.favorite.findMany({ where: { profileId }, include: { ebook: true } }),
+    prisma.readingProgress.findMany({ where: { profileId }, include: { ebook: true } }),
   ]);
 
   const categoryCounts = new Map<string, number>();
-  for (const entry of [...favorites, ...progress, ...orders]) {
-    const category = entry.ebook.category;
+  const authorCounts = new Map<string, number>();
+  for (const entry of [...favorites, ...progress]) {
+    const { category, author } = entry.ebook;
     categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
+    if (author) authorCounts.set(author, (authorCounts.get(author) ?? 0) + 1);
   }
   const topCategory =
     [...categoryCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  const topAuthor = [...authorCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 
   const excludeFilter = excludeIds.length > 0 ? { notIn: excludeIds } : undefined;
 
-  const [byCategory, newest, popularOrders] = await Promise.all([
+  const [byCategory, byAuthor, newest, popularOrders] = await Promise.all([
     topCategory
       ? prisma.eBook.findMany({
           where: { audience: "adults", category: topCategory, id: excludeFilter },
+          take: 3,
+        })
+      : Promise.resolve([]),
+    topAuthor
+      ? prisma.eBook.findMany({
+          where: { audience: "adults", author: topAuthor, id: excludeFilter },
           take: 3,
         })
       : Promise.resolve([]),
@@ -54,5 +59,5 @@ export async function getRecommendations(customerId: string, excludeIds: string[
     .filter((b): b is NonNullable<typeof b> => Boolean(b))
     .slice(0, 3);
 
-  return { topCategory, byCategory, newest, popular };
+  return { topCategory, byCategory, topAuthor, byAuthor, newest, popular };
 }

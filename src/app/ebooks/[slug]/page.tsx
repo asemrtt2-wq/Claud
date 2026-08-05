@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { hasAccessToEbook } from "@/lib/access";
+import { getActiveProfile } from "@/lib/activeProfile";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BuyButton from "@/components/BuyButton";
@@ -21,17 +22,23 @@ export default async function EBookPage({
 
   const customer = await getCurrentCustomer();
   const isLoggedIn = Boolean(customer);
+  const activeProfile = customer ? await getActiveProfile(customer.id) : null;
+
   const [hasAccess, favorite, collections] = customer
     ? await Promise.all([
         hasAccessToEbook(customer.id, ebook.id),
-        prisma.favorite.findUnique({
-          where: { customerId_ebookId: { customerId: customer.id, ebookId: ebook.id } },
-        }),
-        prisma.collection.findMany({
-          where: { customerId: customer.id },
-          include: { items: { where: { ebookId: ebook.id } } },
-          orderBy: { createdAt: "desc" },
-        }),
+        activeProfile
+          ? prisma.favorite.findUnique({
+              where: { profileId_ebookId: { profileId: activeProfile.id, ebookId: ebook.id } },
+            })
+          : Promise.resolve(null),
+        activeProfile
+          ? prisma.collection.findMany({
+              where: { profileId: activeProfile.id },
+              include: { items: { where: { ebookId: ebook.id } } },
+              orderBy: { createdAt: "desc" },
+            })
+          : Promise.resolve([]),
       ])
     : [false, null, []];
 
@@ -74,12 +81,12 @@ export default async function EBookPage({
                   ebookId={ebook.id}
                   slug={ebook.slug}
                   initialFavorited={Boolean(favorite)}
-                  isLoggedIn={isLoggedIn}
+                  profileId={activeProfile?.id ?? null}
                 />
                 <AddToCollectionButton
                   ebookId={ebook.id}
                   collections={collectionOptions}
-                  isLoggedIn={isLoggedIn}
+                  profileId={activeProfile?.id ?? null}
                 />
               </div>
             </div>
@@ -112,7 +119,7 @@ export default async function EBookPage({
             {hasAccess ? (
               <div className="lumina-card max-w-sm rounded-[22px] p-6">
                 <Link
-                  href={`/read/${ebook.slug}`}
+                  href={activeProfile ? `/p/${activeProfile.id}/read/${ebook.slug}` : "/profiles"}
                   className="block rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-center text-sm font-bold text-white shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5"
                 >
                   📖 Lire maintenant

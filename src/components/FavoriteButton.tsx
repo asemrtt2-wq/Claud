@@ -1,28 +1,38 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { toggleFavorite } from "@/lib/customerActions";
+import Link from "next/link";
+import { toggleFavorite } from "@/lib/profileActions";
 
 export default function FavoriteButton({
   ebookId,
   slug,
   initialFavorited,
-  isLoggedIn,
+  profileId,
 }: {
   ebookId: string;
   slug: string;
   initialFavorited: boolean;
-  isLoggedIn: boolean;
+  profileId: string | null;
 }) {
   const [favorited, setFavorited] = useState(initialFavorited);
   const [isPending, startTransition] = useTransition();
 
-  if (!isLoggedIn) return null;
+  if (!profileId) {
+    return (
+      <Link
+        href="/profiles"
+        className="flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:border-[#7c5cff]"
+      >
+        🤍 Choisir un profil
+      </Link>
+    );
+  }
 
   function handleClick() {
     setFavorited((prev) => !prev);
     startTransition(() => {
-      toggleFavorite(ebookId, slug);
+      toggleFavorite(profileId as string, ebookId, slug);
     });
   }
 
