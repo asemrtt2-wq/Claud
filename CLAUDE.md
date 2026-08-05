@@ -110,9 +110,24 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   would be dishonest). Access still goes through a buy button + `/premium` link when the customer
   doesn't have it.
 - `src/app/premium/page.tsx` — pricing page (free / one-time purchase / Premium monthly-yearly).
-- `src/components/HeroCarousel.tsx` — an auto-rotating billboard (Prime Video-style) in the
-  homepage hero, cycling through featured (or first-N) catalog books every 6s with dot
-  navigation; replaced the old static three-cover `HeroCovers` stack.
+- The homepage hero, feature-highlight row, "Compte enfant", "Une expérience de lecture unique",
+  "Compatible partout", and final CTA band sections follow a marketing mockup the project owner
+  supplied. Since the app has no real product photography/illustration assets (see "Cover art"
+  under Conventions) and no image-generation tool is available, the mockup's painted illustrations
+  and character art are approximated with `src/components/DeviceFrame.tsx` (`PhoneFrame`/
+  `TabletFrame`/`LaptopFrame`, plain CSS bezels) wrapping `src/components/MiniAppScreens.tsx`
+  (`MiniDashboardScreen`/`MiniReaderScreen`/`MiniLibraryScreen`, static illustrative recreations of
+  the real in-app UI using the same `lumina-*`/`cover-theme-*` classes as the actual dashboard and
+  reader) — populated with real catalog titles/covers and a real book excerpt, not invented
+  content, so the "preview" is an honest one. `src/components/HeroDeviceShowcase.tsx` composes two
+  overlapping `PhoneFrame`s for the hero (replaced the old `HeroCarousel.tsx` billboard);
+  `src/components/HomeMarketingSections.tsx` holds the rest (`FeatureHighlights`,
+  `KidsModeSection`, `ReadingExperienceSection`, `CompatibilitySection`, `FinalCtaBand`). Two
+  claims from the source mockup were deliberately **not** copied verbatim because they're false for
+  this product: "lis hors ligne" (offline reading is intentionally not implemented — see Reader
+  below) and "Compatible iOS / Android / macOS" (this is a responsive web app, not native apps) —
+  both were reworded to truthful equivalents ("depuis ton navigateur", a browser list instead of an
+  OS list) rather than promising features that don't exist.
 
 ### Customer accounts & profiles
 - `src/lib/auth.ts` — NextAuth config with `admin-credentials` and `customer-credentials`

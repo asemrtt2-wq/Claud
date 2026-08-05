@@ -2,8 +2,15 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import HeroCarousel from "@/components/HeroCarousel";
+import HeroDeviceShowcase from "@/components/HeroDeviceShowcase";
 import EBookCard from "@/components/EBookCard";
+import {
+  CompatibilitySection,
+  FeatureHighlights,
+  FinalCtaBand,
+  KidsModeSection,
+  ReadingExperienceSection,
+} from "@/components/HomeMarketingSections";
 import { getSiteSettings } from "@/lib/siteSettings";
 
 export default async function HomePage() {
@@ -77,7 +84,7 @@ export default async function HomePage() {
           </div>
 
           <div className="flex justify-center md:justify-end">
-            <HeroCarousel ebooks={heroCovers} />
+            <HeroDeviceShowcase books={heroCovers} />
           </div>
         </div>
 
@@ -92,6 +99,8 @@ export default async function HomePage() {
           />
         </svg>
       </section>
+
+      <FeatureHighlights />
 
       <section id="catalogue" className="bg-[#0a0918] px-6 py-28 text-white">
         <div className="mx-auto max-w-6xl">
@@ -123,6 +132,12 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <KidsModeSection />
+
+      <ReadingExperienceSection books={ebooks} />
+
+      <CompatibilitySection />
+
       <section id="avis" className="bg-[#0d0b22] px-6 py-28 text-white">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[2fr_1fr]">
           <div>
@@ -134,7 +149,7 @@ export default async function HomePage() {
             </h2>
             <div className="grid gap-5 sm:grid-cols-3">
               {[
-                { quote: "Une superbe sélection de livres, très pratique et facile à télécharger.", name: "Sophie L." },
+                { quote: "Une superbe sélection de livres, très pratique et facile à utiliser.", name: "Sophie L." },
                 { quote: "Les eBooks sont de grande qualité, ça se remarque.", name: "Marc D." },
                 { quote: "Excellent site ! J'ai trouvé exactement ce que je cherchais.", name: "Julien D." },
               ].map((t) => (
@@ -167,6 +182,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <FinalCtaBand />
 
       <Footer />
     </>
