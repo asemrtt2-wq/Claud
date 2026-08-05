@@ -3,13 +3,15 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { createChildProfile, deleteChildProfile } from "@/lib/childActions";
+import { PROFILE_COLORS, profileGradient } from "@/lib/profileColors";
 
-const AVATARS = ["🧒", "👦", "👧", "🦊", "🐻", "🐱", "🐼", "🐰"];
+const AVATARS = ["🧒", "👦", "👧", "🦊", "🐻", "🐱", "🐼", "🐰", "😀", "😎", "📖", "⚔️"];
 
 type ChildProfileSummary = {
   id: string;
   name: string;
   avatarEmoji: string;
+  color: string;
   dailyLimitMinutes: number | null;
   minutesReadToday: number;
   limitResetDate: string | null;
@@ -28,6 +30,7 @@ export default function ChildProfileManager({
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [avatarEmoji, setAvatarEmoji] = useState(AVATARS[0]);
+  const [color, setColor] = useState("purple");
   const [dailyLimitMinutes, setDailyLimitMinutes] = useState("30");
   const [reminderTime, setReminderTime] = useState("19:30");
   const [isPending, startTransition] = useTransition();
@@ -39,6 +42,7 @@ export default function ChildProfileManager({
       await createChildProfile({
         name: name.trim(),
         avatarEmoji,
+        color,
         dailyLimitMinutes: dailyLimitMinutes ? Number(dailyLimitMinutes) : null,
         reminderTime: reminderTime || null,
       });
@@ -65,7 +69,10 @@ export default function ChildProfileManager({
             return (
               <div key={profile.id} className="lumina-card rounded-2xl p-4">
                 <div className="mb-3 flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-xl">
+                  <span
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-xl"
+                    style={{ background: profileGradient(profile.color) }}
+                  >
                     {profile.avatarEmoji}
                   </span>
                   <div>
@@ -118,7 +125,10 @@ export default function ChildProfileManager({
         </button>
       ) : (
         <form onSubmit={handleCreate} className="lumina-card max-w-md rounded-2xl p-5">
-          <div className="mb-3 flex gap-2">
+          <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+            Avatar
+          </label>
+          <div className="mb-3 flex flex-wrap gap-2">
             {AVATARS.map((emoji) => (
               <button
                 type="button"
@@ -129,6 +139,25 @@ export default function ChildProfileManager({
                 }`}
               >
                 {emoji}
+              </button>
+            ))}
+          </div>
+          <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+            Couleur
+          </label>
+          <div className="mb-3 flex gap-2">
+            {Object.keys(PROFILE_COLORS).map((key) => (
+              <button
+                type="button"
+                key={key}
+                onClick={() => setColor(key)}
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-lg transition ${
+                  color === key ? "ring-2 ring-white" : "hover:opacity-80"
+                }`}
+                style={{ background: profileGradient(key) }}
+                aria-label={key}
+              >
+                {color === key ? "✓" : ""}
               </button>
             ))}
           </div>

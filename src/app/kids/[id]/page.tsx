@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { paginateContent } from "@/lib/paginate";
 import BedtimeReminder from "@/components/BedtimeReminder";
+import ProfileSwitcher from "@/components/ProfileSwitcher";
+import { profileGradient } from "@/lib/profileColors";
 
 export default async function KidsHomePage({
   params,
@@ -17,12 +19,16 @@ export default async function KidsHomePage({
   const profile = await prisma.childProfile.findUnique({ where: { id } });
   if (!profile || profile.parentId !== customer.id) redirect("/account");
 
-  const [kidsBooks, progress] = await Promise.all([
+  const [kidsBooks, progress, siblingProfiles] = await Promise.all([
     prisma.eBook.findMany({ where: { audience: "kids" }, orderBy: { createdAt: "asc" } }),
     prisma.childReadingProgress.findMany({
       where: { childProfileId: id },
       include: { ebook: true },
       orderBy: { updatedAt: "desc" },
+    }),
+    prisma.childProfile.findMany({
+      where: { parentId: customer.id },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
 
@@ -35,17 +41,27 @@ export default async function KidsHomePage({
     <div className="lumina-shell pb-16">
       <header className="flex items-center justify-between px-6 py-6 sm:px-10">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-2xl">
+          <span
+            className="flex h-11 w-11 items-center justify-center rounded-full text-2xl"
+            style={{ background: profileGradient(profile.color) }}
+          >
             {profile.avatarEmoji}
           </span>
           <h1 className="text-xl font-extrabold tracking-tight">Salut, {profile.name} !</h1>
         </div>
-        <Link
-          href="/account"
-          className="rounded-xl border border-white/15 px-3 py-2 text-xs font-bold text-[color:var(--color-lumina-text-muted)] transition hover:border-[#a78bfa] hover:text-white"
-        >
-          🔐 Espace parent
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/account"
+            className="rounded-xl border border-white/15 px-3 py-2 text-xs font-bold text-[color:var(--color-lumina-text-muted)] transition hover:border-[#a78bfa] hover:text-white"
+          >
+            🔐 Espace parent
+          </Link>
+          <ProfileSwitcher
+            customerName={customer.name}
+            childProfiles={siblingProfiles}
+            activeLabel={profile.name}
+          />
+        </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-6 sm:px-10">

@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BuyButton from "@/components/BuyButton";
 import FavoriteButton from "@/components/FavoriteButton";
+import AddToCollectionButton from "@/components/AddToCollectionButton";
 
 export default async function EBookPage({
   params,
@@ -20,14 +21,25 @@ export default async function EBookPage({
 
   const customer = await getCurrentCustomer();
   const isLoggedIn = Boolean(customer);
-  const [hasAccess, favorite] = customer
+  const [hasAccess, favorite, collections] = customer
     ? await Promise.all([
         hasAccessToEbook(customer.id, ebook.id),
         prisma.favorite.findUnique({
           where: { customerId_ebookId: { customerId: customer.id, ebookId: ebook.id } },
         }),
+        prisma.collection.findMany({
+          where: { customerId: customer.id },
+          include: { items: { where: { ebookId: ebook.id } } },
+          orderBy: { createdAt: "desc" },
+        }),
       ])
-    : [false, null];
+    : [false, null, []];
+
+  const collectionOptions = collections.map((c) => ({
+    id: c.id,
+    name: c.name,
+    hasBook: c.items.length > 0,
+  }));
 
   const discount = ebook.oldPrice
     ? Math.round(100 - (ebook.price / ebook.oldPrice) * 100)
@@ -57,12 +69,19 @@ export default async function EBookPage({
               <span className="inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#a78bfa]">
                 {ebook.category}
               </span>
-              <FavoriteButton
-                ebookId={ebook.id}
-                slug={ebook.slug}
-                initialFavorited={Boolean(favorite)}
-                isLoggedIn={isLoggedIn}
-              />
+              <div className="flex items-center gap-2">
+                <FavoriteButton
+                  ebookId={ebook.id}
+                  slug={ebook.slug}
+                  initialFavorited={Boolean(favorite)}
+                  isLoggedIn={isLoggedIn}
+                />
+                <AddToCollectionButton
+                  ebookId={ebook.id}
+                  collections={collectionOptions}
+                  isLoggedIn={isLoggedIn}
+                />
+              </div>
             </div>
             <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-white">
               {ebook.title}

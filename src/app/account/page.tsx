@@ -7,33 +7,57 @@ import AppBottomNav from "@/components/AppBottomNav";
 import SignOutButton from "@/components/SignOutButton";
 import ChildProfileManager from "@/components/ChildProfileManager";
 import ReadingReminderSetting from "@/components/ReadingReminderSetting";
+import ReadingGoalSetting from "@/components/ReadingGoalSetting";
 import BedtimeReminder from "@/components/BedtimeReminder";
+import ProfileSwitcher from "@/components/ProfileSwitcher";
+import CollectionsManager from "@/components/CollectionsManager";
+import { getRecommendations } from "@/lib/recommendations";
+
+function formatMinutes(minutes: number) {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
+}
+
+function relativeDate(date: Date) {
+  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "aujourd'hui";
+  if (days === 1) return "hier";
+  return `il y a ${days} jours`;
+}
 
 export default async function AccountPage() {
   const customer = await getCurrentCustomer();
   if (!customer) redirect("/login");
 
-  const [subscription, orders, favorites, progressEntries, childProfiles] = await Promise.all([
-    prisma.subscription.findUnique({ where: { customerId: customer.id } }),
-    prisma.order.findMany({
-      where: { customerId: customer.id, status: "paid" },
-      include: { ebook: true },
-    }),
-    prisma.favorite.findMany({
-      where: { customerId: customer.id },
-      include: { ebook: true },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.readingProgress.findMany({
-      where: { customerId: customer.id },
-      include: { ebook: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.childProfile.findMany({
-      where: { parentId: customer.id },
-      orderBy: { createdAt: "asc" },
-    }),
-  ]);
+  const [subscription, orders, favorites, progressEntries, childProfiles, collections] =
+    await Promise.all([
+      prisma.subscription.findUnique({ where: { customerId: customer.id } }),
+      prisma.order.findMany({
+        where: { customerId: customer.id, status: "paid" },
+        include: { ebook: true },
+      }),
+      prisma.favorite.findMany({
+        where: { customerId: customer.id },
+        include: { ebook: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.readingProgress.findMany({
+        where: { customerId: customer.id },
+        include: { ebook: true },
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.childProfile.findMany({
+        where: { parentId: customer.id },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.collection.findMany({
+        where: { customerId: customer.id },
+        include: { items: { include: { ebook: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
 
   const progressByEbookId = new Map(progressEntries.map((p) => [p.ebookId, p]));
 
@@ -58,6 +82,18 @@ export default async function AccountPage() {
   const continueReading = progressEntries[0]
     ? libraryMap.get(progressEntries[0].ebookId)
     : null;
+
+  const recommendations = await getRecommendations(customer.id, Array.from(libraryMap.keys()));
+
+  const booksCompletedThisMonth = progressEntries.filter((p) => {
+    const now = new Date();
+    return (
+      p.completed &&
+      p.updatedAt.getMonth() === now.getMonth() &&
+      p.updatedAt.getFullYear() === now.getFullYear()
+    );
+  }).length;
+
   const todayStr = new Date().toISOString().slice(0, 10);
   const hasReadToday = progressEntries.some(
     (p) => p.updatedAt.toISOString().slice(0, 10) === todayStr
@@ -74,9 +110,11 @@ export default async function AccountPage() {
         </Link>
         <div className="flex items-center gap-4">
           <span className="text-lg opacity-70">🔍</span>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#7c5cff] to-[#a78bfa] text-sm font-bold">
-            {customer.name.charAt(0).toUpperCase()}
-          </div>
+          <ProfileSwitcher
+            customerName={customer.name}
+            childProfiles={childProfiles}
+            activeLabel={customer.name}
+          />
         </div>
       </header>
 
@@ -118,6 +156,73 @@ export default async function AccountPage() {
               </span>
             </div>
           </Link>
+        )}
+
+        {(recommendations.byCategory.length > 0 ||
+          recommendations.newest.length > 0 ||
+          recommendations.popular.length > 0) && (
+          <section id="recommandations" className="mb-12 scroll-mt-24">
+            <h2 className="mb-5 text-lg font-extrabold">Recommandé pour toi</h2>
+            <div className="flex flex-col gap-8">
+              {recommendations.byCategory.length > 0 && (
+                <div>
+                  <p className="mb-3 text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
+                    Parce que tu aimes {recommendations.topCategory}
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                    {recommendations.byCategory.map((book) => (
+                      <Link key={book.id} href={`/ebooks/${book.slug}`} className="group">
+                        <div
+                          className={`cover-theme-${book.coverTheme} mb-2 flex h-32 items-center justify-center rounded-2xl text-3xl shadow-lg transition group-hover:-translate-y-1`}
+                        >
+                          {book.coverEmoji}
+                        </div>
+                        <p className="truncate text-xs font-bold">{book.title}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {recommendations.newest.length > 0 && (
+                <div>
+                  <p className="mb-3 text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
+                    Nouveautés
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                    {recommendations.newest.map((book) => (
+                      <Link key={book.id} href={`/ebooks/${book.slug}`} className="group">
+                        <div
+                          className={`cover-theme-${book.coverTheme} mb-2 flex h-32 items-center justify-center rounded-2xl text-3xl shadow-lg transition group-hover:-translate-y-1`}
+                        >
+                          {book.coverEmoji}
+                        </div>
+                        <p className="truncate text-xs font-bold">{book.title}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {recommendations.popular.length > 0 && (
+                <div>
+                  <p className="mb-3 text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
+                    Les plus populaires
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                    {recommendations.popular.map((book) => (
+                      <Link key={book.id} href={`/ebooks/${book.slug}`} className="group">
+                        <div
+                          className={`cover-theme-${book.coverTheme} mb-2 flex h-32 items-center justify-center rounded-2xl text-3xl shadow-lg transition group-hover:-translate-y-1`}
+                        >
+                          {book.coverEmoji}
+                        </div>
+                        <p className="truncate text-xs font-bold">{book.title}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
         )}
 
         <section id="bibliotheque" className="mb-12 scroll-mt-24">
@@ -177,6 +282,47 @@ export default async function AccountPage() {
           )}
         </section>
 
+        <section id="collections" className="mb-12 scroll-mt-24">
+          <h2 className="mb-5 text-lg font-extrabold">Mes collections</h2>
+          <CollectionsManager collections={collections} />
+        </section>
+
+        <section id="historique" className="mb-12 scroll-mt-24">
+          <h2 className="mb-5 text-lg font-extrabold">Historique</h2>
+          {progressEntries.length === 0 ? (
+            <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+              Ton historique de lecture est vide.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {progressEntries.map((p) => {
+                const totalPages = paginateContent(p.ebook.content).length;
+                const percent = Math.round(((p.page + 1) / totalPages) * 100);
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/read/${p.ebook.slug}`}
+                    className="lumina-card flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5"
+                  >
+                    <span
+                      className={`cover-theme-${p.ebook.coverTheme} flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-xl`}
+                    >
+                      {p.ebook.coverEmoji}
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold">{p.ebook.title}</p>
+                      <p className="text-xs text-[color:var(--color-lumina-text-muted)]">
+                        {p.completed ? "Terminé" : `${percent}% lu`} · {relativeDate(p.updatedAt)}
+                      </p>
+                    </div>
+                    {p.completed && <span className="text-[#7ee0a8]">✓</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         <section id="parent" className="mb-12 scroll-mt-24">
           <h2 className="mb-1 text-lg font-extrabold">Espace parent</h2>
           <p className="mb-5 text-sm text-[color:var(--color-lumina-text-muted)]">
@@ -184,6 +330,31 @@ export default async function AccountPage() {
             et suivi de leur activité.
           </p>
           <ChildProfileManager profiles={childProfiles} />
+        </section>
+
+        <section id="objectifs" className="mb-12 scroll-mt-24">
+          <h2 className="mb-5 text-lg font-extrabold">Objectifs & temps de lecture</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="lumina-card rounded-2xl p-5">
+              <ReadingGoalSetting
+                initialGoal={customer.monthlyBookGoal}
+                booksCompletedThisMonth={booksCompletedThisMonth}
+              />
+            </div>
+            <div className="lumina-card rounded-2xl p-5">
+              <p className="mb-1 text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+                ⏱️ Temps de lecture
+              </p>
+              <p className="mb-1 text-2xl font-extrabold">
+                {formatMinutes(customer.totalMinutesRead)}
+              </p>
+              <p className="text-xs text-[color:var(--color-lumina-text-muted)]">
+                {`au total, dont ${formatMinutes(
+                  customer.readingDate === todayStr ? customer.minutesReadToday : 0
+                )} aujourd'hui`}
+              </p>
+            </div>
+          </div>
         </section>
 
         <section id="profil" className="lumina-card scroll-mt-24 rounded-[22px] p-6">

@@ -28,6 +28,7 @@ model EBook {
   favorites   Favorite[]
   progress    ReadingProgress[]
   childProgress ChildReadingProgress[]
+  collectionItems CollectionItem[]
 }
 
 model Order {
@@ -56,12 +57,17 @@ model Customer {
   passwordHash        String
   name                String
   readingReminderTime String?
+  monthlyBookGoal     Int?
+  totalMinutesRead    Int               @default(0)
+  minutesReadToday    Int               @default(0)
+  readingDate         String?
   createdAt           DateTime          @default(now())
   orders              Order[]
   subscription        Subscription?
   favorites           Favorite[]
   progress            ReadingProgress[]
   childProfiles       ChildProfile[]
+  collections         Collection[]
 }
 
 model ChildProfile {
@@ -70,12 +76,33 @@ model ChildProfile {
   parent            Customer                @relation(fields: [parentId], references: [id], onDelete: Cascade)
   name              String
   avatarEmoji       String                  @default("🧒")
+  color             String                  @default("purple")
   dailyLimitMinutes Int?
   minutesReadToday  Int                     @default(0)
   limitResetDate    String?
   reminderTime      String?
   createdAt         DateTime                @default(now())
   progress          ChildReadingProgress[]
+}
+
+model Collection {
+  id         String           @id @default(cuid())
+  customerId String
+  customer   Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name       String
+  createdAt  DateTime         @default(now())
+  items      CollectionItem[]
+}
+
+model CollectionItem {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  ebookId      String
+  ebook        EBook      @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  addedAt      DateTime   @default(now())
+
+  @@unique([collectionId, ebookId])
 }
 
 model ChildReadingProgress {
@@ -124,6 +151,7 @@ model ReadingProgress {
   ebookId    String
   ebook      EBook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
   page       Int      @default(0)
+  completed  Boolean  @default(false)
   updatedAt  DateTime @updatedAt
 
   @@unique([customerId, ebookId])

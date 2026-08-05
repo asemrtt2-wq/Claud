@@ -12,6 +12,7 @@ function todayStr() {
 export async function createChildProfile(data: {
   name: string;
   avatarEmoji: string;
+  color: string;
   dailyLimitMinutes: number | null;
   reminderTime: string | null;
 }) {
@@ -23,6 +24,7 @@ export async function createChildProfile(data: {
       parentId: customer.id,
       name: data.name,
       avatarEmoji: data.avatarEmoji || "🧒",
+      color: data.color || "purple",
       dailyLimitMinutes: data.dailyLimitMinutes,
       reminderTime: data.reminderTime,
     },
@@ -36,6 +38,7 @@ export async function updateChildProfile(
   data: {
     name?: string;
     avatarEmoji?: string;
+    color?: string;
     dailyLimitMinutes?: number | null;
     reminderTime?: string | null;
   }

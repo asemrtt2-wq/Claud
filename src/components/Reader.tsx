@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { saveReadingProgress } from "@/lib/customerActions";
+import { saveReadingProgress, incrementAdultReadingMinutes } from "@/lib/customerActions";
 
 const FONT_SIZES = ["text-base", "text-lg", "text-xl"];
 
@@ -31,6 +31,13 @@ export default function Reader({
   useEffect(() => {
     saveReadingProgress(ebookId, page);
   }, [ebookId, page]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      incrementAdultReadingMinutes();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   function handleScroll() {
     const el = scrollRef.current;

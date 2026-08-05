@@ -5,6 +5,7 @@ import { getCurrentCustomer } from "@/lib/customerSession";
 import { paginateContent } from "@/lib/paginate";
 import ChildSettingsForm from "@/components/ChildSettingsForm";
 import AppBottomNav from "@/components/AppBottomNav";
+import { profileGradient } from "@/lib/profileColors";
 
 function paceLabel(avgSecondsPerPage: number | null) {
   if (avgSecondsPerPage === null) return null;
@@ -60,7 +61,10 @@ export default async function ChildDashboardPage({
 
       <main className="mx-auto max-w-4xl px-6 sm:px-10">
         <div className="mb-8 flex items-center gap-4">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-3xl">
+          <span
+            className="flex h-16 w-16 items-center justify-center rounded-full text-3xl"
+            style={{ background: profileGradient(profile.color) }}
+          >
             {profile.avatarEmoji}
           </span>
           <div>

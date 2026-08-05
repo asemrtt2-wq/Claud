@@ -105,11 +105,34 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   import the async `Header`/`Footer` server components directly into a `"use client"` file,
   Next.js can't render a Server Component inside a Client Component that way.
 - `src/lib/customerSession.ts` — `getCurrentCustomer()` helper (server-only) used across pages.
-- `src/app/account/page.tsx` — the Lumina app dashboard (dark `lumina-shell`): a "continue
-  reading" hero card (last book read, progress bar, resume link), a unified "library" grid
-  deduplicating eBooks the customer purchased/favorited/has progress on, a favorites grid, and
-  a profile section (subscription status, sign out). Renders `AppBottomNav` below the fold for
-  mobile in-app navigation (anchors into the same page plus a link back to the catalogue).
+- `src/app/account/page.tsx` — the Lumina app dashboard (dark `lumina-shell`), sections in
+  order: continue-reading hero card, recommendations, unified "library" grid, favorites,
+  collections, reading history, the parental-controls area, reading goal + time stats, and a
+  profile section (subscription status, sign out, reminder). Renders `AppBottomNav` below the
+  fold for mobile in-app navigation and `ProfileSwitcher` in the header (see below).
+- `src/components/ProfileSwitcher.tsx` — a Netflix-style dropdown (used in the `/account` and
+  `/kids/[id]` headers) listing the parent's own account plus every `ChildProfile`, linking to
+  `/account` or `/kids/[id]` respectively. There is only ever one "adult" profile per login
+  (the `Customer` itself) — the switcher does not support multiple adult profiles on one
+  account, only parent ↔ child.
+- `src/lib/recommendations.ts` — `getRecommendations()`: a simple rule-based engine (no ML) —
+  "because you like X" from the customer's most-common favorited/read/purchased `category`,
+  plus "nouveautés" (newest by `createdAt`) and "les plus populaires" (most-ordered), each
+  excluding books already in the customer's library. The catalog has no author/series fields,
+  so "continuez votre série" / "auteurs similaires" style recommendations aren't implemented.
+- Collections (`Collection`/`CollectionItem` in the schema) are customer-created shelves —
+  `src/components/CollectionsManager.tsx` (create/delete a collection, remove a book) on
+  `/account`, and `src/components/AddToCollectionButton.tsx` on `/ebooks/[slug]` to add the
+  current book to an existing or brand-new collection. Server actions live in
+  `src/lib/customerActions.ts`.
+- Reading goals and time tracking: `Customer.monthlyBookGoal` (set via
+  `src/components/ReadingGoalSetting.tsx`, progress computed from `ReadingProgress.completed`
+  rows in the current month) and `Customer.totalMinutesRead`/`minutesReadToday` (incremented by
+  `incrementAdultReadingMinutes()`, called every 60s from `Reader.tsx` while a book is open —
+  mirrors the kids reading-time tracking, but with no daily limit for adults).
+- **"Downloads" / offline reading is intentionally not implemented.** A plain web app has no
+  reliable way to cache a book for offline use without a service-worker/PWA layer, which this
+  project doesn't have — don't add a fake "download" button that doesn't actually work offline.
 - `src/lib/access.ts` — `hasAccessToEbook()`: true if the customer has an active `Subscription`
   or a `paid` `Order` for that eBook.
 
@@ -186,11 +209,14 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 ### Data model (`prisma/schema.prisma`)
 `EBook` (has a `content` text field used by the reader, and an `audience` field —
 `"adults"`/`"kids"`), `Order` (one-time purchases, optional `customerId`), `Admin`, `Customer`
-(has an optional `readingReminderTime`), `Subscription` (one-to-one with `Customer`), `Favorite`
-and `ReadingProgress` (join tables, unique on `[customerId, ebookId]`), `ChildProfile` (belongs
-to a `Customer`; carries `dailyLimitMinutes`/`minutesReadToday`/`limitResetDate` and
-`reminderTime`), and `ChildReadingProgress` (join table, unique on `[childProfileId, ebookId]`,
-also tracks `completed` and `avgSecondsPerPage`).
+(has `readingReminderTime`, `monthlyBookGoal`, `totalMinutesRead`/`minutesReadToday`/
+`readingDate` for reading-time tracking), `Subscription` (one-to-one with `Customer`),
+`Favorite` and `ReadingProgress` (join tables, unique on `[customerId, ebookId]`;
+`ReadingProgress.completed` flags a finished book), `ChildProfile` (belongs to a `Customer`;
+carries `avatarEmoji`/`color`, `dailyLimitMinutes`/`minutesReadToday`/`limitResetDate` and
+`reminderTime`), `ChildReadingProgress` (join table, unique on `[childProfileId, ebookId]`,
+also tracks `completed` and `avgSecondsPerPage`), and `Collection`/`CollectionItem`
+(customer-created book shelves, unique on `[collectionId, ebookId]`).
 
 - `prisma/seed.ts` — sample adult catalog (with placeholder chapter content for the reader) plus
   three short kids storybooks (`audience: "kids"`, free) + admin account bootstrap. Does not
@@ -205,6 +231,10 @@ also tracks `completed` and `avgSecondsPerPage`).
   `navy`, `deep`, `dark`, `steel` for adult titles — CSS gradients defined in `globals.css` as
   `.cover-theme-*` — kept within the navy/royal-blue brand palette; `aurora`, `ember`, `forest`
   are additional darker/warmer gradients reserved for kids storybooks).
+- `src/lib/profileColors.ts` — the 4-color palette (`yellow`/`blue`/`green`/`purple`) used for
+  `ChildProfile.color`; `profileGradient(color)` returns a CSS gradient string for inline
+  `style` use (avatar backgrounds in `ChildProfileManager`, `ProfileSwitcher`, parent dashboard,
+  kids header) — not Tailwind classes, since the color is dynamic/user-chosen.
 - Lumina purple accent (`#7c5cff` → `#5b3df0`/`#a78bfa`) is the primary interactive color across
   customer-facing CTAs (buy/subscribe/favorite buttons, links, focus rings) — it replaced the
   old `text-royal`/`from-royal` blue accent on those elements. The `royal`/navy tokens remain
