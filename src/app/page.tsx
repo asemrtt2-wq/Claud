@@ -62,11 +62,20 @@ export default async function HomePage() {
           </div>
 
           {heroImage ? (
-            <img
-              src={`/${heroImage}`}
-              alt="Lumina"
-              className="mx-auto w-full max-w-[420px] rounded-[28px] object-cover shadow-[0_30px_60px_rgba(0,0,0,0.4)]"
-            />
+            <div className="relative mx-auto flex w-full max-w-[440px] items-center justify-center">
+              <div className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(124,92,255,0.35),transparent_70%)] blur-3xl" />
+              <img
+                src={`/${heroImage}`}
+                alt="Lumina"
+                className="relative z-10 w-full object-contain"
+                style={{
+                  maskImage:
+                    "radial-gradient(ellipse 75% 75% at center, black 55%, transparent 90%)",
+                  WebkitMaskImage:
+                    "radial-gradient(ellipse 75% 75% at center, black 55%, transparent 90%)",
+                }}
+              />
+            </div>
           ) : (
             <HeroCovers ebooks={heroCovers} />
           )}
