@@ -7,6 +7,7 @@ type Defaults = {
   subtitle?: string;
   description?: string;
   content?: string;
+  pdfUrl?: string | null;
   author?: string;
   publishedYear?: number | null;
   audience?: string;
@@ -154,11 +155,34 @@ export default function EbookForm({
 
       <div>
         <label className="mb-1.5 block text-sm font-semibold text-navy">
+          Lien PDF (optionnel)
+        </label>
+        <p className="mb-2 text-xs text-text-muted">
+          Colle ici l&apos;URL publique d&apos;un PDF déjà hébergé quelque part (ex : un lien
+          Google Drive/Dropbox partagé publiquement, ou un fichier hébergé sur ton propre
+          serveur). <strong>Un chemin de fichier local sur ton ordinateur</strong> (du genre{" "}
+          <code>/Users/toi/Desktop/livre.pdf</code>) ne fonctionnera pas — ce site n&apos;a
+          aucun moyen d&apos;y accéder, il faut d&apos;abord héberger le fichier quelque part
+          avec une vraie adresse web. Si ce champ est rempli, le lecteur affiche directement ce
+          PDF (première page visible en l&apos;ouvrant) à la place du texte ci-dessous.
+        </p>
+        <input
+          type="url"
+          name="pdfUrl"
+          placeholder="https://..."
+          defaultValue={defaults?.pdfUrl ?? ""}
+          className="w-full rounded-xl border border-gray-mid px-4 py-2.5 text-sm outline-none focus:border-royal"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-semibold text-navy">
           Contenu du livre
         </label>
         <p className="mb-2 text-xs text-text-muted">
-          Texte intégral du livre. Pour que les chapitres soient détectés dans la fiche et le
-          lecteur, séparez-les avec une ligne du type « Chapitre 1 — Titre du chapitre ».
+          Texte intégral du livre (ignoré si un lien PDF est renseigné ci-dessus). Pour que les
+          chapitres soient détectés dans la fiche et le lecteur, séparez-les avec une ligne du
+          type « Chapitre 1 — Titre du chapitre ».
         </p>
         <textarea
           name="content"

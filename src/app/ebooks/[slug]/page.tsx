@@ -81,11 +81,13 @@ export default async function EBookPage({
     ? Math.round(100 - (ebook.price / ebook.oldPrice) * 100)
     : null;
 
-  const pages = paginateContent(ebook.content);
-  const chapters = getChapters(ebook.content);
+  const isPdf = Boolean(ebook.pdfUrl);
+  const pages = isPdf ? [] : paginateContent(ebook.content);
+  const chapters = isPdf ? [] : getChapters(ebook.content);
   const readHref = activeProfile ? `/p/${activeProfile.id}/read/${ebook.slug}` : null;
 
-  const percent = progress ? Math.round(((progress.page + 1) / pages.length) * 100) : 0;
+  const percent =
+    progress && !isPdf ? Math.round(((progress.page + 1) / pages.length) * 100) : 0;
   const remainingPages = pages.length - (progress ? progress.page + 1 : 0);
   const secPerPage = progress?.avgSecondsPerPage ?? 90;
   const remainingMinutes = Math.max(1, Math.round((remainingPages * secPerPage) / 60));
@@ -141,7 +143,7 @@ export default async function EBookPage({
           <p className="mb-6 text-sm text-[color:var(--color-lumina-text-muted)]">
             {[
               ebook.publishedYear,
-              `${pages.length} page${pages.length > 1 ? "s" : ""}`,
+              isPdf ? "PDF" : `${pages.length} page${pages.length > 1 ? "s" : ""}`,
               ebook.category,
               "Français",
             ]
@@ -155,11 +157,11 @@ export default async function EBookPage({
                 href={readHref ?? "/profiles"}
                 className="block rounded-2xl bg-white px-7 py-3.5 text-center text-sm font-bold text-navy shadow-[0_12px_30px_rgba(255,255,255,0.15)] transition hover:-translate-y-0.5"
               >
-                {progress && progress.page > 0
+                {!isPdf && progress && progress.page > 0
                   ? "▶ Reprendre la lecture"
                   : "📖 Commencer la lecture"}
               </Link>
-              {progress && (
+              {!isPdf && progress && (
                 <div className="mt-4">
                   <div className="mb-1.5 h-1.5 w-full overflow-hidden rounded-full lumina-progress-track">
                     <div className="h-full lumina-progress-fill" style={{ width: `${percent}%` }} />
@@ -265,10 +267,12 @@ export default async function EBookPage({
                 <dt className="text-[color:var(--color-lumina-text-muted)]">Catégorie</dt>
                 <dd className="font-semibold text-white">{ebook.category}</dd>
               </div>
-              <div>
-                <dt className="text-[color:var(--color-lumina-text-muted)]">Pages</dt>
-                <dd className="font-semibold text-white">{pages.length}</dd>
-              </div>
+              {!isPdf && (
+                <div>
+                  <dt className="text-[color:var(--color-lumina-text-muted)]">Pages</dt>
+                  <dd className="font-semibold text-white">{pages.length}</dd>
+                </div>
+              )}
               <div>
                 <dt className="text-[color:var(--color-lumina-text-muted)]">Langue</dt>
                 <dd className="font-semibold text-white">Français</dd>

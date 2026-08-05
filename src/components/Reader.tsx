@@ -14,6 +14,7 @@ export default function Reader({
   coverTheme,
   pages,
   initialPage,
+  pdfUrl,
 }: {
   profileId: string;
   ebookId: string;
@@ -22,6 +23,7 @@ export default function Reader({
   coverTheme: string;
   pages: string[];
   initialPage: number;
+  pdfUrl?: string | null;
 }) {
   const [page, setPage] = useState(Math.min(initialPage, pages.length - 1));
   const [immersive, setImmersive] = useState(true);
@@ -31,8 +33,9 @@ export default function Reader({
   const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (pdfUrl) return;
     saveReadingProgress(profileId, ebookId, page);
-  }, [profileId, ebookId, page]);
+  }, [profileId, ebookId, page, pdfUrl]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,6 +43,27 @@ export default function Reader({
     }, 60000);
     return () => clearInterval(interval);
   }, [profileId]);
+
+  if (pdfUrl) {
+    return (
+      <div className="flex h-screen flex-col bg-navy-dark text-white">
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+          <Link href={`/p/${profileId}`} className="text-sm font-semibold text-white/70 hover:text-white">
+            ← {title}
+          </Link>
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10"
+          >
+            ⤢ Ouvrir dans un nouvel onglet
+          </a>
+        </div>
+        <iframe src={pdfUrl} title={title} className="flex-1 border-0 bg-white" />
+      </div>
+    );
+  }
 
   function handleScroll() {
     const el = scrollRef.current;

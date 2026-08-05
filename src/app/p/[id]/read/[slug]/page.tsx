@@ -77,6 +77,7 @@ export default async function ProfileReadPage({
       coverTheme={ebook.coverTheme}
       pages={pages}
       initialPage={initialPage}
+      pdfUrl={ebook.pdfUrl}
     />
   );
 }

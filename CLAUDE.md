@@ -179,6 +179,20 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   profile belongs to the logged-in customer, then branches on `profile.type`: `"kids"` renders
   `KidsReader` (and 404s unless `ebook.audience === "kids"`), `"adult"` checks
   `hasAccessToEbook()` and renders `Reader` (and 404s unless `ebook.audience === "adults"`).
+- **PDF-linked books**: `EBook.pdfUrl` is an optional field, settable from the admin ebook form
+  (`src/components/EbookForm.tsx`), for a book whose real content is a PDF hosted elsewhere (the
+  form's helper text is explicit that this must be a public URL — a local file path like
+  `/Users/you/Desktop/book.pdf` is meaningless to a deployed server, since nothing outside that
+  person's own machine can reach it). When set, `Reader.tsx` skips the whole paginated
+  text-reading UI (font size, pages/scroll toggle, immersive background) and instead renders the
+  PDF directly in an `<iframe>` — which shows the first page by default, exactly like opening the
+  file in a browser tab, with a "open in new tab" fallback link. This intentionally does **not**
+  extend to `KidsReader` (mascot/read-aloud/daily-limit are all built around the plain-text
+  `pages` array) or to per-page reading progress/streak/pace tracking on `/ebooks/[slug]`
+  (`isPdf` guards hide the page count, resume-percent, and chapters tab there instead of showing
+  meaningless numbers) — a PDF book has no chapter markers or page-position concept the rest of
+  the app can hook into without embedding a real PDF.js-based viewer, which is a larger lift than
+  this covers.
 - `src/components/Reader.tsx` — "immersive" (default) vs "clair" (light) toggle, plus a
   "pages" (click-through, default) vs "scroll" (continuous, all pages concatenated) mode toggle.
   Immersive mode uses the eBook's `cover-theme-*` gradient as a full-page background with a dark
