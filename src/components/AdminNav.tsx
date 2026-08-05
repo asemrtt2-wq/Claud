@@ -15,6 +15,18 @@ export default function AdminNav({ email }: { email?: string | null }) {
             Voir le site
           </Link>
           <Link
+            href="/admin#adultes"
+            className="text-sm font-semibold text-text-muted hover:text-navy"
+          >
+            📚 Catalogue Adultes
+          </Link>
+          <Link
+            href="/admin#enfants"
+            className="text-sm font-semibold text-text-muted hover:text-navy"
+          >
+            🧒 Catalogue Enfants
+          </Link>
+          <Link
             href="/admin/settings"
             className="text-sm font-semibold text-text-muted hover:text-navy"
           >
