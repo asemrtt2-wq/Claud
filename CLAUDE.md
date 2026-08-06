@@ -176,10 +176,20 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 - `src/components/ProfileSwitcher.tsx` — the header dropdown (used on `/p/[id]`) listing every
   profile on the account with an avatar/color swatch; picking one calls `switchProfile()`
   directly (locked profiles instead route to `/profiles`, where the PIN gate lives). Below the
-  profile list it has "Gérer les profils", "Compte" (anchors to the `#profil` section on the
-  current dashboard), and "Se déconnecter" — modeled after a Netflix-style profile menu, but
-  deliberately without a "Transférer un profil" or "Centre d'aide" entry, since neither is a real
-  feature in this app and adding either would just be a dead button.
+  profile list it has "Gérer les profils", "Compte" (links to `/p/[id]/compte`), and
+  "Se déconnecter" — modeled after a Netflix-style profile menu, but deliberately without a
+  "Transférer un profil" or "Centre d'aide" entry, since neither is a real feature in this app
+  and adding either would just be a dead button.
+- `src/app/p/[id]/compte/page.tsx` — a standalone "Objectifs & temps de lecture" page (adult
+  profiles only, redirects kids-type profiles back to `/p/[id]`): reading goal, time-read/streak
+  stats, and the account card (name/email, "Gérer les profils", "Se déconnecter", Premium status,
+  daily reminder setting). This used to be an inline `#profil`/`#objectifs` section at the bottom
+  of the main `/p/[id]` dashboard; it was split out into its own page so "Compte" in
+  `ProfileSwitcher` and "Profil" in `AppBottomNav` (which now takes a `profileId` prop to build
+  the link) navigate to a real page instead of scrolling the dashboard, and so account/billing
+  info isn't mixed into the browsing experience. The old inline "Téléchargements" section (which
+  only ever explained that offline reading isn't implemented) was removed outright rather than
+  moved, since it wasn't a feature — just an explanation of a missing one.
 - **PIN lock** (`src/lib/profileUnlock.ts`, `src/components/PinGate.tsx`): a profile with
   `pinHash` set requires the PIN before `/p/[id]` renders its dashboard — `verifyProfilePin()`
   checks it and, on success, adds the profile id to an httpOnly `unlockedProfiles` cookie
@@ -205,8 +215,10 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   `src/lib/profiles.ts` — resets to 1 unless the profile also read yesterday).
 - **"Downloads" / offline reading is intentionally not implemented.** A plain web app has no
   reliable way to cache a book for offline use without a service-worker/PWA layer, which this
-  project doesn't have. The `/p/[id]` "Téléchargements" section says so plainly instead of
-  showing a button that doesn't work.
+  project doesn't have. There used to be a `/p/[id]` "Téléchargements" section that said so
+  plainly instead of showing a button that doesn't work; it was removed outright (not moved) when
+  the account/goals section was split into `/p/[id]/compte` (see Profile picker above), since an
+  explanation of a missing feature isn't worth a permanent spot in the nav.
 - `src/lib/access.ts` — `hasAccessToEbook()`: true if the **customer** (not the profile) has an
   active `Subscription` or a `paid` `Order` for that eBook — access is account-wide by design.
 

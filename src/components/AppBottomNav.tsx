@@ -1,14 +1,14 @@
 import Link from "next/link";
 
-const items = [
-  { href: "#accueil", icon: "🏠", label: "Accueil" },
-  { href: "#bibliotheque", icon: "📚", label: "Bibliothèque" },
-  { href: "/#catalogue", icon: "✨", label: "Découvrir" },
-  { href: "#favoris", icon: "❤️", label: "Favoris" },
-  { href: "#profil", icon: "👤", label: "Profil" },
-];
+export default function AppBottomNav({ profileId }: { profileId: string }) {
+  const items = [
+    { href: "#accueil", icon: "🏠", label: "Accueil" },
+    { href: "#bibliotheque", icon: "📚", label: "Bibliothèque" },
+    { href: "/#catalogue", icon: "✨", label: "Découvrir" },
+    { href: "#favoris", icon: "❤️", label: "Favoris" },
+    { href: `/p/${profileId}/compte`, icon: "👤", label: "Profil" },
+  ];
 
-export default function AppBottomNav() {
   return (
     <nav className="lumina-card fixed inset-x-0 bottom-0 z-40 flex items-center justify-around px-4 py-3 sm:hidden">
       {items.map((item) => (

@@ -100,7 +100,7 @@ export default function ProfileSwitcher({
             ⚙️ Gérer les profils
           </Link>
           <Link
-            href={`/p/${activeProfileId}#profil`}
+            href={`/p/${activeProfileId}/compte`}
             onClick={() => setOpen(false)}
             className="block rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/5"
           >
