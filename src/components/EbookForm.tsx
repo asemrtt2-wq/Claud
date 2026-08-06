@@ -1,7 +1,5 @@
 "use client";
 
-const THEMES = ["royal", "navy", "deep", "dark", "steel"];
-
 const inputClass =
   "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#a78bfa]";
 const labelClass = "mb-1.5 block text-sm font-semibold text-white";
@@ -63,32 +61,21 @@ export default function EbookForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-5">
-        <div>
-          <label className={labelClass}>Catégorie</label>
-          <input
-            name="category"
-            required
-            defaultValue={defaults?.category}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Emoji de couverture</label>
-          <input
-            name="coverEmoji"
-            required
-            defaultValue={defaults?.coverEmoji ?? "📘"}
-            className={inputClass}
-          />
-        </div>
+      <input type="hidden" name="coverEmoji" value={defaults?.coverEmoji ?? "📘"} />
+      <input type="hidden" name="coverTheme" value={defaults?.coverTheme ?? "dark"} />
+      <input type="hidden" name="author" value={defaults?.author ?? ""} />
+
+      <div>
+        <label className={labelClass}>Catégorie</label>
+        <input
+          name="category"
+          required
+          defaultValue={defaults?.category}
+          className={inputClass}
+        />
       </div>
 
-      <div className="grid grid-cols-3 gap-5">
-        <div>
-          <label className={labelClass}>Auteur</label>
-          <input name="author" defaultValue={defaults?.author} className={inputClass} />
-        </div>
+      <div className="grid grid-cols-2 gap-5">
         <div>
           <label className={labelClass}>Année de publication</label>
           <input
@@ -111,21 +98,7 @@ export default function EbookForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-5">
-        <div>
-          <label className={labelClass}>Thème</label>
-          <select
-            name="coverTheme"
-            defaultValue={defaults?.coverTheme ?? "royal"}
-            className={inputClass}
-          >
-            {THEMES.map((theme) => (
-              <option key={theme} value={theme} className="bg-navy-dark">
-                {theme}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="grid grid-cols-2 gap-5">
         <div>
           <label className={labelClass}>Prix (€)</label>
           <input

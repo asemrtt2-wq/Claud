@@ -323,11 +323,18 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   under `src/` because the app lives under `src/app`), which redirects to `/admin/login`
   unless `token.role === "admin"` — a logged-in customer is not enough. Admin mutations go
   through Server Actions in `src/lib/actions.ts`, each of which independently re-checks the
-  session server-side (defense in depth beyond the proxy). `EbookForm` covers every real field
-  on `EBook`, including `content` (the full book text — use `"Chapitre N — Title"` lines so
-  `src/lib/chapters.ts` picks up chapters), `author`, `publishedYear`, and `audience`
-  (`"adults"`/`"kids"`), so a real book with working chapters/reader access can be added entirely
-  through `/admin/ebooks/new` without touching `prisma/seed.ts`. The `Admin` account itself has
+  session server-side (defense in depth beyond the proxy). `EbookForm` exposes every field an
+  admin realistically needs to fill by hand — `content` (the full book text — use
+  `"Chapitre N — Title"` lines so `src/lib/chapters.ts` picks up chapters), `publishedYear`,
+  `audience` (`"adults"`/`"kids"`), the cover image URLs, price, etc. — so a real book with
+  working chapters/reader access can be added entirely through `/admin/ebooks/new` without
+  touching `prisma/seed.ts`. `coverEmoji`, `coverTheme`, and `author` are still real `EBook`
+  columns (the first two remain the fallback/reader-background behavior described under "Cover
+  art" and "Real front/back cover images"), but the form no longer surfaces them as inputs — once
+  every book gets a real cover image, hand-picking an emoji and gradient theme per book was just
+  friction, and `author` wasn't something the project owner was filling in anyway. They're
+  submitted as hidden fields instead, preserving whatever value a book already has on edit
+  (`"📘"`/`"dark"`/`""` for a new book) rather than exposing a picker. The `Admin` account itself has
   no self-service signup — `scripts/ensure-admin.ts` runs on every `build` (right after
   `prisma migrate deploy`, before `next build`) and upserts (by email) an `Admin` row from
   `ADMIN_EMAIL`/`ADMIN_PASSWORD`, so a redeploy always makes those exact env vars a working
