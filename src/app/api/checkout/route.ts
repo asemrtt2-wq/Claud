@@ -4,6 +4,10 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
 
+// Temporary: purchases are free while the catalog/reading experience is being tested — no
+// Stripe checkout, the order is marked paid immediately. Flip back to false to require payment.
+const PURCHASES_ARE_FREE = true;
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "customer" || !session.user.email) {
@@ -27,6 +31,19 @@ export async function POST(req: NextRequest) {
 
   if (!ebook || !customer) {
     return NextResponse.json({ error: "eBook introuvable." }, { status: 404 });
+  }
+
+  if (PURCHASES_ARE_FREE) {
+    await prisma.order.create({
+      data: {
+        ebookId: ebook.id,
+        customerId: customer.id,
+        customerEmail: email,
+        amount: ebook.price,
+        status: "paid",
+      },
+    });
+    return NextResponse.json({ url: `/ebooks/${ebook.slug}?purchased=1` });
   }
 
   if (!isStripeConfigured || !stripe) {

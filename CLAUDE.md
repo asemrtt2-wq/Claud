@@ -301,6 +301,9 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 ### Payments
 - `src/app/api/checkout/route.ts` — one-time purchase; requires a logged-in customer, creates
   a `pending` Order linked to that customer, then a Stripe Checkout Session (`mode: "payment"`).
+  **`PURCHASES_ARE_FREE` (top of the file) is currently `true`**, the same temporary testing
+  bypass as `SUBSCRIPTIONS_ARE_FREE` below — the Order is created `paid` immediately, no Stripe.
+  Flip both back to `false` together before this app takes real payments.
 - `src/app/api/subscribe/route.ts` — Premium subscription; requires a logged-in customer,
   upserts a `Subscription` row (`status: "incomplete"`), then a Stripe Checkout Session
   (`mode: "subscription"`) with inline `price_data.recurring` (no pre-created Stripe Price
