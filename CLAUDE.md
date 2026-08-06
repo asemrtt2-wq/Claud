@@ -231,6 +231,19 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   meaningless numbers) — a PDF book has no chapter markers or page-position concept the rest of
   the app can hook into without embedding a real PDF.js-based viewer, which is a larger lift than
   this covers.
+- **Real front/back cover images**: `EBook.coverImageUrl`/`backCoverImageUrl` are optional fields
+  (same "must be a reachable path" rule as `pdfUrl` — a path under `public/`, e.g.
+  `/covers/my-book-front.jpg`, works since Next serves that statically; an absolute external URL
+  works too). When set, they replace the `coverEmoji`+`coverTheme` gradient everywhere a cover
+  renders (`EBookCard`, `BookRow`, the `/ebooks/[slug]` hero, the `/p/[id]` billboard/continue
+  card/library rows). In `Reader.tsx`, a `coverImageUrl` becomes an actual first page before the
+  text starts and `backCoverImageUrl` an actual last page after it — a real front/back cover
+  reading experience, not just a thumbnail — via a `view` index that layers the two cover slots
+  on top of the real 0-based content `page` (which is what's actually saved to
+  `ReadingProgress`, so resuming mid-book still resumes correctly and skips straight past the
+  cover; only a fresh read with no progress yet opens on the front cover). `coverTheme` is still
+  required and still used for the immersive reading background between the two covers, since a
+  cover image doesn't imply a matching page-background gradient.
 - `src/components/Reader.tsx` — "immersive" (default) vs "clair" (light) toggle, plus a
   "pages" (click-through, default) vs "scroll" (continuous, all pages concatenated) mode toggle.
   Immersive mode uses the eBook's `cover-theme-*` gradient as a full-page background with a dark
@@ -343,17 +356,29 @@ types) / `/p/[id]/read/[slug]` (reader, both profile types).
 - `prisma/seed.ts` — sample adult catalog (with placeholder chapter content for the reader,
   and an `author` per title) plus three short kids storybooks (`audience: "kids"`, free) +
   admin account bootstrap. Does not seed a demo customer — use `/signup` locally, which
-  auto-creates that account's first `Profile`.
+  auto-creates that account's first `Profile`. Also includes "Le Code du Guerrier", a real book
+  supplied by the project owner (source: a self-contained HTML export from the `ebook` skill,
+  with both covers embedded as base64 images) — the chapter text was extracted from that HTML
+  into `content` (its 14 `<h3>` chapters converted to `"Chapitre N — Title"` markers so
+  `chapters.ts` picks them up) and its two embedded cover images were decoded, resized, and
+  committed as `public/covers/le-code-du-guerrier-{front,back}.jpg`, referenced from
+  `coverImageUrl`/`backCoverImageUrl`. This is the reference example for adding another book the
+  same way: extract clean chapter text + save the two cover images under `public/covers/`, no
+  file-upload storage needed since these ship as static files with the deployment itself.
 
 ## Conventions
 
 - Tailwind v4: custom brand tokens (colors, shadows, radius) are declared once in
   `src/app/globals.css` under `@theme`, then used as normal utility classes (e.g. `bg-navy`,
   `shadow-soft`). Don't add a `tailwind.config.js` — v4 doesn't need one here.
-- Cover art has no real images; each eBook has a `coverEmoji` + `coverTheme` (one of `royal`,
-  `navy`, `deep`, `dark`, `steel` for adult titles — CSS gradients defined in `globals.css` as
-  `.cover-theme-*` — kept within the navy/royal-blue brand palette; `aurora`, `ember`, `forest`
-  are additional darker/warmer gradients reserved for kids storybooks).
+- Cover art has no real images by default; every eBook has a `coverEmoji` + `coverTheme` (one of
+  `royal`, `navy`, `deep`, `dark`, `steel` for adult titles — CSS gradients defined in
+  `globals.css` as `.cover-theme-*` — kept within the navy/royal-blue brand palette; `aurora`,
+  `ember`, `forest` are additional darker/warmer gradients reserved for kids storybooks). A book
+  can optionally override this with a real `coverImageUrl`/`backCoverImageUrl` (see "Real
+  front/back cover images" under Reader) — `coverEmoji`+`coverTheme` remain required either way
+  since `coverTheme` still drives the reader's background and both act as the fallback anywhere
+  an image fails to load or isn't set.
 - `src/lib/profileColors.ts` — `PROFILE_COLORS` (4-color palette: `yellow`/`blue`/`green`/`purple`)
   and `PROFILE_AVATARS` (the emoji picker list) used by `Profile.color`/`avatarEmoji`;
   `profileGradient(color)` returns a CSS gradient string for inline `style` use (avatar

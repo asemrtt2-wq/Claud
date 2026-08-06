@@ -111,8 +111,16 @@ export default async function ProfilePage({
           {continueReading && (
             <Link
               href={`/p/${id}/read/${continueReading.ebook.slug}`}
-              className={`lumina-card cover-theme-${continueReading.ebook.coverTheme} relative mb-10 flex h-52 flex-col justify-end overflow-hidden rounded-[26px] p-7 transition hover:-translate-y-1`}
+              className={`lumina-card ${continueReading.ebook.coverImageUrl ? "" : `cover-theme-${continueReading.ebook.coverTheme}`} relative mb-10 flex h-52 flex-col justify-end overflow-hidden rounded-[26px] p-7 transition hover:-translate-y-1`}
             >
+              {continueReading.ebook.coverImageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={continueReading.ebook.coverImageUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/10" />
               <div className="relative z-10">
                 <span className="text-xs font-bold uppercase tracking-wider text-white/70">
@@ -135,9 +143,14 @@ export default async function ProfilePage({
               return (
                 <Link key={book.id} href={`/p/${id}/read/${book.slug}`} className="group">
                   <div
-                    className={`cover-theme-${book.coverTheme} mascot-idle mb-3 flex h-44 items-center justify-center rounded-3xl text-5xl shadow-lg transition group-hover:-translate-y-1.5`}
+                    className={`${book.coverImageUrl ? "" : `cover-theme-${book.coverTheme}`} mascot-idle relative mb-3 flex h-44 items-center justify-center overflow-hidden rounded-3xl text-5xl shadow-lg transition group-hover:-translate-y-1.5`}
                   >
-                    {book.coverEmoji}
+                    {book.coverImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={book.coverImageUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      book.coverEmoji
+                    )}
                   </div>
                   <p className="mb-1 text-sm font-bold">{book.title}</p>
                   {p && (
@@ -265,12 +278,21 @@ export default async function ProfilePage({
         {billboardBook && billboardHref && (
           <Link
             href={billboardHref}
-            className={`cover-theme-${billboardBook.coverTheme} relative mb-12 flex h-[300px] flex-col justify-end overflow-hidden rounded-[26px] p-7 transition hover:-translate-y-1 sm:h-[360px] sm:p-10`}
+            className={`${billboardBook.coverImageUrl ? "" : `cover-theme-${billboardBook.coverTheme}`} relative mb-12 flex h-[300px] flex-col justify-end overflow-hidden rounded-[26px] p-7 transition hover:-translate-y-1 sm:h-[360px] sm:p-10`}
           >
+            {billboardBook.coverImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={billboardBook.coverImageUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <div className="absolute right-8 top-8 text-7xl opacity-80 sm:text-8xl">
+                {billboardBook.coverEmoji}
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute right-8 top-8 text-7xl opacity-80 sm:text-8xl">
-              {billboardBook.coverEmoji}
-            </div>
             <div className="relative z-10 max-w-md">
               <span className="mb-2 inline-block text-xs font-bold uppercase tracking-wider text-white/70">
                 {continueReading ? "Continuer la lecture" : "Notre sélection pour toi"}
@@ -393,9 +415,14 @@ export default async function ProfilePage({
                     className="lumina-card flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5"
                   >
                     <span
-                      className={`cover-theme-${p.ebook.coverTheme} flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-xl`}
+                      className={`${p.ebook.coverImageUrl ? "" : `cover-theme-${p.ebook.coverTheme}`} relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg text-xl`}
                     >
-                      {p.ebook.coverEmoji}
+                      {p.ebook.coverImageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.ebook.coverImageUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        p.ebook.coverEmoji
+                      )}
                     </span>
                     <div className="flex-1">
                       <p className="text-sm font-bold">{p.ebook.title}</p>

@@ -6,6 +6,7 @@ type RowBook = {
   title: string;
   coverEmoji: string;
   coverTheme: string;
+  coverImageUrl?: string | null;
 };
 
 export default function BookRow({
@@ -36,9 +37,14 @@ export default function BookRow({
               className="group w-32 shrink-0 snap-start sm:w-36"
             >
               <div
-                className={`cover-theme-${book.coverTheme} mb-2 flex h-40 items-center justify-center rounded-2xl text-4xl shadow-lg transition group-hover:-translate-y-1`}
+                className={`${book.coverImageUrl ? "" : `cover-theme-${book.coverTheme}`} relative mb-2 flex h-40 items-center justify-center overflow-hidden rounded-2xl text-4xl shadow-lg transition group-hover:-translate-y-1`}
               >
-                {book.coverEmoji}
+                {book.coverImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={book.coverImageUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  book.coverEmoji
+                )}
               </div>
               <p className="truncate text-xs font-bold text-white">{book.title}</p>
               {percent !== undefined && (

@@ -12,6 +12,8 @@ export default function Reader({
   slug,
   title,
   coverTheme,
+  coverImageUrl,
+  backCoverImageUrl,
   pages,
   initialPage,
   pdfUrl,
@@ -21,21 +23,31 @@ export default function Reader({
   slug: string;
   title: string;
   coverTheme: string;
+  coverImageUrl?: string | null;
+  backCoverImageUrl?: string | null;
   pages: string[];
   initialPage: number;
   pdfUrl?: string | null;
 }) {
-  const [page, setPage] = useState(Math.min(initialPage, pages.length - 1));
+  const frontOffset = coverImageUrl ? 1 : 0;
+  const totalSlots = pages.length + frontOffset + (backCoverImageUrl ? 1 : 0);
+  const startView = initialPage > 0 ? initialPage + frontOffset : 0;
+  const [view, setView] = useState(Math.min(Math.max(startView, 0), totalSlots - 1));
   const [immersive, setImmersive] = useState(true);
   const [fontSizeIndex, setFontSizeIndex] = useState(1);
   const [mode, setMode] = useState<"pages" | "scroll">("pages");
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const isFrontCover = frontOffset === 1 && view === 0;
+  const isBackCover = !!backCoverImageUrl && view === totalSlots - 1;
+  const contentPage = Math.min(Math.max(view - frontOffset, 0), pages.length - 1);
+
   useEffect(() => {
-    if (pdfUrl) return;
-    saveReadingProgress(profileId, ebookId, page);
-  }, [profileId, ebookId, page, pdfUrl]);
+    if (pdfUrl || isFrontCover || isBackCover) return;
+    saveReadingProgress(profileId, ebookId, contentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileId, ebookId, contentPage, pdfUrl, isFrontCover, isBackCover]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -69,12 +81,12 @@ export default function Reader({
     const el = scrollRef.current;
     if (!el) return;
     const ratio = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight);
-    const nextPage = Math.min(pages.length - 1, Math.max(0, Math.round(ratio * (pages.length - 1))));
+    const nextView = Math.min(totalSlots - 1, Math.max(0, Math.round(ratio * (totalSlots - 1))));
     if (scrollSaveTimeout.current) clearTimeout(scrollSaveTimeout.current);
-    scrollSaveTimeout.current = setTimeout(() => setPage(nextPage), 500);
+    scrollSaveTimeout.current = setTimeout(() => setView(nextView), 500);
   }
 
-  const progress = Math.round(((page + 1) / pages.length) * 100);
+  const progress = Math.round(((view + 1) / totalSlots) * 100);
 
   return (
     <div
@@ -129,23 +141,42 @@ export default function Reader({
       </div>
 
       {mode === "pages" ? (
-        <div className="relative z-10 mx-auto max-w-2xl px-6 py-16">
-          <div
-            className={`rounded-[22px] p-8 ${immersive ? "bg-black/40 backdrop-blur-sm" : ""}`}
-          >
-            <p
-              className={`whitespace-pre-line leading-relaxed ${FONT_SIZES[fontSizeIndex]}`}
-            >
-              {pages[page]}
-            </p>
+        isFrontCover || isBackCover ? (
+          <div className="relative z-10 mx-auto flex max-w-2xl justify-center px-6 py-16">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={(isFrontCover ? coverImageUrl : backCoverImageUrl) ?? undefined}
+              alt={isFrontCover ? `Couverture de ${title}` : `Quatrième de couverture de ${title}`}
+              className="max-h-[70vh] rounded-[18px] shadow-[0_30px_70px_rgba(0,0,0,0.5)]"
+            />
           </div>
-        </div>
+        ) : (
+          <div className="relative z-10 mx-auto max-w-2xl px-6 py-16">
+            <div
+              className={`rounded-[22px] p-8 ${immersive ? "bg-black/40 backdrop-blur-sm" : ""}`}
+            >
+              <p
+                className={`whitespace-pre-line leading-relaxed ${FONT_SIZES[fontSizeIndex]}`}
+              >
+                {pages[contentPage]}
+              </p>
+            </div>
+          </div>
+        )
       ) : (
         <div
           ref={scrollRef}
           onScroll={handleScroll}
           className="relative z-10 mx-auto h-[70vh] max-w-2xl overflow-y-auto px-6 py-16"
         >
+          {coverImageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverImageUrl}
+              alt={`Couverture de ${title}`}
+              className="mx-auto mb-10 max-h-[70vh] rounded-[18px] shadow-[0_30px_70px_rgba(0,0,0,0.5)]"
+            />
+          )}
           <div
             className={`rounded-[22px] p-8 ${immersive ? "bg-black/40 backdrop-blur-sm" : ""}`}
           >
@@ -155,6 +186,14 @@ export default function Reader({
               {pages.join("\n\n— • —\n\n")}
             </p>
           </div>
+          {backCoverImageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={backCoverImageUrl}
+              alt={`Quatrième de couverture de ${title}`}
+              className="mx-auto mt-10 max-h-[70vh] rounded-[18px] shadow-[0_30px_70px_rgba(0,0,0,0.5)]"
+            />
+          )}
         </div>
       )}
 
@@ -165,18 +204,22 @@ export default function Reader({
           }`}
         >
           <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
+            onClick={() => setView((v) => Math.max(0, v - 1))}
+            disabled={view === 0}
             className={`rounded-xl border px-5 py-2.5 text-sm font-bold disabled:opacity-40 ${immersive ? "border-white/20" : "border-gray-mid"}`}
           >
             ← Précédent
           </button>
           <span className="text-sm font-semibold opacity-70">
-            {page + 1} / {pages.length}
+            {isFrontCover
+              ? "Couverture"
+              : isBackCover
+                ? "Fin"
+                : `${contentPage + 1} / ${pages.length}`}
           </span>
           <button
-            onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}
-            disabled={page === pages.length - 1}
+            onClick={() => setView((v) => Math.min(totalSlots - 1, v + 1))}
+            disabled={view === totalSlots - 1}
             className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
           >
             Suivant →

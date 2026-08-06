@@ -29,6 +29,8 @@ model EBook {
   audience    String   @default("adults")
   coverEmoji  String
   coverTheme  String
+  coverImageUrl     String?
+  backCoverImageUrl String?
   price       Float
   oldPrice    Float?
   featured    Boolean  @default(false)

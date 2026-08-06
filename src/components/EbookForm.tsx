@@ -19,6 +19,8 @@ type Defaults = {
   category?: string;
   coverEmoji?: string;
   coverTheme?: string;
+  coverImageUrl?: string | null;
+  backCoverImageUrl?: string | null;
   price?: number;
   oldPrice?: number | null;
   featured?: boolean;
@@ -142,6 +144,39 @@ export default function EbookForm({
             step="0.01"
             name="oldPrice"
             defaultValue={defaults?.oldPrice ?? undefined}
+            className={inputClass}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-5">
+        <div>
+          <label className={labelClass}>Image de couverture (optionnel)</label>
+          <p className={helpClass}>
+            Chemin ou URL publique de l&apos;image de première de couverture (ex :{" "}
+            <code>/covers/mon-livre-front.jpg</code> si le fichier est dans le dossier{" "}
+            <code>public/</code> du site). Remplace l&apos;emoji + le dégradé par cette image
+            partout où le livre apparaît, et s&apos;affiche comme première page dans le lecteur.
+          </p>
+          <input
+            type="text"
+            name="coverImageUrl"
+            placeholder="/covers/mon-livre-front.jpg"
+            defaultValue={defaults?.coverImageUrl ?? ""}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Image de quatrième de couverture (optionnel)</label>
+          <p className={helpClass}>
+            Même principe, affichée comme toute dernière page dans le lecteur — une vraie
+            couverture de fin, après la dernière page de texte.
+          </p>
+          <input
+            type="text"
+            name="backCoverImageUrl"
+            placeholder="/covers/mon-livre-back.jpg"
+            defaultValue={defaults?.backCoverImageUrl ?? ""}
             className={inputClass}
           />
         </div>

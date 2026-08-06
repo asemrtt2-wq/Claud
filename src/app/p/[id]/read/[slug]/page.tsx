@@ -75,6 +75,8 @@ export default async function ProfileReadPage({
       slug={ebook.slug}
       title={ebook.title}
       coverTheme={ebook.coverTheme}
+      coverImageUrl={ebook.coverImageUrl}
+      backCoverImageUrl={ebook.backCoverImageUrl}
       pages={pages}
       initialPage={initialPage}
       pdfUrl={ebook.pdfUrl}

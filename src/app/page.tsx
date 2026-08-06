@@ -124,6 +124,7 @@ export default async function HomePage() {
                 category={ebook.category}
                 coverEmoji={ebook.coverEmoji}
                 coverTheme={ebook.coverTheme}
+                coverImageUrl={ebook.coverImageUrl}
                 price={ebook.price}
                 oldPrice={ebook.oldPrice}
               />

@@ -116,8 +116,16 @@ export default async function EBookPage({
       <Header />
       <div className="lumina-shell">
         <div
-          className={`cover-theme-${ebook.coverTheme} relative flex h-[38vh] min-h-[280px] flex-col justify-between p-6`}
+          className={`${ebook.coverImageUrl ? "" : `cover-theme-${ebook.coverTheme}`} relative flex h-[38vh] min-h-[280px] flex-col justify-between overflow-hidden p-6`}
         >
+          {ebook.coverImageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={ebook.coverImageUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0918] via-black/10 to-black/20" />
           <div className="relative z-10 flex items-center justify-between">
             <BackButton />
@@ -129,9 +137,11 @@ export default async function EBookPage({
               ✕
             </Link>
           </div>
-          <div className="relative z-10 flex flex-1 items-center justify-center text-8xl">
-            {ebook.coverEmoji}
-          </div>
+          {!ebook.coverImageUrl && (
+            <div className="relative z-10 flex flex-1 items-center justify-center text-8xl">
+              {ebook.coverEmoji}
+            </div>
+          )}
         </div>
 
         <div className="mx-auto max-w-3xl px-6 pb-20 pt-8">
