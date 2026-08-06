@@ -292,7 +292,12 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 - `src/app/api/subscribe/route.ts` — Premium subscription; requires a logged-in customer,
   upserts a `Subscription` row (`status: "incomplete"`), then a Stripe Checkout Session
   (`mode: "subscription"`) with inline `price_data.recurring` (no pre-created Stripe Price
-  needed).
+  needed). **`SUBSCRIPTIONS_ARE_FREE` (top of the file) is currently `true`** — a deliberate,
+  temporary bypass requested by the project owner to test the full catalog/reading experience
+  without paying, while more books were still being added. While it's on, subscribing skips
+  Stripe entirely and activates the `Subscription` immediately (`status: "active"`). Flip it back
+  to `false` to restore real Stripe billing before this app is actually used by paying customers
+  — nothing else needs to change, the normal Stripe Checkout code path right below it is untouched.
 - `src/app/api/webhook/stripe/route.ts` — on `checkout.session.completed`, marks the Order
   `paid` (payment mode) or the Subscription `active` (subscription mode, using
   `session.metadata.customerId`); on `customer.subscription.updated/deleted`, syncs status.

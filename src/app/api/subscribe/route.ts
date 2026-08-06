@@ -9,6 +9,10 @@ const PLANS = {
   yearly: { amount: 7900, interval: "year" as const, label: "Premium annuel" },
 };
 
+// Temporary: Premium is free while the catalog/reading experience is being tested — no Stripe
+// checkout, the subscription activates immediately. Flip back to false to require real payment.
+const SUBSCRIPTIONS_ARE_FREE = true;
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "customer" || !session.user.email) {
@@ -24,6 +28,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Offre invalide." }, { status: 400 });
   }
 
+  const email = session.user.email;
+  const customer = await prisma.customer.findUnique({ where: { email } });
+  if (!customer) {
+    return NextResponse.json({ error: "Compte introuvable." }, { status: 404 });
+  }
+
+  if (SUBSCRIPTIONS_ARE_FREE) {
+    await prisma.subscription.upsert({
+      where: { customerId: customer.id },
+      update: { plan, status: "active" },
+      create: { customerId: customer.id, plan, status: "active" },
+    });
+    return NextResponse.json({ url: "/profiles?subscribed=1" });
+  }
+
   if (!isStripeConfigured || !stripe) {
     return NextResponse.json(
       {
@@ -32,12 +51,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 503 }
     );
-  }
-
-  const email = session.user.email;
-  const customer = await prisma.customer.findUnique({ where: { email } });
-  if (!customer) {
-    return NextResponse.json({ error: "Compte introuvable." }, { status: 404 });
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? req.nextUrl.origin;

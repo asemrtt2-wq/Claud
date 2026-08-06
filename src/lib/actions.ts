@@ -102,3 +102,20 @@ export async function deleteEbook(id: string) {
   revalidatePath("/admin");
   revalidatePath("/");
 }
+
+export async function importRealBooks() {
+  await requireAdmin();
+
+  const { REAL_BOOKS } = await import("@/lib/realBooks");
+  for (const book of REAL_BOOKS) {
+    await prisma.eBook.upsert({
+      where: { slug: book.slug },
+      update: book,
+      create: book,
+    });
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  redirect("/admin");
+}
