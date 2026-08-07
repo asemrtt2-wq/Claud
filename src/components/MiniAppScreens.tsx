@@ -106,25 +106,22 @@ export function MiniReaderScreen({
 }) {
   const progress = Math.round((page / totalPages) * 100);
   return (
-    <div className="flex h-full flex-col bg-[#0d0b22] px-3.5 pb-3 pt-4 text-white">
-      <div className="mb-2.5 flex items-center justify-between text-[0.6rem] text-[color:var(--color-lumina-text-muted)]">
-        <div>
-          <p className="font-extrabold text-white">{title}</p>
-          <p>{chapterLabel}</p>
-        </div>
-        <span>🔖</span>
+    <div className="relative flex h-full flex-col overflow-hidden bg-[#faf8f4] px-4 pb-3 pt-3 text-[#1a1730]">
+      <div className="absolute inset-x-0 top-0 h-[3px] bg-[#e7e2d8]">
+        <div
+          className="h-full bg-gradient-to-r from-[#7c5cff] to-[#a78bfa]"
+          style={{ width: `${progress}%` }}
+        />
       </div>
-      <p className="flex-1 overflow-hidden text-[0.6rem] leading-relaxed text-[#d8d4f0]">
+      <p className="mb-2 mt-2 text-[0.52rem] font-bold uppercase tracking-wide text-[#8b84a8]">
+        {chapterLabel}
+      </p>
+      <p className="flex-1 overflow-hidden whitespace-pre-line text-[0.62rem] leading-[1.65] text-[#2a2540]">
         {excerpt}
       </p>
-      <div className="mt-2 flex items-center justify-between text-[0.55rem] text-[color:var(--color-lumina-text-muted)]">
-        <span>
-          {page} / {totalPages}
-        </span>
-        <div className="lumina-progress-track h-1 w-20 overflow-hidden rounded-full">
-          <div className="lumina-progress-fill h-full rounded-full" style={{ width: `${progress}%` }} />
-        </div>
-      </div>
+      <p className="mt-2 text-center text-[0.5rem] text-[#a29ab8]">
+        {page} / {totalPages}
+      </p>
     </div>
   );
 }

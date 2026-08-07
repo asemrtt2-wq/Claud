@@ -25,11 +25,12 @@ export default function BookRow({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  function scrollNext() {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollBy({ left: el.clientWidth * 0.8, behavior: "smooth" });
+  function scrollBy(amount: number) {
+    scrollRef.current?.scrollBy({ left: amount, behavior: "smooth" });
   }
+
+  const arrowClass =
+    "absolute top-0 z-10 hidden h-40 w-12 items-center justify-center text-2xl text-white opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 sm:flex";
 
   return (
     <div className="group/row relative">
@@ -72,14 +73,24 @@ export default function BookRow({
       </div>
 
       {books.length > 3 && (
-        <button
-          type="button"
-          onClick={scrollNext}
-          aria-label="Voir plus"
-          className="absolute right-0 top-0 hidden h-40 w-12 items-center justify-center rounded-l-2xl bg-gradient-to-l from-[#0a0918] to-transparent text-2xl text-white opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 sm:flex"
-        >
-          ›
-        </button>
+        <>
+          <button
+            type="button"
+            onClick={() => scrollBy(-(scrollRef.current?.clientWidth ?? 0) * 0.8)}
+            aria-label="Voir précédent"
+            className={`${arrowClass} left-0 justify-start rounded-r-2xl bg-gradient-to-r from-[#0a0918] to-transparent pl-2`}
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollBy((scrollRef.current?.clientWidth ?? 0) * 0.8)}
+            aria-label="Voir plus"
+            className={`${arrowClass} right-0 justify-end rounded-l-2xl bg-gradient-to-l from-[#0a0918] to-transparent pr-2`}
+          >
+            ›
+          </button>
+        </>
       )}
     </div>
   );

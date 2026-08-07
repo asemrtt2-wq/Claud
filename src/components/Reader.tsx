@@ -36,8 +36,15 @@ export default function Reader({
   const [immersive, setImmersive] = useState(true);
   const [fontSizeIndex, setFontSizeIndex] = useState(1);
   const [mode, setMode] = useState<"pages" | "scroll">("pages");
+  const [toolbarVisible, setToolbarVisible] = useState(true);
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function goToView(next: number) {
+    setDirection(next > view ? "forward" : "backward");
+    setView(next);
+  }
 
   const isFrontCover = frontOffset === 1 && view === 0;
   const isBackCover = !!backCoverImageUrl && view === totalSlots - 1;
@@ -98,51 +105,85 @@ export default function Reader({
     >
       {immersive && <div className="pointer-events-none absolute inset-0 bg-black/45" />}
 
-      <div className="relative z-10 flex items-center justify-between border-b border-white/10 px-6 py-4">
-        <Link
-          href={`/p/${profileId}`}
-          className={`text-sm font-semibold ${immersive ? "text-white/70 hover:text-white" : "text-text-muted hover:text-navy"}`}
+      <div
+        className={`sticky top-0 z-20 overflow-hidden transition-[max-height] duration-300 ${
+          toolbarVisible ? "max-h-24" : "max-h-0"
+        }`}
+      >
+        <div
+          className={`flex items-center justify-between border-b px-6 py-4 backdrop-blur-sm ${
+            immersive ? "border-white/10 bg-black/50" : "border-gray-mid bg-white/90"
+          }`}
         >
-          ← {title}
-        </Link>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setFontSizeIndex((i) => Math.max(0, i - 1))}
-            className={`h-8 w-8 rounded-lg border text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
+          <Link
+            href={`/p/${profileId}`}
+            className={`text-sm font-semibold ${immersive ? "text-white/70 hover:text-white" : "text-text-muted hover:text-navy"}`}
           >
-            A-
-          </button>
-          <button
-            onClick={() => setFontSizeIndex((i) => Math.min(FONT_SIZES.length - 1, i + 1))}
-            className={`h-8 w-8 rounded-lg border text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
-          >
-            A+
-          </button>
-          <button
-            onClick={() => setImmersive((v) => !v)}
-            className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
-          >
-            {immersive ? "☀️ Clair" : "🌙 Immersif"}
-          </button>
-          <button
-            onClick={() => setMode((m) => (m === "pages" ? "scroll" : "pages"))}
-            className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
-          >
-            {mode === "pages" ? "📜 Défilement" : "📖 Pages"}
-          </button>
+            ← {title}
+          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setFontSizeIndex((i) => Math.max(0, i - 1))}
+              className={`h-8 w-8 rounded-lg border text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
+            >
+              A-
+            </button>
+            <button
+              onClick={() => setFontSizeIndex((i) => Math.min(FONT_SIZES.length - 1, i + 1))}
+              className={`h-8 w-8 rounded-lg border text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
+            >
+              A+
+            </button>
+            <button
+              onClick={() => setImmersive((v) => !v)}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
+            >
+              {immersive ? "☀️ Clair" : "🌙 Immersif"}
+            </button>
+            <button
+              onClick={() => setMode((m) => (m === "pages" ? "scroll" : "pages"))}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
+            >
+              {mode === "pages" ? "📜 Défilement" : "📖 Pages"}
+            </button>
+            <button
+              onClick={() => setToolbarVisible(false)}
+              aria-label="Masquer les commandes"
+              className={`h-8 w-8 rounded-lg border text-sm font-bold ${immersive ? "border-white/20" : "border-gray-mid"}`}
+            >
+              ⌃
+            </button>
+          </div>
+        </div>
+        <div className={`h-1 w-full ${immersive ? "bg-white/10" : "bg-gray-mid"}`}>
+          <div
+            className="h-1 bg-gradient-to-r from-[#7c5cff] to-[#a78bfa] transition-all"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
 
-      <div className={`relative z-10 h-1 w-full ${immersive ? "bg-white/10" : "bg-gray-mid"}`}>
-        <div
-          className="h-1 bg-gradient-to-r from-[#7c5cff] to-[#a78bfa] transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+      {!toolbarVisible && (
+        <button
+          type="button"
+          onClick={() => setToolbarVisible(true)}
+          aria-label="Afficher les commandes"
+          className={`fixed left-1/2 top-3 z-20 flex h-8 w-10 -translate-x-1/2 items-center justify-center rounded-full text-sm font-bold shadow-lg backdrop-blur-sm ${
+            immersive ? "bg-black/50 text-white" : "bg-white text-navy"
+          }`}
+        >
+          ⌄
+        </button>
+      )}
 
       {mode === "pages" ? (
         isFrontCover || isBackCover ? (
-          <div className="relative z-10 mx-auto flex max-w-2xl justify-center px-6 py-16">
+          <div
+            key={view}
+            className={`relative z-10 mx-auto flex max-w-2xl justify-center px-6 py-16 ${
+              direction === "forward" ? "page-turn-forward" : "page-turn-backward"
+            }`}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={(isFrontCover ? coverImageUrl : backCoverImageUrl) ?? undefined}
@@ -151,7 +192,12 @@ export default function Reader({
             />
           </div>
         ) : (
-          <div className="relative z-10 mx-auto max-w-2xl px-6 py-16">
+          <div
+            key={view}
+            className={`relative z-10 mx-auto max-w-2xl px-6 py-16 ${
+              direction === "forward" ? "page-turn-forward" : "page-turn-backward"
+            }`}
+          >
             <div
               className={`rounded-[22px] p-8 ${immersive ? "bg-black/40 backdrop-blur-sm" : ""}`}
             >
@@ -204,7 +250,7 @@ export default function Reader({
           }`}
         >
           <button
-            onClick={() => setView((v) => Math.max(0, v - 1))}
+            onClick={() => goToView(Math.max(0, view - 1))}
             disabled={view === 0}
             className={`rounded-xl border px-5 py-2.5 text-sm font-bold disabled:opacity-40 ${immersive ? "border-white/20" : "border-gray-mid"}`}
           >
@@ -218,7 +264,7 @@ export default function Reader({
                 : `${contentPage + 1} / ${pages.length}`}
           </span>
           <button
-            onClick={() => setView((v) => Math.min(totalSlots - 1, v + 1))}
+            onClick={() => goToView(Math.min(totalSlots - 1, view + 1))}
             disabled={view === totalSlots - 1}
             className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
           >

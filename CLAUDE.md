@@ -94,7 +94,11 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 
 ### Public storefront
 - `src/app/page.tsx` — home page (hero + dynamic catalog grid + testimonials), a server
-  component that reads eBooks directly from Prisma.
+  component that reads eBooks directly from Prisma. The "Nos eBooks populaires" grid shows only 4
+  books at a time via `pickDailyBooks()` — a deterministic rotation keyed off
+  `Math.floor(Date.now() / 86400000)` (days since epoch) that picks a different contiguous
+  window of the catalog each calendar day (UTC), wrapping around. No cron/background job needed:
+  since it's computed fresh on every request, it just naturally changes once the date rolls over.
 - `src/app/ebooks/[slug]/page.tsx` — eBook detail page: a Netflix/Apple-TV-style layout with a
   large cover hero (gradient overlay, back/close buttons), title/author/year/page-count/category
   metadata, a progress-aware CTA ("Commencer" vs "Reprendre" with page/percent/estimated time
@@ -119,8 +123,11 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   (`MiniDashboardScreen`/`MiniReaderScreen`/`MiniLibraryScreen`, static illustrative recreations of
   the real in-app UI using the same `lumina-*`/`cover-theme-*` classes as the actual dashboard and
   reader) — populated with real catalog titles/covers and a real book excerpt, not invented
-  content, so the "preview" is an honest one. `src/components/HeroDeviceShowcase.tsx` composes two
-  overlapping `PhoneFrame`s for the hero (replaced the old `HeroCarousel.tsx` billboard);
+  content, so the "preview" is an honest one — `MiniReaderScreen` in particular renders a
+  full-bleed light-mode page (no header/footer chrome, just a thin top progress line and a page
+  counter) so it reads as an actual open book rather than app UI. `src/components/
+  HeroDeviceShowcase.tsx` composes two overlapping `PhoneFrame`s for the hero (replaced the old
+  `HeroCarousel.tsx` billboard);
   `src/components/HomeMarketingSections.tsx` holds the rest (`FeatureHighlights`,
   `KidsModeSection`, `ReadingExperienceSection`, `CompatibilitySection`, `FinalCtaBand`). Two
   claims from the source mockup were deliberately **not** copied verbatim because they're false for
@@ -155,7 +162,10 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   bibliothèque" (via `hrefBase` pointing at the reader instead of the detail page, plus a
   `progressByEbookId` map for the per-card progress bar), and "Mes favoris". Also reused on
   `/ebooks/[slug]` ("Recommandés pour vous" and the "Livres similaires" tab in
-  `BookDetailTabs.tsx`) so both pages share one horizontal-row style instead of a grid.
+  `BookDetailTabs.tsx`) so both pages share one horizontal-row style instead of a grid. Hovering a
+  cover scales it up slightly (`z-10` so it isn't clipped by neighbors); rows with more than 3
+  books get a `‹`/`›` arrow fixed to each edge (fade in on row hover, no movement of their own)
+  that scroll the row by ~80% of its visible width.
 - The `/p/[id]` adult dashboard opens with a full-width "billboard" hero (Netflix-style) instead
   of a small card: the in-progress book if there is one ("Reprendre ▶", with its progress bar),
   otherwise a top pick from recommendations/library ("Découvrir →") — falls back gracefully to
@@ -265,6 +275,13 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   In scroll mode, progress is derived from scroll position (debounced) instead of button clicks.
   Reading position is saved via `saveReadingProgress(profileId, ebookId, page)` in
   `src/lib/profileActions.ts`; reading time via `incrementReadingMinutes(profileId)` every 60s.
+  The top toolbar (back link, font size, immersive/clair, pages/scroll) collapses to nothing via a
+  `max-height` transition when the ⌃ button is pressed, for a distraction-free full-bleed reading
+  view closer to a real e-reader; a small floating ⌄ pill (fixed top-center) brings it back. In
+  "pages" mode, moving between pages/covers replays a `page-turn-forward`/`page-turn-backward`
+  CSS keyframe animation (`globals.css`, a slide + slight `rotateY` skew) keyed on the page `view`
+  index, giving a lightweight "turning page" feel — deliberately not a literal 3D page-curl, which
+  would need canvas/drag-gesture work well beyond a CSS transition.
 - `src/components/KidsReader.tsx` — adds on top of that pattern: a bouncing mascot emoji on page
   turn, a `SpeechSynthesis`-based read-aloud voice picker (Femme/Homme/Robot/Alien/Loup/Ours —
   pitch/rate presets on the browser's built-in voice, not distinct synthesized models), and a

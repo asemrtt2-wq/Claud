@@ -127,6 +127,38 @@ body {
   animation: float 5s ease-in-out infinite;
 }
 
+@keyframes page-slide-in-forward {
+  from {
+    opacity: 0;
+    transform: translateX(28px) rotateY(-4deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0);
+  }
+}
+
+@keyframes page-slide-in-backward {
+  from {
+    opacity: 0;
+    transform: translateX(-28px) rotateY(4deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0);
+  }
+}
+
+.page-turn-forward {
+  animation: page-slide-in-forward 0.32s ease-out;
+  transform-origin: left center;
+}
+
+.page-turn-backward {
+  animation: page-slide-in-backward 0.32s ease-out;
+  transform-origin: right center;
+}
+
 .card-scrim::after {
   content: "";
   position: absolute;

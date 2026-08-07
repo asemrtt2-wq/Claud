@@ -14,6 +14,13 @@ import {
 } from "@/components/HomeMarketingSections";
 import { getSiteSettings } from "@/lib/siteSettings";
 
+function pickDailyBooks<T>(items: T[], count: number): T[] {
+  if (items.length <= count) return items;
+  const dayIndex = Math.floor(Date.now() / 86400000);
+  const start = dayIndex % items.length;
+  return Array.from({ length: count }, (_, i) => items[(start + i) % items.length]);
+}
+
 export default async function HomePage() {
   const [ebooks, settings, catalogs] = await Promise.all([
     prisma.eBook.findMany({
@@ -27,6 +34,7 @@ export default async function HomePage() {
     }),
   ]);
   const catalogsWithBooks = catalogs.filter((c) => c.ebooks.length > 0);
+  const dailyBooks = pickDailyBooks(ebooks, 4);
   const featured = ebooks.filter((e) => e.featured);
   const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
   const categoryCount = new Set(ebooks.map((e) => e.category)).size;
@@ -128,11 +136,11 @@ export default async function HomePage() {
               Nos eBooks populaires
             </h2>
             <p className="text-[1.05rem] text-[color:var(--color-lumina-text-muted)]">
-              Explorez notre collection d&apos;eBooks pour tous les goûts et toutes les passions.
+              Une sélection différente chaque jour parmi notre collection d&apos;eBooks.
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {ebooks.map((ebook) => (
+          <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
+            {dailyBooks.map((ebook) => (
               <EBookCard
                 key={ebook.id}
                 slug={ebook.slug}
