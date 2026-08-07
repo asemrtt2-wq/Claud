@@ -33,6 +33,7 @@ export async function createEbook(formData: FormData) {
   const oldPriceRaw = formData.get("oldPrice");
 
   const publishedYearRaw = formData.get("publishedYear");
+  const catalogIds = formData.getAll("catalogIds").map(String);
 
   await prisma.eBook.create({
     data: {
@@ -53,6 +54,7 @@ export async function createEbook(formData: FormData) {
       price,
       oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null,
       featured: formData.get("featured") === "on",
+      catalogs: { connect: catalogIds.map((id) => ({ id })) },
     },
   });
 
@@ -67,6 +69,7 @@ export async function updateEbook(id: string, formData: FormData) {
   const title = String(formData.get("title") ?? "");
   const oldPriceRaw = formData.get("oldPrice");
   const publishedYearRaw = formData.get("publishedYear");
+  const catalogIds = formData.getAll("catalogIds").map(String);
 
   await prisma.eBook.update({
     where: { id },
@@ -88,6 +91,7 @@ export async function updateEbook(id: string, formData: FormData) {
       price: Number(formData.get("price") ?? 0),
       oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null,
       featured: formData.get("featured") === "on",
+      catalogs: { set: catalogIds.map((id) => ({ id })) },
     },
   });
 
@@ -99,6 +103,32 @@ export async function updateEbook(id: string, formData: FormData) {
 export async function deleteEbook(id: string) {
   await requireAdmin();
   await prisma.eBook.delete({ where: { id } });
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function createCatalog(formData: FormData) {
+  await requireAdmin();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return;
+  await prisma.catalog.create({ data: { name } });
+  revalidatePath("/admin/catalogs");
+}
+
+export async function renameCatalog(id: string, formData: FormData) {
+  await requireAdmin();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return;
+  await prisma.catalog.update({ where: { id }, data: { name } });
+  revalidatePath("/admin/catalogs");
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function deleteCatalog(id: string) {
+  await requireAdmin();
+  await prisma.catalog.delete({ where: { id } });
+  revalidatePath("/admin/catalogs");
   revalidatePath("/admin");
   revalidatePath("/");
 }

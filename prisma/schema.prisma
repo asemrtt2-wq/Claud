@@ -40,6 +40,14 @@ model EBook {
   favorites   Favorite[]
   progress    ReadingProgress[]
   collectionItems CollectionItem[]
+  catalogs    Catalog[]
+}
+
+model Catalog {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  ebooks    EBook[]
 }
 
 model Order {

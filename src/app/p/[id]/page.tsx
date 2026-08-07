@@ -158,7 +158,7 @@ export default async function ProfilePage({
   }
 
   // Adult profile dashboard
-  const [orders, favorites, progressEntries, collections, catalog] =
+  const [orders, favorites, progressEntries, collections, catalog, catalogs] =
     await Promise.all([
       prisma.order.findMany({
         where: { customerId: customer.id, status: "paid" },
@@ -180,7 +180,12 @@ export default async function ProfilePage({
         orderBy: { createdAt: "desc" },
       }),
       prisma.eBook.findMany({ where: { audience: "adults" }, orderBy: { category: "asc" } }),
+      prisma.catalog.findMany({
+        include: { ebooks: { where: { audience: "adults" } } },
+        orderBy: { createdAt: "asc" },
+      }),
     ]);
+  const catalogsWithBooks = catalogs.filter((c) => c.ebooks.length > 0);
 
   const categoriesMap = new Map<string, typeof catalog>();
   for (const book of catalog) {
@@ -293,6 +298,16 @@ export default async function ProfilePage({
               </span>
             </div>
           </Link>
+        )}
+
+        {catalogsWithBooks.length > 0 && (
+          <section className="mb-12">
+            <div className="flex flex-col gap-8">
+              {catalogsWithBooks.map((cat) => (
+                <BookRow key={cat.id} label={cat.name} books={cat.ebooks} />
+              ))}
+            </div>
+          </section>
         )}
 
         {categoryRows.length > 0 && (

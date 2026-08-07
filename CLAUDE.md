@@ -357,6 +357,24 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   hardcoded as literal hex values across dozens of components rather than only the `--color-
   lumina-purple` CSS variable, so a real site-wide color picker would need that centralized first.
 
+### Curated catalogs
+- `Catalog` — an admin-defined named shelf (e.g. "Coup de cœur", "Best-sellers"), many-to-many
+  with `EBook` via Prisma's implicit join table. Managed at `/admin/catalogs` (linked from
+  `AdminNav`): create, rename, and delete catalogs there; which books belong to a catalog is set
+  from that book's own edit form instead (a checkbox list — a book can be in any number of
+  catalogs, or none). `createCatalog`/`renameCatalog`/`deleteCatalog` in `src/lib/actions.ts`
+  follow the same admin-session-gated pattern as the rest of that file.
+- Any catalog with at least one **adult** book renders as its own `BookRow` — on the homepage
+  (`src/app/page.tsx`, right after the feature-highlight row, before the plain "Nos eBooks
+  populaires" grid) and on the adult `/p/[id]` dashboard (right before "Parcourir par
+  catégorie") — in both places ordered by the catalog's `createdAt`. This is deliberately
+  separate from `category` (the existing single free-text field every book has, which drives the
+  "Parcourir par catégorie" rows and the homepage grid's implicit grouping): `category` is one
+  value per book describing what it's about, while `Catalog` is admin-curated editorial
+  placement — a book can be in several catalogs (or none) independent of its category. Kids
+  audience books are excluded from catalog rows since catalogs only ever render on
+  adult-facing surfaces.
+
 ### Data model (`prisma/schema.prisma`)
 `EBook` (has a `content` text field used by the reader, `author`/`publishedYear` fields for the
 detail page's metadata, and an `audience` field — `"adults"`/`"kids"`), `Order` (one-time
@@ -369,8 +387,9 @@ purchases, optional `customerId`), `Admin`,
 `Favorite` and `ReadingProgress` (profile-scoped join tables, unique on `[profileId, ebookId]`;
 `ReadingProgress` also carries `completed`, `lastPageAt`, `avgSecondsPerPage` — the same
 pace-tracking fields used to flag "very fast"/"posé" reading pace apply to any profile now, not
-just kids), and `Collection`/`CollectionItem` (profile-scoped book shelves, unique on
-`[collectionId, ebookId]`).
+just kids), `Collection`/`CollectionItem` (profile-scoped book shelves, unique on
+`[collectionId, ebookId]`), and `Catalog` (admin-curated shelves, many-to-many with `EBook` —
+see "Curated catalogs" above; not to be confused with the profile-scoped `Collection` above).
 
 There used to be a separate `ChildProfile`/`ChildReadingProgress` pair and `Customer` doubled as
 the implicit single "adult profile" — that was replaced by the unified `Profile` model above so

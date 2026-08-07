@@ -12,9 +12,10 @@ export default async function EditEbookPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [session, ebook] = await Promise.all([
+  const [session, ebook, catalogs] = await Promise.all([
     getServerSession(authOptions),
-    prisma.eBook.findUnique({ where: { id } }),
+    prisma.eBook.findUnique({ where: { id }, include: { catalogs: true } }),
+    prisma.catalog.findMany({ orderBy: { name: "asc" } }),
   ]);
 
   if (!ebook) notFound();
@@ -28,7 +29,12 @@ export default async function EditEbookPage({
         <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-white">
           Modifier « {ebook.title} »
         </h1>
-        <EbookForm action={boundUpdate} defaults={ebook} submitLabel="Enregistrer" />
+        <EbookForm
+          action={boundUpdate}
+          defaults={{ ...ebook, catalogIds: ebook.catalogs.map((c) => c.id) }}
+          submitLabel="Enregistrer"
+          catalogs={catalogs}
+        />
       </div>
     </div>
   );

@@ -33,6 +33,12 @@ export default function AdminNav({ email }: { email?: string | null }) {
             🧒 Catalogue Enfants
           </Link>
           <Link
+            href="/admin/catalogs"
+            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+          >
+            🗂️ Catalogues
+          </Link>
+          <Link
             href="/admin/settings"
             className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
           >

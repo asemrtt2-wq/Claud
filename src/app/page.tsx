@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroDeviceShowcase from "@/components/HeroDeviceShowcase";
 import EBookCard from "@/components/EBookCard";
+import BookRow from "@/components/BookRow";
 import {
   CompatibilitySection,
   FeatureHighlights,
@@ -14,13 +15,18 @@ import {
 import { getSiteSettings } from "@/lib/siteSettings";
 
 export default async function HomePage() {
-  const [ebooks, settings] = await Promise.all([
+  const [ebooks, settings, catalogs] = await Promise.all([
     prisma.eBook.findMany({
       where: { audience: "adults" },
       orderBy: { createdAt: "asc" },
     }),
     getSiteSettings(),
+    prisma.catalog.findMany({
+      include: { ebooks: { where: { audience: "adults" } } },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
+  const catalogsWithBooks = catalogs.filter((c) => c.ebooks.length > 0);
   const featured = ebooks.filter((e) => e.featured);
   const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
   const categoryCount = new Set(ebooks.map((e) => e.category)).size;
@@ -101,6 +107,16 @@ export default async function HomePage() {
       </section>
 
       <FeatureHighlights />
+
+      {catalogsWithBooks.length > 0 && (
+        <section className="bg-[#0a0918] px-6 pb-4 pt-20 text-white">
+          <div className="mx-auto flex max-w-6xl flex-col gap-12">
+            {catalogsWithBooks.map((catalog) => (
+              <BookRow key={catalog.id} label={catalog.name} books={catalog.ebooks} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section id="catalogue" className="bg-[#0a0918] px-6 py-28 text-white">
         <div className="mx-auto max-w-6xl">

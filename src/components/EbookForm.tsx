@@ -22,16 +22,19 @@ type Defaults = {
   price?: number;
   oldPrice?: number | null;
   featured?: boolean;
+  catalogIds?: string[];
 };
 
 export default function EbookForm({
   action,
   defaults,
   submitLabel,
+  catalogs,
 }: {
   action: (formData: FormData) => void;
   defaults?: Defaults;
   submitLabel: string;
+  catalogs: { id: string; name: string }[];
 }) {
   return (
     <form action={action} className="lumina-card grid gap-5 rounded-2xl p-7">
@@ -75,27 +78,49 @@ export default function EbookForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-5">
-        <div>
-          <label className={labelClass}>Année de publication</label>
-          <input
-            type="number"
-            name="publishedYear"
-            defaultValue={defaults?.publishedYear ?? undefined}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Public</label>
-          <select
-            name="audience"
-            defaultValue={defaults?.audience ?? "adults"}
-            className={inputClass}
-          >
-            <option value="adults" className="bg-navy-dark">Adultes</option>
-            <option value="kids" className="bg-navy-dark">Enfants</option>
-          </select>
-        </div>
+      <input type="hidden" name="publishedYear" value={defaults?.publishedYear ?? ""} />
+
+      <div>
+        <label className={labelClass}>Public</label>
+        <select
+          name="audience"
+          defaultValue={defaults?.audience ?? "adults"}
+          className={inputClass}
+        >
+          <option value="adults" className="bg-navy-dark">Adultes</option>
+          <option value="kids" className="bg-navy-dark">Enfants</option>
+        </select>
+      </div>
+
+      <div>
+        <label className={labelClass}>Catalogue</label>
+        <p className={helpClass}>
+          Coche un ou plusieurs catalogues pour que ce livre apparaisse dans leurs rangées
+          personnalisées sur le site. Gère la liste des catalogues depuis{" "}
+          <span className="font-semibold text-white">Catalogues</span> dans le menu admin.
+        </p>
+        {catalogs.length === 0 ? (
+          <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+            Aucun catalogue pour le moment.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-3">
+            {catalogs.map((catalog) => (
+              <label
+                key={catalog.id}
+                className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-semibold text-white"
+              >
+                <input
+                  type="checkbox"
+                  name="catalogIds"
+                  value={catalog.id}
+                  defaultChecked={defaults?.catalogIds?.includes(catalog.id)}
+                />
+                {catalog.name}
+              </label>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-5">

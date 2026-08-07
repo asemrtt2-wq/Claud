@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import AdminNav from "@/components/AdminNav";
 import EbookForm from "@/components/EbookForm";
 import { createEbook } from "@/lib/actions";
@@ -9,9 +10,10 @@ export default async function NewEbookPage({
 }: {
   searchParams: Promise<{ audience?: string }>;
 }) {
-  const [session, { audience }] = await Promise.all([
+  const [session, { audience }, catalogs] = await Promise.all([
     getServerSession(authOptions),
     searchParams,
+    prisma.catalog.findMany({ orderBy: { name: "asc" } }),
   ]);
 
   return (
@@ -25,6 +27,7 @@ export default async function NewEbookPage({
           action={createEbook}
           defaults={{ audience: audience === "kids" ? "kids" : "adults" }}
           submitLabel="Créer l'eBook"
+          catalogs={catalogs}
         />
       </div>
     </div>
