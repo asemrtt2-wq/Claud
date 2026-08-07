@@ -41,6 +41,10 @@ export default function Reader({
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  function scrollStep(dir: 1 | -1) {
+    scrollRef.current?.scrollBy({ top: dir * scrollRef.current.clientHeight * 0.85, behavior: "smooth" });
+  }
+
   function goToView(next: number) {
     setDirection(next > view ? "forward" : "backward");
     setView(next);
@@ -243,35 +247,33 @@ export default function Reader({
         </div>
       )}
 
-      {mode === "pages" && (
-        <div
-          className={`sticky bottom-0 z-10 flex items-center justify-between border-t px-6 py-4 ${
-            immersive ? "border-white/10 bg-black/50 backdrop-blur-sm" : "border-gray-mid bg-white"
-          }`}
+      <div
+        className={`sticky bottom-0 z-10 flex items-center justify-between border-t px-6 py-4 ${
+          immersive ? "border-white/10 bg-black/50 backdrop-blur-sm" : "border-gray-mid bg-white"
+        }`}
+      >
+        <button
+          onClick={() => (mode === "pages" ? goToView(Math.max(0, view - 1)) : scrollStep(-1))}
+          disabled={mode === "pages" && view === 0}
+          className={`rounded-xl border px-5 py-2.5 text-sm font-bold disabled:opacity-40 ${immersive ? "border-white/20" : "border-gray-mid"}`}
         >
-          <button
-            onClick={() => goToView(Math.max(0, view - 1))}
-            disabled={view === 0}
-            className={`rounded-xl border px-5 py-2.5 text-sm font-bold disabled:opacity-40 ${immersive ? "border-white/20" : "border-gray-mid"}`}
-          >
-            ← Précédent
-          </button>
-          <span className="text-sm font-semibold opacity-70">
-            {isFrontCover
-              ? "Couverture"
-              : isBackCover
-                ? "Fin"
-                : `${contentPage + 1} / ${pages.length}`}
+          ← Précédent
+        </button>
+        <span className="text-sm font-semibold opacity-70">
+          {isFrontCover
+            ? "Couverture"
+            : isBackCover
+              ? "Fin"
+              : `${contentPage + 1} / ${pages.length}`}
           </span>
-          <button
-            onClick={() => goToView(Math.min(totalSlots - 1, view + 1))}
-            disabled={view === totalSlots - 1}
-            className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
-          >
-            Suivant →
-          </button>
-        </div>
-      )}
+        <button
+          onClick={() => (mode === "pages" ? goToView(Math.min(totalSlots - 1, view + 1)) : scrollStep(1))}
+          disabled={mode === "pages" && view === totalSlots - 1}
+          className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
+        >
+          Suivant →
+        </button>
+      </div>
     </div>
   );
 }

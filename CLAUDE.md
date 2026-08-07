@@ -100,7 +100,7 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   window of the catalog each calendar day (UTC), wrapping around. No cron/background job needed:
   since it's computed fresh on every request, it just naturally changes once the date rolls over.
 - `src/app/ebooks/[slug]/page.tsx` — eBook detail page: a Netflix/Apple-TV-style layout with a
-  large cover hero (gradient overlay, back/close buttons), title/author/year/page-count/category
+  large cover hero (back/close buttons), title/author/year/page-count/category
   metadata, a progress-aware CTA ("Commencer" vs "Reprendre" with page/percent/estimated time
   remaining if `ReadingProgress` exists for the active profile), an expandable summary
   (`ExpandableText`), an actions row (favorite, add-to-collection, share via
@@ -165,7 +165,11 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   `BookDetailTabs.tsx`) so both pages share one horizontal-row style instead of a grid. Hovering a
   cover scales it up slightly (`z-10` so it isn't clipped by neighbors); rows with more than 3
   books get a `‹`/`›` arrow fixed to each edge (fade in on row hover, no movement of their own)
-  that scroll the row by ~80% of its visible width.
+  that scroll the row by ~80% of its visible width. The cover tile always renders its
+  `cover-theme-*` gradient as the tile background (not just as an image-missing fallback) and
+  lays a real `coverImageUrl` over it with `object-contain` rather than `object-cover` — a
+  portrait cover (~0.56 aspect ratio) inside a wider tile no longer gets its title cropped off;
+  the gradient shows as letterbox/pillarbox fill around it instead.
 - The `/p/[id]` adult dashboard opens with a full-width "billboard" hero (Netflix-style) instead
   of a small card: the in-progress book if there is one ("Reprendre ▶", with its progress bar),
   otherwise a top pick from recommendations/library ("Découvrir →") — falls back gracefully to
@@ -265,7 +269,12 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   `ReadingProgress`, so resuming mid-book still resumes correctly and skips straight past the
   cover; only a fresh read with no progress yet opens on the front cover). `coverTheme` is still
   required and still used for the immersive reading background between the two covers, since a
-  cover image doesn't imply a matching page-background gradient.
+  cover image doesn't imply a matching page-background gradient. On the `/ebooks/[slug]` hero, a
+  real cover image is shown twice at once rather than once cropped: a blurred, darkened,
+  full-bleed copy (`object-cover object-top blur-2xl`) fills the band as a backdrop, and a second,
+  un-cropped copy floats centered over it at `object-contain` so the whole cover — including the
+  title, which used to get cut off when the hero cropped a portrait cover to a landscape band —
+  is always fully visible before a visitor reads the summary or buys.
 - `src/components/Reader.tsx` — "immersive" (default) vs "clair" (light) toggle, plus a
   "pages" (click-through, default) vs "scroll" (continuous, all pages concatenated) mode toggle.
   Immersive mode uses the eBook's `cover-theme-*` gradient as a full-page background with a dark
@@ -273,6 +282,13 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   prev/next, and a purple progress bar work in both modes — border/background colors on the
   control buttons branch on the `immersive` boolean so they stay visible in light mode too.
   In scroll mode, progress is derived from scroll position (debounced) instead of button clicks.
+  The bottom bar (← Précédent / page position / Suivant →) is always rendered in both modes now,
+  fixed at the same size and position — it used to only exist in "pages" mode and disappear
+  entirely in "scroll" mode, which made the reader feel inconsistent as soon as someone switched
+  modes. In "scroll" mode the same two buttons call `scrollStep(±1)` (scrolls the container by
+  ~85% of its visible height via `scrollBy({ behavior: "smooth" })`) instead of `goToView(...)`,
+  and are never `disabled` (there's no page-edge state to know without more scroll-position work);
+  in "pages" mode they keep their original `goToView`/`disabled`-at-the-edges behavior.
   Reading position is saved via `saveReadingProgress(profileId, ebookId, page)` in
   `src/lib/profileActions.ts`; reading time via `incrementReadingMinutes(profileId)` every 60s.
   The top toolbar (back link, font size, immersive/clair, pages/scroll) collapses to nothing via a
