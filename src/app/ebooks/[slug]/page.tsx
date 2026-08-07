@@ -64,13 +64,46 @@ export default async function EBookPage({
         })
       : null;
 
-  const [similarBooks, recommendations] = await Promise.all([
+  const [similarBooks, recommendations, seriesBooks] = await Promise.all([
     prisma.eBook.findMany({
       where: { audience: "adults", category: ebook.category, id: { not: ebook.id } },
       take: 4,
     }),
     activeProfile ? getRecommendations(activeProfile.id, [ebook.id]) : null,
+    ebook.seriesName
+      ? prisma.eBook.findMany({
+          where: { seriesName: ebook.seriesName, audience: "adults" },
+          orderBy: { seriesOrder: "asc" },
+        })
+      : Promise.resolve([]),
   ]);
+
+  const seriesProgress = activeProfile
+    ? await prisma.readingProgress.findMany({
+        where: { profileId: activeProfile.id, ebookId: { in: seriesBooks.map((b) => b.id) } },
+      })
+    : [];
+  const seriesProgressByEbookId = new Map(seriesProgress.map((p) => [p.ebookId, p]));
+
+  const episodes = seriesBooks.map((book) => {
+    const bookProgress = seriesProgressByEbookId.get(book.id);
+    const bookPages = book.pdfUrl ? [] : paginateContent(book.content);
+    return {
+      id: book.id,
+      slug: book.slug,
+      title: book.title,
+      seriesOrder: book.seriesOrder,
+      coverEmoji: book.coverEmoji,
+      coverTheme: book.coverTheme,
+      coverImageUrl: book.coverImageUrl,
+      isCurrent: book.id === ebook.id,
+      progressPercent:
+        bookProgress && bookPages.length > 0
+          ? Math.round(((bookProgress.page + 1) / bookPages.length) * 100)
+          : null,
+      completed: bookProgress?.completed ?? false,
+    };
+  });
 
   const collectionOptions = collections.map((c) => ({
     id: c.id,
@@ -150,6 +183,12 @@ export default async function EBookPage({
           </h1>
           {ebook.author && (
             <p className="mb-2 text-lg font-semibold text-[#a78bfa]">{ebook.author}</p>
+          )}
+          {ebook.seriesName && (
+            <p className="mb-2 text-sm font-bold uppercase tracking-wide text-[#a78bfa]">
+              {ebook.seriesName}
+              {ebook.seriesOrder ? ` · Tome ${ebook.seriesOrder}` : ""}
+            </p>
           )}
           <p className="mb-6 text-sm text-[color:var(--color-lumina-text-muted)]">
             {[
@@ -233,7 +272,12 @@ export default async function EBookPage({
           </div>
 
           <div className="mb-12">
-            <BookDetailTabs chapters={chapters} readHref={readHref} similarBooks={similarBooks} />
+            <BookDetailTabs
+              chapters={chapters}
+              readHref={readHref}
+              similarBooks={similarBooks}
+              episodes={episodes}
+            />
           </div>
 
           {recommendedRows.length > 0 && (

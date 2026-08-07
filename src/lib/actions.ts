@@ -33,6 +33,7 @@ export async function createEbook(formData: FormData) {
   const oldPriceRaw = formData.get("oldPrice");
 
   const publishedYearRaw = formData.get("publishedYear");
+  const seriesOrderRaw = formData.get("seriesOrder");
   const catalogIds = formData.getAll("catalogIds").map(String);
 
   await prisma.eBook.create({
@@ -51,6 +52,8 @@ export async function createEbook(formData: FormData) {
       coverTheme: String(formData.get("coverTheme") ?? "royal"),
       coverImageUrl: String(formData.get("coverImageUrl") ?? "").trim() || null,
       backCoverImageUrl: String(formData.get("backCoverImageUrl") ?? "").trim() || null,
+      seriesName: String(formData.get("seriesName") ?? "").trim() || null,
+      seriesOrder: seriesOrderRaw ? Number(seriesOrderRaw) : null,
       price,
       oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null,
       featured: formData.get("featured") === "on",
@@ -69,6 +72,7 @@ export async function updateEbook(id: string, formData: FormData) {
   const title = String(formData.get("title") ?? "");
   const oldPriceRaw = formData.get("oldPrice");
   const publishedYearRaw = formData.get("publishedYear");
+  const seriesOrderRaw = formData.get("seriesOrder");
   const catalogIds = formData.getAll("catalogIds").map(String);
 
   await prisma.eBook.update({
@@ -88,6 +92,8 @@ export async function updateEbook(id: string, formData: FormData) {
       coverTheme: String(formData.get("coverTheme") ?? "royal"),
       coverImageUrl: String(formData.get("coverImageUrl") ?? "").trim() || null,
       backCoverImageUrl: String(formData.get("backCoverImageUrl") ?? "").trim() || null,
+      seriesName: String(formData.get("seriesName") ?? "").trim() || null,
+      seriesOrder: seriesOrderRaw ? Number(seriesOrderRaw) : null,
       price: Number(formData.get("price") ?? 0),
       oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null,
       featured: formData.get("featured") === "on",

@@ -31,6 +31,8 @@ model EBook {
   coverTheme  String
   coverImageUrl     String?
   backCoverImageUrl String?
+  seriesName  String?
+  seriesOrder Int?
   price       Float
   oldPrice    Float?
   featured    Boolean  @default(false)

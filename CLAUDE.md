@@ -375,9 +375,28 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   audience books are excluded from catalog rows since catalogs only ever render on
   adult-facing surfaces.
 
+### Series ("Épisodes")
+- `EBook.seriesName`/`seriesOrder` (both optional) group standalone `EBook` rows into a saga —
+  e.g. the 5 "Sparte" tomes each have `seriesName: "Sparte"` and `seriesOrder` 1–5. Set from the
+  book's own admin edit form (two plain fields, "Série" + "Numéro de tome"); there is no separate
+  `Series` table, a shared `seriesName` string is what groups books together, so renaming it
+  consistently across every tome (by hand, in each book's edit form) is how you'd rename a saga.
+- `src/app/ebooks/[slug]/page.tsx` looks up every other `EBook` sharing the same `seriesName`
+  (ordered by `seriesOrder`) and, when the list is non-empty, passes it to `BookDetailTabs` as an
+  `episodes` prop — an extra "Épisodes" tab (shown first, selected by default) alongside
+  `Chapitres`/`Livres similaires`, modeled on a streaming-service episode list: each tome's real
+  cover, a "Tome N" label, "· Vous êtes ici" on the one currently being viewed, a per-tome
+  progress bar for the active profile (from `ReadingProgress`, resolved the same way as the
+  main page's own progress bar), and a checkmark once that tome is `completed`. A standalone
+  book (no `seriesName`) never shows this tab at all — `chapters`/`similar` stays the default.
+  Clicking an episode navigates to that tome's own `/ebooks/[slug]` page (same buy/read CTA logic
+  as any other book) rather than jumping straight into the reader, since access/progress is
+  still per-book, not shared across a series.
+
 ### Data model (`prisma/schema.prisma`)
 `EBook` (has a `content` text field used by the reader, `author`/`publishedYear` fields for the
-detail page's metadata, and an `audience` field — `"adults"`/`"kids"`), `Order` (one-time
+detail page's metadata, an `audience` field — `"adults"`/`"kids"` — and optional
+`seriesName`/`seriesOrder` for the "Épisodes" tab, see "Series" above), `Order` (one-time
 purchases, optional `customerId`), `Admin`,
 `Customer` (just login/billing: email, passwordHash, name, `Order[]`, `Subscription?`,
 `Profile[]`), `Subscription` (one-to-one with `Customer`, account-wide), `Profile` (belongs to a

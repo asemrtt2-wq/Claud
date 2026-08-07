@@ -19,6 +19,8 @@ type Defaults = {
   coverTheme?: string;
   coverImageUrl?: string | null;
   backCoverImageUrl?: string | null;
+  seriesName?: string | null;
+  seriesOrder?: number | null;
   price?: number;
   oldPrice?: number | null;
   featured?: boolean;
@@ -90,6 +92,33 @@ export default function EbookForm({
           <option value="adults" className="bg-navy-dark">Adultes</option>
           <option value="kids" className="bg-navy-dark">Enfants</option>
         </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-5">
+        <div>
+          <label className={labelClass}>Série (optionnel)</label>
+          <p className={helpClass}>
+            Nom de la saga (ex : "Sparte"). Renseigne ce champ sur chaque tome pour qu&apos;ils
+            s&apos;affichent ensemble comme des épisodes sur la fiche du livre.
+          </p>
+          <input
+            name="seriesName"
+            placeholder="Ex : Sparte"
+            defaultValue={defaults?.seriesName ?? ""}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Numéro de tome (optionnel)</label>
+          <input
+            type="number"
+            min={1}
+            name="seriesOrder"
+            placeholder="Ex : 1"
+            defaultValue={defaults?.seriesOrder ?? undefined}
+            className={inputClass}
+          />
+        </div>
       </div>
 
       <div>
