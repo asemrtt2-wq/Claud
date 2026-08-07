@@ -24,7 +24,7 @@ export default function EBookCard({
   return (
     <Link
       href={`/ebooks/${slug}`}
-      className={`card-scrim ${coverImageUrl ? "" : `cover-theme-${coverTheme}`} group relative flex h-[290px] flex-col justify-between overflow-hidden rounded-[22px] p-6 text-white shadow-soft transition-transform duration-300 hover:-translate-y-2.5`}
+      className={`card-scrim ${coverImageUrl ? "" : `cover-theme-${coverTheme}`} group relative flex h-[290px] flex-col justify-between overflow-hidden rounded-[22px] p-6 text-white shadow-soft ring-1 ring-white/10 transition-transform duration-300 hover:-translate-y-2.5`}
     >
       {coverImageUrl && (
         // eslint-disable-next-line @next/next/no-img-element

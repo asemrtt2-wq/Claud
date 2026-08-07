@@ -13,6 +13,7 @@ import {
   ReadingExperienceSection,
 } from "@/components/HomeMarketingSections";
 import { getSiteSettings } from "@/lib/siteSettings";
+import { dedupeSeries } from "@/lib/series";
 
 function pickDailyBooks<T>(items: T[], count: number): T[] {
   if (items.length <= count) return items;
@@ -33,8 +34,10 @@ export default async function HomePage() {
       orderBy: { createdAt: "asc" },
     }),
   ]);
-  const catalogsWithBooks = catalogs.filter((c) => c.ebooks.length > 0);
-  const dailyBooks = pickDailyBooks(ebooks, 4);
+  const catalogsWithBooks = catalogs
+    .filter((c) => c.ebooks.length > 0)
+    .map((c) => ({ ...c, ebooks: dedupeSeries(c.ebooks) }));
+  const dailyBooks = pickDailyBooks(dedupeSeries(ebooks), 4);
   const featured = ebooks.filter((e) => e.featured);
   const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
   const categoryCount = new Set(ebooks.map((e) => e.category)).size;

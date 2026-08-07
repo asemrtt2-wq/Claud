@@ -12,6 +12,7 @@ import CollectionsManager from "@/components/CollectionsManager";
 import BedtimeReminder from "@/components/BedtimeReminder";
 import PinGate from "@/components/PinGate";
 import { profileGradient } from "@/lib/profileColors";
+import { dedupeSeries } from "@/lib/series";
 
 function relativeDate(date: Date) {
   const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
@@ -185,10 +186,12 @@ export default async function ProfilePage({
         orderBy: { createdAt: "asc" },
       }),
     ]);
-  const catalogsWithBooks = catalogs.filter((c) => c.ebooks.length > 0);
+  const catalogsWithBooks = catalogs
+    .filter((c) => c.ebooks.length > 0)
+    .map((c) => ({ ...c, ebooks: dedupeSeries(c.ebooks) }));
 
   const categoriesMap = new Map<string, typeof catalog>();
-  for (const book of catalog) {
+  for (const book of dedupeSeries(catalog)) {
     const list = categoriesMap.get(book.category) ?? [];
     list.push(book);
     categoriesMap.set(book.category, list);

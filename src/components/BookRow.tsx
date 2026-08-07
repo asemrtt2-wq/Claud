@@ -52,7 +52,7 @@ export default function BookRow({
               className="group relative w-32 shrink-0 snap-start transition hover:z-10 sm:w-36"
             >
               <div
-                className={`${book.coverImageUrl ? "" : `cover-theme-${book.coverTheme}`} relative mb-2 flex h-40 items-center justify-center overflow-hidden rounded-2xl text-4xl shadow-lg transition duration-300 group-hover:-translate-y-1 group-hover:scale-110 group-hover:shadow-2xl`}
+                className={`${book.coverImageUrl ? "" : `cover-theme-${book.coverTheme}`} relative mb-2 flex h-40 items-center justify-center overflow-hidden rounded-2xl text-4xl shadow-[0_10px_24px_rgba(0,0,0,0.45)] ring-1 ring-white/10 transition duration-300 group-hover:-translate-y-1 group-hover:scale-110 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.55)]`}
               >
                 {book.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

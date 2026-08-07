@@ -17,6 +17,7 @@ import ShareButton from "@/components/ShareButton";
 import BackButton from "@/components/BackButton";
 import BookDetailTabs from "@/components/BookDetailTabs";
 import BookRow from "@/components/BookRow";
+import { dedupeSeries } from "@/lib/series";
 
 function formatDuration(minutes: number) {
   if (minutes < 60) return `${minutes} min`;
@@ -64,10 +65,15 @@ export default async function EBookPage({
         })
       : null;
 
-  const [similarBooks, recommendations, seriesBooks] = await Promise.all([
+  const [rawSimilarBooks, recommendations, seriesBooks] = await Promise.all([
     prisma.eBook.findMany({
-      where: { audience: "adults", category: ebook.category, id: { not: ebook.id } },
-      take: 4,
+      where: {
+        audience: "adults",
+        category: ebook.category,
+        id: { not: ebook.id },
+        ...(ebook.seriesName ? { seriesName: { not: ebook.seriesName } } : {}),
+      },
+      take: 8,
     }),
     activeProfile ? getRecommendations(activeProfile.id, [ebook.id]) : null,
     ebook.seriesName
@@ -77,6 +83,8 @@ export default async function EBookPage({
         })
       : Promise.resolve([]),
   ]);
+
+  const similarBooks = dedupeSeries(rawSimilarBooks).slice(0, 4);
 
   const seriesProgress = activeProfile
     ? await prisma.readingProgress.findMany({

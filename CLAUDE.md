@@ -409,6 +409,14 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   Clicking an episode navigates to that tome's own `/ebooks/[slug]` page (same buy/read CTA logic
   as any other book) rather than jumping straight into the reader, since access/progress is
   still per-book, not shared across a series.
+- `src/lib/series.ts` — `dedupeSeries()` collapses a list of books down to one representative per
+  `seriesName` (the lowest `seriesOrder`, i.e. "tome 1") so browse rows read like a single show
+  tile instead of listing every tome separately — applied to the `/p/[id]` "Parcourir par
+  catégorie" rows, the homepage's custom `Catalog` rows and daily-picked grid, and the
+  "Livres similaires" row on `/ebooks/[slug]` (which additionally excludes the current book's own
+  series outright, since those tomes are already surfaced in the "Épisodes" tab). Deliberately
+  **not** applied to "Continuer la lecture" / "Ma bibliothèque" / "Mes favoris" / "Historique",
+  where the specific tome the profile favorited, read, or is mid-way through must stay visible.
 
 ### Data model (`prisma/schema.prisma`)
 `EBook` (has a `content` text field used by the reader, `author`/`publishedYear` fields for the
