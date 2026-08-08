@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import BookRow from "@/components/BookRow";
+import LibraryBookRow from "@/components/LibraryBookRow";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { getActiveProfile } from "@/lib/activeProfile";
 import { hasAccessToEbook } from "@/lib/access";
@@ -38,6 +38,20 @@ export default async function BibliothequePage() {
     getSurpriseBook(activeProfile?.id ?? null),
   ]);
 
+  let accessibleIds = new Set<string>();
+  if (customer) {
+    const subscription = await prisma.subscription.findUnique({ where: { customerId: customer.id } });
+    if (subscription?.status === "active") {
+      accessibleIds = new Set(ebooks.map((e) => e.id));
+    } else {
+      const paidOrders = await prisma.order.findMany({
+        where: { customerId: customer.id, status: "paid" },
+        select: { ebookId: true },
+      });
+      accessibleIds = new Set(paidOrders.map((o) => o.ebookId));
+    }
+  }
+
   const categories = Array.from(new Set(ebooks.map((e) => e.category)));
   const categoriesMap = new Map<string, typeof ebooks>();
   for (const book of dedupeSeries(ebooks)) {
@@ -47,7 +61,27 @@ export default async function BibliothequePage() {
   }
   const categoryRows = categories.map((category) => ({
     category,
-    books: withBadges(categoriesMap.get(category) ?? [], bestsellerIds),
+    books: withBadges(categoriesMap.get(category) ?? [], bestsellerIds).map((b) => {
+      const hasAccess = accessibleIds.has(b.id);
+      return {
+        id: b.id,
+        slug: b.slug,
+        title: b.title,
+        subtitle: b.subtitle,
+        category: b.category,
+        coverEmoji: b.coverEmoji,
+        coverTheme: b.coverTheme,
+        coverImageUrl: b.coverImageUrl,
+        price: b.price,
+        oldPrice: b.oldPrice,
+        readingMinutes: b.pdfUrl ? null : Math.max(1, Math.round(countWords(b.content) / 200)),
+        isNew: b.isNew,
+        isBestseller: b.isBestseller,
+        hasAccess,
+        href:
+          hasAccess && activeProfile ? `/p/${activeProfile.id}/read/${b.slug}` : `/ebooks/${b.slug}`,
+      };
+    }),
   }));
 
   const featured = ebooks.find((e) => e.featured) ?? [...ebooks].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ?? null;
@@ -144,7 +178,7 @@ export default async function BibliothequePage() {
                   <p className="mb-5 text-sm text-[color:var(--color-lumina-text-muted)]">
                     {books.length} iBook{books.length > 1 ? "s" : ""} dans cette catégorie.
                   </p>
-                  <BookRow label="" books={books} />
+                  <LibraryBookRow books={books} />
                 </section>
               );
             })}

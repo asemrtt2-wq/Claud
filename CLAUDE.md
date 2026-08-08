@@ -109,9 +109,9 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   link now points here instead of anchor-scrolling to the homepage's own catalogue section).
   Category filter pills are the real distinct `category` values in the catalog (not a hardcoded
   example list) and are plain anchor links (`#neurosciences`, etc.) down to that category's own
-  `BookRow` section — no separate filtered-view state, since the whole catalog is already on the
-  page. **"À la une"** picks `EBook.featured` (falling back to the newest book if nothing is
-  flagged featured) and links to the reader directly if the visiting customer already has access
+  row — no separate filtered-view state, since the whole catalog is already on the page.
+  **"À la une"** picks `EBook.featured` (falling back to the newest book if nothing is flagged
+  featured) and links to the reader directly if the visiting customer already has access
   (`hasAccessToEbook()`) via their active profile, or to `/ebooks/[slug]` otherwise — mirroring
   the "Lire"/"Découvrir" wording split. **"Me recommander un livre"** calls
   `getSurpriseBook()` (`src/lib/recommendations.ts`): personalized (same signals as
@@ -120,6 +120,17 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   a single fixed "recommendation" cached anywhere. There is no "Premium" filter pill like an
   early mockup suggested, since Premium unlocks the *entire* library rather than a distinct
   premium-only book subset — a pill for it would filter to either everything or nothing.
+  Category rows use `src/components/LibraryBookRow.tsx` — a richer, taller card (cover, badge,
+  title, description, category + real reading-time estimate, price, and a Lire/Découvrir button)
+  than the compact `BookRow` tile used elsewhere in the app (dashboard rows, "Ma bibliothèque",
+  the reader's end-of-book "Livres similaires"). This is a deliberately separate component rather
+  than a variant of `BookRow`, since the two are tuned for different contexts — `BookRow`'s bare
+  cover+title suits dense, personal, already-familiar rows, while this page is a first-time
+  browsing/discovery surface where more info up front (and a per-book access check, computed once
+  per page load from the customer's paid `Order`s and `Subscription` status, not one query per
+  book) helps a visitor decide what to read. Reusing `BookRow` here would have meant cramming this
+  much text into a tile designed for a plain cover, or bloating `BookRow` with props unused by
+  every other caller.
 - `src/app/ebooks/[slug]/page.tsx` — eBook detail page: a Netflix/Apple-TV-style layout with a
   large cover hero (back/close buttons), title/author/year/page-count/category
   metadata, a progress-aware CTA ("Commencer" vs "Reprendre" with page/percent/estimated time
