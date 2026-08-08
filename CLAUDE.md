@@ -275,29 +275,83 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   un-cropped copy floats centered over it at `object-contain` so the whole cover — including the
   title, which used to get cut off when the hero cropped a portrait cover to a landscape band —
   is always fully visible before a visitor reads the summary or buys.
-- `src/components/Reader.tsx` — "immersive" (default) vs "clair" (light) toggle, plus a
-  "pages" (click-through, default) vs "scroll" (continuous, all pages concatenated) mode toggle.
-  Immersive mode uses the eBook's `cover-theme-*` gradient as a full-page background with a dark
-  overlay and a glassmorphic content card; light mode is a plain white reader. Font size (A-/A+),
-  prev/next, and a purple progress bar work in both modes — border/background colors on the
-  control buttons branch on the `immersive` boolean so they stay visible in light mode too.
-  In scroll mode, progress is derived from scroll position (debounced) instead of button clicks.
-  The bottom bar (← Précédent / page position / Suivant →) is always rendered in both modes now,
-  fixed at the same size and position — it used to only exist in "pages" mode and disappear
-  entirely in "scroll" mode, which made the reader feel inconsistent as soon as someone switched
-  modes. In "scroll" mode the same two buttons call `scrollStep(±1)` (scrolls the container by
-  ~85% of its visible height via `scrollBy({ behavior: "smooth" })`) instead of `goToView(...)`,
-  and are never `disabled` (there's no page-edge state to know without more scroll-position work);
-  in "pages" mode they keep their original `goToView`/`disabled`-at-the-edges behavior.
-  Reading position is saved via `saveReadingProgress(profileId, ebookId, page)` in
-  `src/lib/profileActions.ts`; reading time via `incrementReadingMinutes(profileId)` every 60s.
-  The top toolbar (back link, font size, immersive/clair, pages/scroll) collapses to nothing via a
-  `max-height` transition when the ⌃ button is pressed, for a distraction-free full-bleed reading
-  view closer to a real e-reader; a small floating ⌄ pill (fixed top-center) brings it back. In
-  "pages" mode, moving between pages/covers replays a `page-turn-forward`/`page-turn-backward`
-  CSS keyframe animation (`globals.css`, a slide + slight `rotateY` skew) keyed on the page `view`
-  index, giving a lightweight "turning page" feel — deliberately not a literal 3D page-curl, which
-  would need canvas/drag-gesture work well beyond a CSS transition.
+- `src/components/Reader.tsx` — a premium, Apple-Books-style reading experience. Four **reading
+  themes** (Clair `#FAFAFA`, Sépia `#F4ECD8`, Sombre `#161616`, Immersif — the eBook's
+  `cover-theme-*` gradient with a dark overlay, the long-standing default) replace the old
+  binary immersive/clair toggle; a `dark` boolean derived from the theme drives chrome
+  (borders/backdrop) styling for both dark themes at once. A "pages" (click-through, default) vs
+  "scroll" (continuous, all pages concatenated with a thin `···` divider between them) mode
+  toggle remains. All of these plus font family (sans/serif), text size (17–23px), line-height
+  (1.6/1.8/2, "Compact/Confort/Aéré"), and content width (620/720/860px, "Étroit/Confort/Large")
+  live in a single "Aa" **Réglages** dropdown instead of cluttering the toolbar — they're plain
+  `useState` UI prefs (not persisted server-side; they reset per session, same tier as the
+  existing font-size control that was already client-only).
+  - **Content rendering**: page text is split on blank lines and each block is classified —
+    a line matching the same `Chapitre N — Title`/`Introduction` heading pattern `chapters.ts`
+    uses renders as a large styled heading (not just bigger inline text); a block starting with
+    `> ` renders as a purple-accented quote card; a block whose every line starts with `- `
+    renders as a bulleted list; anything else is a normal paragraph. This is a convention any
+    future book's `content` can opt into from the admin form — existing plain-paragraph books are
+    unaffected and just render as before, only with the new width/size/line-height/spacing.
+  - **Progress header**: below the icon row, a small info line shows the current chapter title
+    (resolved from the `chapters` prop passed down from the read-route page, via
+    `getChapters(ebook.content)` — the same chapter list `/ebooks/[slug]`'s "Chapitres" tab
+    uses) plus `{percent}% · ~{N} min restantes`. The remaining-time estimate is real, not
+    invented: if `ReadingProgress.avgSecondsPerPage` exists for this profile (already tracked by
+    `saveReadingProgress`) it's `avgSecondsPerPage × pagesLeft`; otherwise it falls back to a
+    200-words-per-minute estimate over the actual remaining page text — never a fabricated
+    constant.
+  - **Sommaire / Signets panel** (📑): two tabs. "Chapitres" lists the real parsed chapters with
+    per-chapter time estimates, jumping straight to that chapter's page. "Signets" is a genuine
+    bookmark list (any page, not just chapter starts) — stored in `localStorage` under
+    `lumina-bookmarks:{ebookId}:{profileId}`, **not** synced server-side/cross-device (a real
+    per-profile DB model would be the next step if that matters; this ships something functional
+    today without a schema migration).
+  - **Recherche** (🔍): client-side full-text search across the already-loaded `pages` array —
+    no new endpoint, matches with a snippet, click jumps to that page.
+  - **Favori** (🤍/❤️): the same `toggleFavorite()` action `FavoriteButton` uses on
+    `/ebooks/[slug]`, so favoriting works from inside the reader too.
+  - **Quote copy/share**: selecting text anywhere in the page content shows a small floating
+    "📋 Copier / ↗ Partager" pill using the browser's native text selection (a real highlight
+    while reading), `navigator.clipboard`, and `navigator.share` (falls back to clipboard where
+    Web Share isn't available). This is **not** a persistent saved-highlights feature — no new
+    data is stored — just a quick copy/share of whatever's selected.
+  - **End-of-book screen**: appended after the last page (or back cover, if the book has one) —
+    "Merci d'avoir lu « Title » !", a real "Tome suivant" link when the eBook has a `seriesName`
+    and a next `seriesOrder` exists, a "Livres similaires" `BookRow` (same category-based query
+    `/ebooks/[slug]` uses, series-deduped), and "Retour à la bibliothèque". Deliberately has
+    **no** star-rating control — this app has no rating storage, and a rating UI that doesn't
+    save anywhere would be exactly the kind of fake feature this codebase avoids.
+  - Border/background colors on every control branch on `dark` (not raw `immersive` anymore) so
+    they stay legible across all four themes. Prev/next, the purple progress bar, and the
+    always-visible bottom bar (← Précédent / page position / Suivant →, present in both
+    pages/scroll modes) are unchanged from before. In scroll mode the same two buttons call
+    `scrollStep(±1)` (~85% of visible height via `scrollBy({ behavior: "smooth" })`) instead of
+    `goToView(...)`, and are never `disabled`; in "pages" mode they keep `goToView`/
+    `disabled`-at-the-edges behavior. Reading position is saved via
+    `saveReadingProgress(profileId, ebookId, page)` in `src/lib/profileActions.ts`; reading time
+    via `incrementReadingMinutes(profileId)` every 60s. The top toolbar collapses to nothing via
+    a `max-height` transition when the ⌃ button is pressed (also closes any open panel); a small
+    floating ⌄ pill (fixed top-center) brings it back. In "pages" mode, moving between
+    pages/covers replays a `page-turn-forward`/`page-turn-backward` CSS keyframe animation
+    (`globals.css`, a slide + slight `rotateY` skew) keyed on the page `view` index — deliberately
+    not a literal 3D page-curl, which would need canvas/drag-gesture work well beyond a CSS
+    transition.
+  - **Deliberately not built in this pass** (would need real new assets, external services, or
+    schema work beyond what a client-side reader upgrade justifies): illustrations/diagrams
+    embedded every few pages (needs real per-book image assets — only a front/back cover exists
+    per book today, same constraint as "Cover art" above); audio read-aloud with word-level
+    highlighting sync (KidsReader already has a simpler, non-synced `SpeechSynthesis` voice
+    picker — word-boundary-synced highlighting for the adult reader is a real feature, not a
+    small add-on, and is a reasonable next step on its own); a species/quick-facts info box
+    (taille/poids/habitat/etc.) — would need new structured per-book fields that don't exist and
+    wouldn't apply to most of the catalog (fitness/mindset titles, not just the animal ones);
+    instant word definitions/translation (needs a real dictionary/translation API, none
+    configured — see the Stripe-key pattern for how this app handles "not configured yet");
+    persistent text highlights and note-taking (would need a new `Highlight`/`Note` Prisma model,
+    a bigger addition than this pass); a reading-badges/achievements system beyond the streak and
+    goal tracking that already exists on `/p/[id]/compte`; offline download and multi-device sync
+    (see "Downloads" / offline reading above — unchanged, still intentionally not implemented).
 - `src/components/KidsReader.tsx` — adds on top of that pattern: a bouncing mascot emoji on page
   turn, a `SpeechSynthesis`-based read-aloud voice picker (Femme/Homme/Robot/Alien/Loup/Ours —
   pitch/rate presets on the browser's built-in voice, not distinct synthesized models), and a
