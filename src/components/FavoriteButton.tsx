@@ -17,6 +17,7 @@ export default function FavoriteButton({
 }) {
   const [favorited, setFavorited] = useState(initialFavorited);
   const [isPending, startTransition] = useTransition();
+  const [popping, setPopping] = useState(false);
 
   if (!profileId) {
     return (
@@ -31,6 +32,7 @@ export default function FavoriteButton({
 
   function handleClick() {
     setFavorited((prev) => !prev);
+    setPopping(true);
     startTransition(() => {
       toggleFavorite(profileId as string, ebookId, slug);
     });
@@ -46,7 +48,9 @@ export default function FavoriteButton({
           : "border-white/15 text-white hover:border-[#7c5cff]"
       }`}
     >
-      <span>{favorited ? "❤️" : "🤍"}</span>
+      <span className={popping ? "heart-pop" : ""} onAnimationEnd={() => setPopping(false)}>
+        {favorited ? "❤️" : "🤍"}
+      </span>
       {favorited ? "Dans tes favoris" : "Ajouter aux favoris"}
     </button>
   );

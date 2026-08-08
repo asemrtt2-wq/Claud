@@ -4,15 +4,24 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { paginateContent } from "@/lib/paginate";
 import { isProfileUnlocked } from "@/lib/profileUnlock";
-import { getRecommendations } from "@/lib/recommendations";
+import { getRecommendations, getBestsellerIds } from "@/lib/recommendations";
 import AppBottomNav from "@/components/AppBottomNav";
 import BookRow from "@/components/BookRow";
 import ProfileSwitcher from "@/components/ProfileSwitcher";
 import CollectionsManager from "@/components/CollectionsManager";
 import BedtimeReminder from "@/components/BedtimeReminder";
 import PinGate from "@/components/PinGate";
+import FavoriteButton from "@/components/FavoriteButton";
 import { profileGradient } from "@/lib/profileColors";
 import { dedupeSeries } from "@/lib/series";
+import { isNewBook } from "@/lib/badges";
+
+function withBadges<T extends { id: string; createdAt: Date }>(
+  books: T[],
+  bestsellerIds: Set<string>
+): (T & { isNew: boolean; isBestseller: boolean })[] {
+  return books.map((b) => ({ ...b, isNew: isNewBook(b.createdAt), isBestseller: bestsellerIds.has(b.id) }));
+}
 
 function relativeDate(date: Date) {
   const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
@@ -159,7 +168,7 @@ export default async function ProfilePage({
   }
 
   // Adult profile dashboard
-  const [orders, favorites, progressEntries, collections, catalog, catalogs] =
+  const [orders, favorites, progressEntries, collections, catalog, catalogs, bestsellerIds] =
     await Promise.all([
       prisma.order.findMany({
         where: { customerId: customer.id, status: "paid" },
@@ -185,10 +194,11 @@ export default async function ProfilePage({
         include: { ebooks: { where: { audience: "adults" } } },
         orderBy: { createdAt: "asc" },
       }),
+      getBestsellerIds(),
     ]);
   const catalogsWithBooks = catalogs
     .filter((c) => c.ebooks.length > 0)
-    .map((c) => ({ ...c, ebooks: dedupeSeries(c.ebooks) }));
+    .map((c) => ({ ...c, ebooks: withBadges(dedupeSeries(c.ebooks), bestsellerIds) }));
 
   const categoriesMap = new Map<string, typeof catalog>();
   for (const book of dedupeSeries(catalog)) {
@@ -196,7 +206,9 @@ export default async function ProfilePage({
     list.push(book);
     categoriesMap.set(book.category, list);
   }
-  const categoryRows = Array.from(categoriesMap.entries());
+  const categoryRows = Array.from(categoriesMap.entries()).map(
+    ([category, books]) => [category, withBadges(books, bestsellerIds)] as const
+  );
 
   const progressByEbookId = new Map(progressEntries.map((p) => [p.ebookId, p]));
   const libraryMap = new Map<
@@ -229,6 +241,9 @@ export default async function ProfilePage({
   const billboardPercent = continueReading
     ? Math.round(((continueReading.page + 1) / continueReading.totalPages) * 100)
     : null;
+  const billboardIsFavorited = billboardBook
+    ? favorites.some((f) => f.ebookId === billboardBook.id)
+    : false;
 
   const hasReadToday = progressEntries.some(
     (p) => p.updatedAt.toISOString().slice(0, 10) === todayStr
@@ -264,16 +279,15 @@ export default async function ProfilePage({
         />
 
         {billboardBook && billboardHref && (
-          <Link
-            href={billboardHref}
-            className={`${billboardBook.coverImageUrl ? "" : `cover-theme-${billboardBook.coverTheme}`} relative mb-12 flex h-[300px] flex-col justify-end overflow-hidden rounded-[26px] p-7 transition hover:-translate-y-1 sm:h-[360px] sm:p-10`}
+          <div
+            className={`${billboardBook.coverImageUrl ? "" : `cover-theme-${billboardBook.coverTheme}`} group relative mb-12 flex h-[300px] flex-col justify-end overflow-hidden rounded-[26px] p-7 shadow-[0_25px_70px_rgba(0,0,0,0.4)] transition hover:-translate-y-1 sm:h-[360px] sm:p-10`}
           >
             {billboardBook.coverImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={billboardBook.coverImageUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             ) : (
               <div className="absolute right-8 top-8 text-7xl opacity-80 sm:text-8xl">
@@ -281,6 +295,14 @@ export default async function ProfilePage({
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute right-6 top-6 z-20 sm:right-8 sm:top-8">
+              <FavoriteButton
+                ebookId={billboardBook.id}
+                slug={billboardBook.slug}
+                initialFavorited={billboardIsFavorited}
+                profileId={id}
+              />
+            </div>
             <div className="relative z-10 max-w-md">
               <span className="mb-2 inline-block text-xs font-bold uppercase tracking-wider text-white/70">
                 {continueReading ? "Continuer la lecture" : "Notre sélection pour toi"}
@@ -292,15 +314,18 @@ export default async function ProfilePage({
                 <p className="mb-4 line-clamp-2 text-sm text-white/80">{billboardBook.subtitle}</p>
               )}
               {billboardPercent !== null && (
-                <div className="mb-4 h-1.5 w-48 overflow-hidden rounded-full lumina-progress-track">
+                <div className="mb-4 h-2.5 w-56 overflow-hidden rounded-full lumina-progress-track">
                   <div className="h-full lumina-progress-fill" style={{ width: `${billboardPercent}%` }} />
                 </div>
               )}
-              <span className="inline-block rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-navy">
-                {continueReading ? "Reprendre ▶" : "Découvrir →"}
-              </span>
+              <Link
+                href={billboardHref}
+                className="inline-block rounded-xl bg-white px-6 py-3 text-base font-bold text-navy shadow-[0_10px_28px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(0,0,0,0.4)]"
+              >
+                {continueReading ? "▶ Reprendre" : "Découvrir →"}
+              </Link>
             </div>
-          </Link>
+          </div>
         )}
 
         {catalogsWithBooks.length > 0 && (

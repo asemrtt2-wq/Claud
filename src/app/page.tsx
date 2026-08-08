@@ -14,6 +14,12 @@ import {
 } from "@/components/HomeMarketingSections";
 import { getSiteSettings } from "@/lib/siteSettings";
 import { dedupeSeries } from "@/lib/series";
+import { getBestsellerIds } from "@/lib/recommendations";
+import { isNewBook } from "@/lib/badges";
+import { getCategoryStyle } from "@/lib/categoryStyle";
+import { getCurrentCustomer } from "@/lib/customerSession";
+import { getActiveProfile } from "@/lib/activeProfile";
+import { countWords, paginateContent } from "@/lib/paginate";
 
 function pickDailyBooks<T>(items: T[], count: number): T[] {
   if (items.length <= count) return items;
@@ -22,8 +28,18 @@ function pickDailyBooks<T>(items: T[], count: number): T[] {
   return Array.from({ length: count }, (_, i) => items[(start + i) % items.length]);
 }
 
+function withBadges<T extends { id: string; createdAt: Date }>(
+  books: T[],
+  bestsellerIds: Set<string>
+): (T & { isNew: boolean; isBestseller: boolean })[] {
+  return books.map((b) => ({ ...b, isNew: isNewBook(b.createdAt), isBestseller: bestsellerIds.has(b.id) }));
+}
+
 export default async function HomePage() {
-  const [ebooks, settings, catalogs] = await Promise.all([
+  const customer = await getCurrentCustomer();
+  const activeProfile = customer ? await getActiveProfile(customer.id) : null;
+
+  const [ebooks, settings, catalogs, bestsellerIds] = await Promise.all([
     prisma.eBook.findMany({
       where: { audience: "adults" },
       orderBy: { createdAt: "asc" },
@@ -33,14 +49,17 @@ export default async function HomePage() {
       include: { ebooks: { where: { audience: "adults" } } },
       orderBy: { createdAt: "asc" },
     }),
+    getBestsellerIds(),
   ]);
   const catalogsWithBooks = catalogs
     .filter((c) => c.ebooks.length > 0)
-    .map((c) => ({ ...c, ebooks: dedupeSeries(c.ebooks) }));
-  const dailyBooks = pickDailyBooks(dedupeSeries(ebooks), 4);
+    .map((c) => ({ ...c, ebooks: withBadges(dedupeSeries(c.ebooks), bestsellerIds) }));
+  const dailyBooks = withBadges(pickDailyBooks(dedupeSeries(ebooks), 4), bestsellerIds);
   const featured = ebooks.filter((e) => e.featured);
   const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
-  const categoryCount = new Set(ebooks.map((e) => e.category)).size;
+  const categories = Array.from(new Set(ebooks.map((e) => e.category)));
+  const categoryCount = categories.length;
+  const browseHref = activeProfile ? `/p/${activeProfile.id}#parcourir` : "/login";
 
   return (
     <>
@@ -48,6 +67,8 @@ export default async function HomePage() {
 
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0a0918] via-[#150f2e] to-navy-dark px-6 pb-20 pt-16 text-white">
         <div className="pointer-events-none absolute -right-52 -top-52 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(124,92,255,0.3),transparent_70%)]" />
+        <div className="lumina-glow -left-32 top-40 h-72 w-72 bg-[#5b3df0]/30" />
+        <div className="lumina-glow bottom-0 left-1/3 h-56 w-56 bg-[#a78bfa]/20" style={{ animationDelay: "3s" }} />
         <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
           <div>
             <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4.5 py-2 text-[0.82rem] font-bold uppercase tracking-wide text-[#c9bdff]">
@@ -119,6 +140,32 @@ export default async function HomePage() {
 
       <FeatureHighlights />
 
+      {categories.length > 0 && (
+        <section className="bg-[#0d0b22] px-6 py-20 text-white">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="mb-8 text-lg font-extrabold">Explorer par catégorie</h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {categories.map((category, i) => {
+                const style = getCategoryStyle(category, i);
+                return (
+                  <Link
+                    key={category}
+                    href={browseHref}
+                    style={{ animationDelay: `${i * 60}ms` }}
+                    className={`animate-fade-in-up group flex flex-col items-center justify-center gap-2 rounded-2xl bg-gradient-to-br ${style.gradient} p-5 text-center shadow-[0_10px_28px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.05] hover:shadow-[0_20px_44px_rgba(124,92,255,0.4)]`}
+                  >
+                    <span className="text-3xl transition-transform duration-300 group-hover:scale-110">
+                      {style.emoji}
+                    </span>
+                    <span className="text-xs font-bold leading-tight">{category}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {catalogsWithBooks.length > 0 && (
         <section className="bg-[#0a0918] px-6 pb-4 pt-20 text-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-12">
@@ -143,7 +190,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
-            {dailyBooks.map((ebook) => (
+            {dailyBooks.map((ebook, i) => (
               <EBookCard
                 key={ebook.id}
                 slug={ebook.slug}
@@ -154,6 +201,11 @@ export default async function HomePage() {
                 coverImageUrl={ebook.coverImageUrl}
                 price={ebook.price}
                 oldPrice={ebook.oldPrice}
+                pages={ebook.pdfUrl ? undefined : paginateContent(ebook.content).length}
+                readingMinutes={ebook.pdfUrl ? undefined : Math.max(1, Math.round(countWords(ebook.content) / 200))}
+                isNew={ebook.isNew}
+                isBestseller={ebook.isBestseller}
+                animationDelayMs={i * 80}
               />
             ))}
           </div>

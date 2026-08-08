@@ -1,5 +1,20 @@
 import { prisma } from "@/lib/prisma";
 
+/**
+ * Real "bestseller" signal: eBook ids with the most paid orders, most-read
+ * first. No fabricated rating/reader-count data — just actual purchases.
+ */
+export async function getBestsellerIds(limit = 10): Promise<Set<string>> {
+  const orders = await prisma.order.groupBy({
+    by: ["ebookId"],
+    where: { status: "paid" },
+    _count: { ebookId: true },
+    orderBy: { _count: { ebookId: "desc" } },
+    take: limit,
+  });
+  return new Set(orders.map((o) => o.ebookId));
+}
+
 export async function getRecommendations(profileId: string, excludeIds: string[]) {
   const [favorites, progress] = await Promise.all([
     prisma.favorite.findMany({ where: { profileId }, include: { ebook: true } }),

@@ -15,6 +15,24 @@ function formatMinutes(minutes: number) {
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
 }
 
+function xpForLevel(level: number) {
+  return (level - 1) ** 2 * 100;
+}
+
+/**
+ * A level/XP framing over stats we already track for real (minutes read,
+ * completed books, streak) — not a persisted points system, just a more
+ * game-like presentation of the same numbers shown above.
+ */
+function computeLevel(totalMinutesRead: number, completedBooks: number, streak: number) {
+  const xp = totalMinutesRead * 2 + completedBooks * 50 + streak * 5;
+  let level = 1;
+  while (xp >= xpForLevel(level + 1)) level += 1;
+  const xpIntoLevel = xp - xpForLevel(level);
+  const xpForNext = xpForLevel(level + 1) - xpForLevel(level);
+  return { xp, level, xpIntoLevel, xpForNext, percent: Math.round((xpIntoLevel / xpForNext) * 100) };
+}
+
 export default async function CompteObjectifsPage({
   params,
 }: {
@@ -59,6 +77,29 @@ export default async function CompteObjectifsPage({
       p.updatedAt.getFullYear() === now.getFullYear()
     );
   }).length;
+  const completedBooksTotal = progressEntries.filter((p) => p.completed).length;
+  const currentStreak =
+    profile.lastReadDate === todayStr ||
+    profile.lastReadDate === new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+      ? profile.readingStreak
+      : 0;
+  const { level, xpIntoLevel, xpForNext, percent: levelPercent } = computeLevel(
+    profile.totalMinutesRead,
+    completedBooksTotal,
+    currentStreak
+  );
+  const milestones = [
+    { emoji: "📖", label: "Premier livre terminé", achieved: completedBooksTotal >= 1 },
+    { emoji: "📚", label: "10 livres terminés", achieved: completedBooksTotal >= 10 },
+    { emoji: "🔥", label: "7 jours de suite", achieved: currentStreak >= 7 },
+    { emoji: "⏱️", label: "10 h de lecture", achieved: profile.totalMinutesRead >= 600 },
+    { emoji: "🌙", label: "50 h de lecture", achieved: profile.totalMinutesRead >= 3000 },
+    {
+      emoji: "🎯",
+      label: "Objectif du mois atteint",
+      achieved: profile.monthlyBookGoal ? booksCompletedThisMonth >= profile.monthlyBookGoal : false,
+    },
+  ];
 
   return (
     <div className="lumina-shell pb-24">
@@ -111,14 +152,47 @@ export default async function CompteObjectifsPage({
             <p className="mb-1 text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
               🔥 Jours consécutifs
             </p>
-            <p className="text-2xl font-extrabold">
-              {profile.lastReadDate === todayStr ||
-              profile.lastReadDate === new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-                ? profile.readingStreak
-                : 0}
-            </p>
+            <p className="text-2xl font-extrabold">{currentStreak}</p>
           </div>
         </div>
+
+        <section className="lumina-card mb-10 rounded-[22px] p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-extrabold">{`Niveau ${level}`}</h2>
+              <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+                {`${xpIntoLevel} / ${xpForNext} XP vers le niveau ${level + 1}`}
+              </p>
+            </div>
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-xl font-extrabold shadow-[0_10px_28px_rgba(124,92,255,0.4)]">
+              {level}
+            </span>
+          </div>
+          <div className="mb-6 h-2.5 w-full overflow-hidden rounded-full lumina-progress-track">
+            <div
+              className="h-full lumina-progress-fill transition-all duration-700"
+              style={{ width: `${levelPercent}%` }}
+            />
+          </div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-lumina-text-muted)]">
+            Badges
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {milestones.map((m) => (
+              <div
+                key={m.label}
+                className={`flex flex-col items-center gap-1.5 rounded-2xl border p-4 text-center transition ${
+                  m.achieved
+                    ? "border-[#7c5cff]/40 bg-[#7c5cff]/10"
+                    : "border-white/10 bg-white/[0.02] opacity-40"
+                }`}
+              >
+                <span className="text-2xl">{m.achieved ? m.emoji : "🔒"}</span>
+                <span className="text-xs font-bold leading-tight">{m.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <section className="lumina-card rounded-[22px] p-6">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">

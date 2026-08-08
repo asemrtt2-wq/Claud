@@ -140,6 +140,7 @@ export default function Reader({
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [favorited, setFavorited] = useState(initialFavorited);
+  const [favoritePopping, setFavoritePopping] = useState(false);
   const [selection, setSelection] = useState<string | null>(null);
   const [isFavPending, startFavTransition] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -176,6 +177,7 @@ export default function Reader({
 
   function handleToggleFavorite() {
     setFavorited((v) => !v);
+    setFavoritePopping(true);
     startFavTransition(() => {
       toggleFavorite(profileId, ebookId, slug);
     });
@@ -387,7 +389,12 @@ export default function Reader({
               aria-label="Ajouter aux favoris"
               className={`h-8 w-8 rounded-lg border text-sm font-bold disabled:opacity-50 ${dark ? "border-white/20" : "border-black/15"}`}
             >
-              {favorited ? "❤️" : "🤍"}
+              <span
+                className={favoritePopping ? "heart-pop inline-block" : "inline-block"}
+                onAnimationEnd={() => setFavoritePopping(false)}
+              >
+                {favorited ? "❤️" : "🤍"}
+              </span>
             </button>
             <button
               onClick={() => setPanelOpen((p) => (p === "settings" ? null : "settings"))}

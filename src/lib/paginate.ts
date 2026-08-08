@@ -1,5 +1,9 @@
 const MAX_CHARS_PER_PAGE = 900;
 
+export function countWords(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
 export function paginateContent(content: string): string[] {
   const paragraphs = content.split(/\n\n+/).filter(Boolean);
   const pages: string[] = [];

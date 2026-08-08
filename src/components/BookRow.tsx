@@ -10,6 +10,8 @@ type RowBook = {
   coverEmoji: string;
   coverTheme: string;
   coverImageUrl?: string | null;
+  isNew?: boolean;
+  isBestseller?: boolean;
 };
 
 export default function BookRow({
@@ -43,16 +45,17 @@ export default function BookRow({
         ref={scrollRef}
         className="scrollbar-hide -mx-6 flex snap-x gap-4 overflow-x-auto px-6 pb-1 sm:-mx-10 sm:px-10"
       >
-        {books.map((book) => {
+        {books.map((book, i) => {
           const percent = progressByEbookId?.get(book.id);
           return (
             <Link
               key={book.id}
               href={`${hrefBase}/${book.slug}`}
-              className="group relative w-32 shrink-0 snap-start transition hover:z-10 sm:w-36"
+              style={{ animationDelay: `${i * 50}ms` }}
+              className="group relative w-32 shrink-0 snap-start transition hover:z-10 sm:w-36 animate-fade-in-up"
             >
               <div
-                className={`cover-theme-${book.coverTheme} relative mb-2 flex h-40 items-center justify-center overflow-hidden rounded-2xl text-4xl shadow-[0_10px_24px_rgba(0,0,0,0.45)] ring-1 ring-white/10 transition duration-300 group-hover:-translate-y-1 group-hover:scale-110 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.55)]`}
+                className={`cover-theme-${book.coverTheme} relative mb-2 flex h-40 items-center justify-center overflow-hidden rounded-2xl text-4xl shadow-[0_10px_24px_rgba(0,0,0,0.45)] ring-1 ring-white/10 transition duration-300 group-hover:-translate-y-1 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-[0_20px_44px_rgba(124,92,255,0.45)]`}
               >
                 {book.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -63,6 +66,17 @@ export default function BookRow({
                   />
                 ) : (
                   book.coverEmoji
+                )}
+                {(book.isBestseller || book.isNew) && (
+                  <span
+                    className={`absolute left-1.5 top-1.5 rounded-full px-2 py-0.5 text-[0.55rem] font-extrabold uppercase tracking-wide text-white shadow-lg ${
+                      book.isBestseller
+                        ? "bg-gradient-to-r from-[#f59e0b] to-[#d97706]"
+                        : "bg-gradient-to-r from-[#7c5cff] to-[#5b3df0]"
+                    }`}
+                  >
+                    {book.isBestseller ? "🔥" : "🆕"}
+                  </span>
                 )}
               </div>
               <p className="truncate text-xs font-bold text-white">{book.title}</p>

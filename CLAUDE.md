@@ -136,6 +136,68 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   both were reworded to truthful equivalents ("depuis ton navigateur", a browser list instead of an
   OS list) rather than promising features that don't exist.
 
+### Visual polish / "premium" pass (identity, cards, gamification)
+
+A later pass made the whole app feel more like a finished premium product without inventing data
+that doesn't exist. What changed, and — just as importantly — what was deliberately left out and
+why, since a couple of the source requests would have meant faking numbers:
+
+- **`.lumina-shell` background** (`globals.css`) is now a richer violet → navy → black vertical
+  gradient layered with three soft radial glow blobs instead of the flatter two-blob version —
+  applies everywhere the class is used (homepage, `/login`, `/signup`, `/profiles`, `/p/[id]`,
+  `/p/[id]/compte`) with a single shared edit. `.lumina-card` picked up a heavier shadow and an
+  explicit 20px radius. A new `.lumina-glow` utility (a blurred, slowly-pulsing circle) is used
+  for a couple of extra ambient glows on the homepage hero.
+- **`EBookCard`/`BookRow` hover polish**: scale-up (1.03–1.1) + a purple glow shadow + (on
+  `EBookCard`) a slow image zoom on hover, replacing the flatter lift-only hover. Hovering an
+  `EBookCard` also reveals real `📖 {pages} pages` / `⏱ ~{minutes} min` text (computed from
+  `paginateContent`/word-count, exactly like the reader's own estimates — not invented) via a
+  color transition from transparent to visible, so there's no layout shift. Grid/row items fade
+  and slide in on mount (`.animate-fade-in-up`, staggered per index) instead of appearing all at
+  once.
+- **Real badges, not fake ones**: a "🆕 Nouveau" ribbon (`isNewBook()` in `src/lib/badges.ts` —
+  `createdAt` within 14 days) and a "🔥 Bestseller" ribbon (`getBestsellerIds()` in
+  `src/lib/recommendations.ts` — real paid-`Order` counts grouped by eBook, the same signal the
+  "Les plus populaires" recommendation row already used) show on the homepage's daily grid and on
+  `BookRow` tiles across the homepage and `/p/[id]` dashboard. Deliberately **not** built: a star
+  rating (⭐ 4.9-style) or a reader/view count (👁 245 000 lecteurs) — this app has no rating
+  model and the real customer/profile count is nowhere near "245 000," so displaying either would
+  be fabricating a number, not styling one. Same reasoning killed "🎧 Disponible en audio" and
+  "⬇ Téléchargement" cover badges — this catalog has no audio narration and offline download is
+  explicitly not implemented (see Reader below), so a badge advertising either would be false
+  advertising, not polish.
+- **"Explorer par catégorie"** (`src/app/page.tsx`, using `src/lib/categoryStyle.ts`): colored
+  gradient tiles for every real `category` value actually present in the catalog (Neurosciences,
+  Bien-être, Biologie, Histoire & récit, etc. — not a hardcoded example list), each tile linking
+  to `/p/{activeProfileId}#parcourir` (the existing "Parcourir par catégorie" section on the
+  dashboard) when a profile is active, or `/login` otherwise — reusing the real browse section
+  instead of building a second, separate filtered-catalog page.
+- **Dashboard billboard** (`/p/[id]`): gained a "🤍/❤️ Ajouter aux favoris" button (the same
+  `FavoriteButton` component/action used on `/ebooks/[slug]`) and a thicker progress bar. The
+  favorite toggle everywhere (`FavoriteButton.tsx`, and the reader's own favorite button in
+  `Reader.tsx`) now plays a `.heart-pop` micro-interaction on click.
+- **Gamification-lite** (`/p/[id]/compte`): a "Niveau {n}" card with an XP bar, and a grid of
+  milestone badges (first book finished, 10 books, 7-day streak, 10h/50h read, monthly goal hit) —
+  locked ones shown dimmed with a 🔒. The XP formula (`computeLevel()` in that page) is arbitrary
+  for-fun framing (`totalMinutesRead × 2 + completedBooks × 50 + streak × 5`), but every input is
+  a real, already-tracked `Profile` field — nothing is stored or fabricated beyond what
+  `/p/[id]/compte`'s stats cards already showed. Deliberately **not** built: a persisted
+  achievements/XP/challenges system with its own unlock history, which would need a new Prisma
+  model (`Achievement` or similar) — this is a computed-on-read presentation layer over existing
+  stats, not a new gamification backend.
+- **Loading skeletons**: `src/app/loading.tsx` and `src/app/p/[id]/loading.tsx` use a shared
+  `.skeleton` shimmer class instead of a spinner, shown by Next.js automatically while those routes'
+  server components are rendering.
+- **Deliberately not built in this pass** (production-heavy, dishonest, or blocked on an
+  already-documented prerequisite): literal parallax/fog/particle effects on the hero (the ambient
+  `.lumina-glow` blobs are the lightweight version of "the hero feels alive"); a full multi-theme
+  color picker (Noir/Violet/Bleu Nuit/Or/Rouge/Vert Émeraude) — `Conventions` above already notes
+  the purple accent is hardcoded as literal hex values across dozens of components rather than a
+  single CSS variable, so a real site-wide theme switcher needs that centralization done first,
+  not a half-working picker that only recolors a few elements; "Recommandations IA" — the existing
+  `getRecommendations()` engine is honestly documented as rule-based, no ML, so it keeps its
+  honest "Recommandé pour toi" label rather than being rebranded "IA."
+
 ### Customer accounts & profiles
 - `src/lib/auth.ts` — NextAuth config with `admin-credentials` and `customer-credentials`
   providers; `token.role` / `session.user.role` distinguish which one signed in (see

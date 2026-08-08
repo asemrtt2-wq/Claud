@@ -59,16 +59,39 @@ body {
 .lumina-shell {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 15% 0%, rgba(124, 92, 255, 0.25), transparent 55%),
-    radial-gradient(circle at 85% 20%, rgba(124, 92, 255, 0.12), transparent 45%),
-    var(--color-lumina-bg);
+    radial-gradient(circle at 15% 0%, rgba(124, 92, 255, 0.28), transparent 55%),
+    radial-gradient(circle at 85% 15%, rgba(91, 61, 240, 0.16), transparent 45%),
+    radial-gradient(circle at 30% 85%, rgba(124, 92, 255, 0.1), transparent 50%),
+    linear-gradient(180deg, #150f2e 0%, var(--color-lumina-bg) 45%, #000000 100%);
   color: #ffffff;
 }
 
 .lumina-card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--color-lumina-border);
+  border-radius: 20px;
   backdrop-filter: blur(16px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.lumina-glow {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  animation: glow-pulse 9s ease-in-out infinite;
 }
 
 .lumina-progress-track {
@@ -169,4 +192,59 @@ body {
     rgba(5, 15, 43, 0.15) 65%
   );
   z-index: 0;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}
+
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.4);
+  }
+  65% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.heart-pop {
+  animation: heart-pop 0.4s ease;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.12) 37%,
+    rgba(255, 255, 255, 0.05) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.6s ease infinite;
+  border-radius: 16px;
 }
