@@ -417,20 +417,48 @@ why, since a couple of the source requests would have meant faking numbers:
     **no** star-rating control — this app has no rating storage, and a rating UI that doesn't
     save anywhere would be exactly the kind of fake feature this codebase avoids.
   - Border/background colors on every control branch on `dark` (not raw `immersive` anymore) so
-    they stay legible across all four themes. Prev/next, the purple progress bar, and the
-    always-visible bottom bar (← Précédent / page position / Suivant →, present in both
-    pages/scroll modes) are unchanged from before. In scroll mode the same two buttons call
-    `scrollStep(±1)` (~85% of visible height via `scrollBy({ behavior: "smooth" })`) instead of
-    `goToView(...)`, and are never `disabled`; in "pages" mode they keep `goToView`/
-    `disabled`-at-the-edges behavior. Reading position is saved via
-    `saveReadingProgress(profileId, ebookId, page)` in `src/lib/profileActions.ts`; reading time
-    via `incrementReadingMinutes(profileId)` every 60s. The top toolbar collapses to nothing via
-    a `max-height` transition when the ⌃ button is pressed (also closes any open panel); a small
-    floating ⌄ pill (fixed top-center) brings it back. In "pages" mode, moving between
-    pages/covers replays a `page-turn-forward`/`page-turn-backward` CSS keyframe animation
-    (`globals.css`, a slide + slight `rotateY` skew) keyed on the page `view` index — deliberately
-    not a literal 3D page-curl, which would need canvas/drag-gesture work well beyond a CSS
-    transition.
+    they stay legible across all four themes. The always-visible bottom bar (← Précédent / page
+    position / Suivant →, present in both pages/scroll modes) is unchanged. In scroll mode the
+    same two buttons call `scrollStep(±1)` (~85% of visible height via
+    `scrollBy({ behavior: "smooth" })`) and are never `disabled`; in "pages" mode they call
+    `handleNext()`/`handlePrev()`, which route to a real page-turn (see below) for content pages
+    or a simple `goToView()` for the front/back cover, and stay `disabled`-at-the-edges. Reading
+    position is saved via `saveReadingProgress(profileId, ebookId, page)` in
+    `src/lib/profileActions.ts`; reading time via `incrementReadingMinutes(profileId)` every 60s.
+    The top toolbar collapses to nothing via a `max-height` transition when the ⌃ button is
+    pressed (also closes any open panel); a small floating ⌄ pill (fixed top-center) brings it
+    back. Front/back cover transitions still use the older `page-turn-forward`/`page-turn-backward`
+    CSS keyframe (`globals.css`, a slide + slight `rotateY` skew) — a real 3D flip on a full-bleed
+    cover image added little over the simpler slide, so it was left as-is; only content-page
+    navigation got the full treatment below.
+  - **`src/components/BookFlip.tsx`** — a real, physically-modeled page-turn for content pages
+    (not a fade or a slide): CSS 3D transforms (`perspective`, `rotateY`, `transform-origin`,
+    `backface-visibility: hidden`) on a small overlay that sits on top of the page being turned.
+    That overlay has two faces — front (what's currently showing, so it's pixel-identical to the
+    static page underneath at rest) and back (the incoming page, pre-rotated 180° so it reads
+    correctly once the flip passes 90°) — plus a shadow gradient whose opacity peaks at 90° (the
+    "edge-on" moment) via `Math.sin(angle/180 × π)`. **Desktop** (`≥1024px`, matched live with
+    `matchMedia`) shows a real two-page spread — left = `pages[currentIndex]`, right =
+    `pages[currentIndex + 1]` — with a spine line and inward shadow gradients on both inner
+    edges; turning the right page forward reveals `pages[currentIndex + 2]` underneath (already
+    static, not freshly rendered mid-flip) exactly like a real book, where the page you're
+    turning and the page it lands on are different sheets from the one revealed beneath it.
+    Turning the left page backward is the exact mirror. Each turn advances/retreats by **2**
+    pages on desktop. **Mobile** shows one page; the overlay covers the entire page (front =
+    current, back = next/previous) and the static layer beneath must show the *target* page (not
+    a duplicate of the current one, which was an early bug here) since there's no second slot to
+    reveal it — turns move by **1** page. Both button clicks and drag/swipe funnel through the
+    same `beginFlip()`/`finishFlip()` pair via a `forwardRef` (`next()`/`prev()`), so there's one
+    code path for "how a turn looks," not two: a click starts the flip at angle 0 and immediately
+    animates to ±180° over ~640ms (`cubic-bezier(0.45,0,0.2,1)`); a drag (unified mouse + touch via
+    Pointer Events) sets the angle directly proportional to drag distance with no CSS transition,
+    so the page follows the cursor/finger 1:1, then on release either finishes the animation to
+    ±180° (if past a ~39% angle threshold) or animates back to 0° and cancels — matching a real
+    book's "let go too early and it falls back" behavior. The page's own background is real paper
+    (`#FAFAF7` for Clair/Immersif, a warm cream for Sépia, a dark gray with light text for Sombre
+    as a genuine night-reading option) regardless of the reader's outer theme, which stays applied
+    to the chrome/backdrop around the book — deliberately not stripping dark mode in favor of
+    literal realism, since night reading is too established a reader expectation to drop.
   - **Lecture à voix haute avec surlignage mot-par-mot** (🎧): uses the browser's
     `SpeechSynthesis`/`SpeechSynthesisUtterance` on the *current page's* text, with a voice
     picker (French voices preferred, falling back to whatever the browser exposes — real browser

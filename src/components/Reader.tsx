@@ -11,6 +11,7 @@ import {
   deleteHighlight,
 } from "@/lib/profileActions";
 import BookRow from "@/components/BookRow";
+import BookFlip, { type BookFlipHandle } from "@/components/BookFlip";
 
 const FONT_SIZES = ["text-[17px]", "text-[19px]", "text-[21px]", "text-[23px]"];
 const FONT_SIZE_PX = [17, 19, 21, 23];
@@ -237,6 +238,7 @@ export default function Reader({
   const [isFavPending, startFavTransition] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bookFlipRef = useRef<BookFlipHandle>(null);
 
   const [highlights, setHighlights] = useState<HighlightData[]>(initialHighlights);
   const [editingHighlightId, setEditingHighlightId] = useState<string | null>(null);
@@ -508,6 +510,46 @@ export default function Reader({
   const textClass = `${FONT_SIZES[fontSizeIndex]} ${LINE_HEIGHTS[lineHeightIndex]} ${
     fontFamily === "serif" ? "font-serif" : ""
   }`;
+  const paperBg = theme === "sombre" ? "#1c1c1c" : theme === "sepia" ? "#F4ECD8" : "#FAFAF7";
+  const paperText = theme === "sombre" ? "#e8e8e8" : theme === "sepia" ? "#3f2f1d" : "#1a1a1a";
+
+  function renderBookPage(index: number) {
+    return (
+      <div className={textClass}>
+        {renderPageContent(
+          pages[index],
+          highlightsByPage.get(index) ?? [],
+          listening && index === contentPage ? currentWordIndex : null
+        )}
+      </div>
+    );
+  }
+
+  function handleNext() {
+    if (mode !== "pages") {
+      scrollStep(1);
+      return;
+    }
+    if (isFrontCover) {
+      goToView(1);
+      return;
+    }
+    if (isBackCover) return;
+    bookFlipRef.current?.next();
+  }
+
+  function handlePrev() {
+    if (mode !== "pages") {
+      scrollStep(-1);
+      return;
+    }
+    if (isBackCover) {
+      goToView(totalSlots - 2);
+      return;
+    }
+    if (isFrontCover) return;
+    bookFlipRef.current?.prev();
+  }
 
   const endOfBookBlock = isLastView ? (
     <div className={`mx-auto mt-12 ${WIDTHS[widthIndex]} rounded-[26px] p-8 text-center ${dark ? "bg-white/5" : "bg-black/5"}`}>
@@ -1004,23 +1046,18 @@ export default function Reader({
             {isLastView && endOfBookBlock}
           </div>
         ) : (
-          <div
-            key={view}
-            className={`relative z-10 mx-auto ${WIDTHS[widthIndex]} px-6 py-16 ${
-              direction === "forward" ? "page-turn-forward" : "page-turn-backward"
-            }`}
-          >
-            <div className={`select-text rounded-[22px] p-8 ${dark ? "bg-black/40 backdrop-blur-sm" : ""}`}>
-              <div className={textClass}>
-                {renderPageContent(
-                  pages[contentPage],
-                  highlightsByPage.get(contentPage) ?? [],
-                  listening ? currentWordIndex : null
-                )}
-              </div>
-            </div>
-            {isLastView && endOfBookBlock}
-          </div>
+          <>
+            <BookFlip
+              ref={bookFlipRef}
+              pageCount={pages.length}
+              currentIndex={contentPage}
+              onCommit={(idx) => goToView(idx + frontOffset)}
+              renderPage={renderBookPage}
+              paperBg={paperBg}
+              paperText={paperText}
+            />
+            {isLastView && <div className="relative z-10 mx-auto px-6 pb-16">{endOfBookBlock}</div>}
+          </>
         )
       ) : (
         <div
@@ -1084,7 +1121,7 @@ export default function Reader({
         }`}
       >
         <button
-          onClick={() => (mode === "pages" ? goToView(Math.max(0, view - 1)) : scrollStep(-1))}
+          onClick={handlePrev}
           disabled={mode === "pages" && view === 0}
           className={`rounded-xl border px-5 py-2.5 text-sm font-bold disabled:opacity-40 ${dark ? "border-white/20" : "border-black/15"}`}
         >
@@ -1098,7 +1135,7 @@ export default function Reader({
               : `${contentPage + 1} / ${pages.length}`}
         </span>
         <button
-          onClick={() => (mode === "pages" ? goToView(Math.min(totalSlots - 1, view + 1)) : scrollStep(1))}
+          onClick={handleNext}
           disabled={mode === "pages" && view === totalSlots - 1}
           className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
         >
