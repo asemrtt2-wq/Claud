@@ -76,3 +76,26 @@ export async function getRecommendations(profileId: string, excludeIds: string[]
 
   return { topCategory, byCategory, topAuthor, byAuthor, newest, popular };
 }
+
+/**
+ * "Me recommander un livre" pick: personalized (same signals as
+ * getRecommendations) when a profile is active, otherwise a genuinely
+ * random pick from the adult catalog — never a fabricated "just for you".
+ */
+export async function getSurpriseBook(profileId: string | null): Promise<string | null> {
+  if (profileId) {
+    const rec = await getRecommendations(profileId, []);
+    const pick = rec.byCategory[0] ?? rec.popular[0] ?? rec.byAuthor[0] ?? rec.newest[0] ?? null;
+    if (pick) return pick.slug;
+  }
+
+  const count = await prisma.eBook.count({ where: { audience: "adults" } });
+  if (count === 0) return null;
+  const [random] = await prisma.eBook.findMany({
+    where: { audience: "adults" },
+    select: { slug: true },
+    take: 1,
+    skip: Math.floor(Math.random() * count),
+  });
+  return random?.slug ?? null;
+}

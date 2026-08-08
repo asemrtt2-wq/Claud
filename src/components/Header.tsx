@@ -17,7 +17,7 @@ export default async function Header() {
           <Link href="/" className="text-sm font-semibold text-white/70 transition hover:text-white">
             Accueil
           </Link>
-          <Link href="/#catalogue" className="text-sm font-semibold text-white/70 transition hover:text-white">
+          <Link href="/bibliotheque" className="text-sm font-semibold text-white/70 transition hover:text-white">
             Bibliothèque
           </Link>
           <Link href="/premium" className="text-sm font-semibold text-white/70 transition hover:text-white">

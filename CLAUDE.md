@@ -105,6 +105,21 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   Lisez à votre rythme) and the reworked `KidsModeSection` copy (now framed around "toute la
   famille" rather than kids specifically, since the account model already supports any number of
   adult *and* kids profiles — see Series/Profiles below) round out the current homepage narrative.
+- `src/app/bibliotheque/page.tsx` — a dedicated public catalog page (the header's "Bibliothèque"
+  link now points here instead of anchor-scrolling to the homepage's own catalogue section).
+  Category filter pills are the real distinct `category` values in the catalog (not a hardcoded
+  example list) and are plain anchor links (`#neurosciences`, etc.) down to that category's own
+  `BookRow` section — no separate filtered-view state, since the whole catalog is already on the
+  page. **"À la une"** picks `EBook.featured` (falling back to the newest book if nothing is
+  flagged featured) and links to the reader directly if the visiting customer already has access
+  (`hasAccessToEbook()`) via their active profile, or to `/ebooks/[slug]` otherwise — mirroring
+  the "Lire"/"Découvrir" wording split. **"Me recommander un livre"** calls
+  `getSurpriseBook()` (`src/lib/recommendations.ts`): personalized (same signals as
+  `getRecommendations()`) when a profile is active, otherwise a genuinely random pick from the
+  adult catalog via `skip: Math.floor(Math.random() * count)` — re-rolled on every page load, not
+  a single fixed "recommendation" cached anywhere. There is no "Premium" filter pill like an
+  early mockup suggested, since Premium unlocks the *entire* library rather than a distinct
+  premium-only book subset — a pill for it would filter to either everything or nothing.
 - `src/app/ebooks/[slug]/page.tsx` — eBook detail page: a Netflix/Apple-TV-style layout with a
   large cover hero (back/close buttons), title/author/year/page-count/category
   metadata, a progress-aware CTA ("Commencer" vs "Reprendre" with page/percent/estimated time
