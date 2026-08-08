@@ -7,26 +7,26 @@ const FEATURES = [
   {
     emoji: "📖",
     color: "#4d7dff",
-    title: "Lis autrement",
-    text: "Des eBooks immersifs qui captivent ton esprit et nourrissent ton âme.",
+    title: "Des lectures courtes",
+    text: "Apprenez des choses utiles sans devoir consacrer des heures à la lecture.",
   },
   {
     emoji: "🧠",
     color: "#a78bfa",
-    title: "Déconnecte-toi",
-    text: "Remplace le scroll infini par des histoires qui comptent vraiment.",
+    title: "Des sujets qui vous font progresser",
+    text: "Psychologie, histoire, sciences, culture, développement personnel et bien plus encore.",
   },
   {
-    emoji: "🎯",
+    emoji: "👨‍👩‍👧‍👦",
     color: "#34d399",
-    title: "Progresse chaque jour",
-    text: "Développement personnel, connaissances, imagination : deviens la meilleure version de toi-même.",
+    title: "Pour toute la famille",
+    text: "Des contenus adaptés aux différents âges et aux différents profils de lecteurs.",
   },
   {
-    emoji: "🌐",
+    emoji: "⚡",
     color: "#4d7dff",
-    title: "Partout avec toi",
-    text: "Retrouve ta lecture sur tous tes écrans, directement depuis ton navigateur.",
+    title: "Apprenez à votre rythme",
+    text: "Quelques minutes de lecture peuvent suffire pour découvrir une nouvelle idée, comprendre un sujet ou développer une nouvelle compétence.",
   },
 ];
 
@@ -61,11 +61,11 @@ export function KidsModeSection() {
       <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div className="lumina-card rounded-[22px] p-8">
           <span className="mb-3 inline-flex items-center gap-2 text-lg font-extrabold tracking-tight">
-            Compte enfant <span title="Verrouillable par PIN">🔒</span>
+            Un profil pour chacun <span title="Verrouillable par PIN">🔒</span>
           </span>
           <p className="mb-6 text-[color:var(--color-lumina-text-muted)]">
-            Un espace pensé pour chaque âge, avec des eBooks adaptés pour éveiller leur curiosité
-            et leur imagination.
+            Créez votre profil et découvrez des contenus adaptés à votre âge, vos centres
+            d&apos;intérêt et votre façon de lire.
           </p>
           <div className="mb-6 flex flex-wrap gap-3">
             {KIDS_AVATARS.map((emoji) => (
@@ -79,10 +79,10 @@ export function KidsModeSection() {
           </div>
           <ul className="grid gap-2.5 sm:grid-cols-2">
             {[
-              "Contenu adapté à chaque âge",
-              "Sans publicité",
-              "Suivi du temps de lecture",
-              "Mode enfant simple",
+              "Contenus adaptés à chaque âge",
+              "Recommandations personnalisées",
+              "Lecture simple et accessible",
+              "Un espace pensé pour toute la famille",
             ].map((item) => (
               <li key={item} className="flex items-center gap-2 text-sm font-semibold">
                 <span className="text-[#34d399]">✓</span>
@@ -103,8 +103,54 @@ export function KidsModeSection() {
             href="/signup"
             className="inline-block rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5"
           >
-            Créer un profil enfant
+            Créer mon profil
           </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const HOW_IT_WORKS = [
+  {
+    number: "01",
+    title: "Créez votre profil",
+    text: "Indiquez votre âge et vos centres d'intérêt pour personnaliser votre expérience.",
+  },
+  {
+    number: "02",
+    title: "Découvrez vos lectures",
+    text: "Explorez une bibliothèque de contenus sélectionnés pour vous.",
+  },
+  {
+    number: "03",
+    title: "Lisez à votre rythme",
+    text: "Lisez quelques minutes par jour et développez progressivement vos connaissances.",
+  },
+];
+
+export function HowItWorksSection() {
+  return (
+    <section className="bg-[#0d0b22] px-6 py-20 text-white">
+      <div className="mx-auto max-w-6xl">
+        <div className="mx-auto mb-14 max-w-xl text-center">
+          <span className="mb-3.5 inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#a78bfa]">
+            Comment ça marche ?
+          </span>
+          <h2 className="text-[1.8rem] font-extrabold leading-tight tracking-tight md:text-[2.2rem]">
+            Trois étapes pour commencer à apprendre.
+          </h2>
+        </div>
+        <div className="grid gap-8 sm:grid-cols-3">
+          {HOW_IT_WORKS.map((step) => (
+            <div key={step.number} className="lumina-card rounded-[22px] p-7">
+              <span className="mb-4 block bg-gradient-to-br from-[#a78bfa] to-white bg-clip-text text-3xl font-extrabold text-transparent">
+                {step.number}
+              </span>
+              <h3 className="mb-2 text-lg font-extrabold tracking-tight">{step.title}</h3>
+              <p className="text-sm text-[color:var(--color-lumina-text-muted)]">{step.text}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -226,10 +272,11 @@ export function FinalCtaBand() {
           <span className="text-2xl">✦</span>
           <div>
             <p className="text-lg font-extrabold tracking-tight">
-              Reprends le contrôle de ton temps.
+              Votre prochaine lecture commence ici.
             </p>
             <p className="text-sm text-[#e4defc]">
-              Moins de distractions, plus d&apos;histoires qui te construisent.
+              Découvrez de nouveaux sujets, développez votre curiosité et faites de chaque lecture
+              une occasion d&apos;apprendre.
             </p>
           </div>
         </div>
@@ -238,7 +285,7 @@ export function FinalCtaBand() {
             href="/signup"
             className="rounded-2xl bg-white px-6 py-3 text-sm font-bold text-navy shadow-[0_12px_28px_rgba(0,0,0,0.2)] transition hover:bg-[#f0f4ff]"
           >
-            Essayer gratuitement
+            Commencer gratuitement
           </Link>
           <Link
             href="/login"

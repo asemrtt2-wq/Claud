@@ -9,6 +9,7 @@ import {
   CompatibilitySection,
   FeatureHighlights,
   FinalCtaBand,
+  HowItWorksSection,
   KidsModeSection,
   ReadingExperienceSection,
 } from "@/components/HomeMarketingSections";
@@ -20,13 +21,6 @@ import { getCategoryStyle } from "@/lib/categoryStyle";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { getActiveProfile } from "@/lib/activeProfile";
 import { countWords, paginateContent } from "@/lib/paginate";
-
-function pickDailyBooks<T>(items: T[], count: number): T[] {
-  if (items.length <= count) return items;
-  const dayIndex = Math.floor(Date.now() / 86400000);
-  const start = dayIndex % items.length;
-  return Array.from({ length: count }, (_, i) => items[(start + i) % items.length]);
-}
 
 function withBadges<T extends { id: string; createdAt: Date }>(
   books: T[],
@@ -54,7 +48,10 @@ export default async function HomePage() {
   const catalogsWithBooks = catalogs
     .filter((c) => c.ebooks.length > 0)
     .map((c) => ({ ...c, ebooks: withBadges(dedupeSeries(c.ebooks), bestsellerIds) }));
-  const dailyBooks = withBadges(pickDailyBooks(dedupeSeries(ebooks), 4), bestsellerIds);
+  const latestBooks = withBadges(
+    dedupeSeries([...ebooks].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())).slice(0, 4),
+    bestsellerIds
+  );
   const featured = ebooks.filter((e) => e.featured);
   const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
   const categories = Array.from(new Set(ebooks.map((e) => e.category)));
@@ -79,29 +76,29 @@ export default async function HomePage() {
                 settings.heroTitle
               ) : (
                 <>
-                  Remplace les écrans par des{" "}
+                  Apprenez quelque chose de{" "}
                   <span className="bg-gradient-to-br from-[#a78bfa] to-white bg-clip-text text-transparent">
-                    histoires qui te transforment
+                    nouveau chaque jour
                   </span>
                 </>
               )}
             </h1>
             <p className="mb-10 max-w-lg text-lg text-[#c3bfe8]">
               {settings?.heroSubtitle ??
-                "L'application qui t'aide à reprendre le contrôle de ton temps grâce à des eBooks immersifs, interactifs et motivants."}
+                "Des iBooks courts, captivants et accessibles pour développer votre culture, votre mental et vos connaissances. Découvrez des lectures pensées pour vous et toute votre famille."}
             </p>
             <div className="flex flex-wrap gap-4.5">
               <Link
-                href="/signup"
+                href="#catalogue"
                 className="rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-sm font-bold shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(124,92,255,0.5)]"
               >
-                Commencer gratuitement
+                Découvrir la bibliothèque
               </Link>
               <Link
-                href="#catalogue"
+                href="/signup"
                 className="rounded-2xl border border-gray-mid bg-white px-7 py-3.5 text-sm font-bold text-navy shadow-[0_8px_24px_rgba(8,27,69,0.1)] transition hover:-translate-y-0.5"
               >
-                En savoir plus
+                Commencer gratuitement
               </Link>
             </div>
 
@@ -180,22 +177,23 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto mb-16 max-w-xl text-center">
             <span className="mb-3.5 inline-block text-[0.82rem] font-extrabold uppercase tracking-wider text-[#a78bfa]">
-              Le catalogue
+              Nos dernières parutions
             </span>
             <h2 className="mb-4 text-[2rem] font-extrabold tracking-tight text-white md:text-[2.75rem]">
-              Nos eBooks populaires
+              Découvrez nos nouveaux iBooks
             </h2>
             <p className="text-[1.05rem] text-[color:var(--color-lumina-text-muted)]">
-              Une sélection différente chaque jour parmi notre collection d&apos;eBooks.
+              Trouvez votre prochaine lecture parmi nos dernières parutions.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
-            {dailyBooks.map((ebook, i) => (
+            {latestBooks.map((ebook, i) => (
               <EBookCard
                 key={ebook.id}
                 slug={ebook.slug}
                 title={ebook.title}
                 category={ebook.category}
+                description={ebook.subtitle}
                 coverEmoji={ebook.coverEmoji}
                 coverTheme={ebook.coverTheme}
                 coverImageUrl={ebook.coverImageUrl}
@@ -213,6 +211,8 @@ export default async function HomePage() {
       </section>
 
       <KidsModeSection />
+
+      <HowItWorksSection />
 
       <ReadingExperienceSection books={ebooks} />
 

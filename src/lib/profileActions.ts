@@ -304,3 +304,64 @@ export async function removeFromCollection(collectionId: string, ebookId: string
   await prisma.collectionItem.deleteMany({ where: { collectionId, ebookId } });
   revalidatePath(`/p/${collection.profileId}`);
 }
+
+// ---- Highlights & notes ----
+
+export async function getHighlights(profileId: string, ebookId: string) {
+  const customer = await getCurrentCustomer();
+  if (!customer) return [];
+  const profile = await getOwnedProfile(profileId, customer.id);
+  if (!profile) return [];
+
+  return prisma.highlight.findMany({
+    where: { profileId, ebookId },
+    orderBy: [{ page: "asc" }, { createdAt: "asc" }],
+  });
+}
+
+export async function createHighlight(
+  profileId: string,
+  ebookId: string,
+  page: number,
+  text: string
+) {
+  const customer = await getCurrentCustomer();
+  if (!customer) throw new Error("Non authentifié.");
+  const profile = await getOwnedProfile(profileId, customer.id);
+  if (!profile) throw new Error("Profil introuvable.");
+  if (!text.trim()) throw new Error("Texte requis.");
+
+  const highlight = await prisma.highlight.create({
+    data: { profileId, ebookId, page, text: text.trim() },
+  });
+  return highlight.id;
+}
+
+export async function updateHighlightNote(highlightId: string, note: string) {
+  const customer = await getCurrentCustomer();
+  if (!customer) throw new Error("Non authentifié.");
+
+  const highlight = await prisma.highlight.findUnique({
+    where: { id: highlightId },
+    include: { profile: true },
+  });
+  if (!highlight || highlight.profile.customerId !== customer.id) throw new Error("Introuvable.");
+
+  await prisma.highlight.update({
+    where: { id: highlightId },
+    data: { note: note.trim() || null },
+  });
+}
+
+export async function deleteHighlight(highlightId: string) {
+  const customer = await getCurrentCustomer();
+  if (!customer) throw new Error("Non authentifié.");
+
+  const highlight = await prisma.highlight.findUnique({
+    where: { id: highlightId },
+    include: { profile: true },
+  });
+  if (!highlight || highlight.profile.customerId !== customer.id) throw new Error("Introuvable.");
+
+  await prisma.highlight.delete({ where: { id: highlightId } });
+}

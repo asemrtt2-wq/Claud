@@ -59,12 +59,16 @@ export default async function ProfileReadPage({
   const allowed = await hasAccessToEbook(customer.id, ebook.id);
   if (!allowed) redirect(`/ebooks/${slug}`);
 
-  const [progress, favorite] = await Promise.all([
+  const [progress, favorite, highlights] = await Promise.all([
     prisma.readingProgress.findUnique({
       where: { profileId_ebookId: { profileId: id, ebookId: ebook.id } },
     }),
     prisma.favorite.findUnique({
       where: { profileId_ebookId: { profileId: id, ebookId: ebook.id } },
+    }),
+    prisma.highlight.findMany({
+      where: { profileId: id, ebookId: ebook.id },
+      orderBy: [{ page: "asc" }, { createdAt: "asc" }],
     }),
   ]);
 
@@ -120,6 +124,7 @@ export default async function ProfileReadPage({
       initialFavorited={!!favorite}
       nextTome={nextTome}
       similarBooks={similarBooks}
+      initialHighlights={highlights}
     />
   );
 }

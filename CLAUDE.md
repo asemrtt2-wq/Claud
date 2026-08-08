@@ -93,12 +93,18 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 ## Architecture
 
 ### Public storefront
-- `src/app/page.tsx` — home page (hero + dynamic catalog grid + testimonials), a server
-  component that reads eBooks directly from Prisma. The "Nos eBooks populaires" grid shows only 4
-  books at a time via `pickDailyBooks()` — a deterministic rotation keyed off
-  `Math.floor(Date.now() / 86400000)` (days since epoch) that picks a different contiguous
-  window of the catalog each calendar day (UTC), wrapping around. No cron/background job needed:
-  since it's computed fresh on every request, it just naturally changes once the date rolls over.
+- `src/app/page.tsx` — home page (hero + "Nos dernières parutions" + category tiles +
+  testimonials), a server component that reads eBooks directly from Prisma. The hero pitches
+  Lumina as short daily-learning reads ("Apprenez quelque chose de nouveau chaque jour"), and the
+  "Nos dernières parutions" grid always shows the real 4 newest adult eBooks by `createdAt`
+  (`dedupeSeries()`-collapsed so a multi-tome series only takes one slot) — this replaced an
+  earlier `pickDailyBooks()` rotation gimmick that showed a deterministic-but-arbitrary daily
+  pick under a "populaires" label; showing the true latest releases under a "dernières
+  parutions" label is both simpler and more honest about what the section actually is.
+  `HomeMarketingSections.tsx`'s `HowItWorksSection` (Créez votre profil → Découvrez vos lectures →
+  Lisez à votre rythme) and the reworked `KidsModeSection` copy (now framed around "toute la
+  famille" rather than kids specifically, since the account model already supports any number of
+  adult *and* kids profiles — see Series/Profiles below) round out the current homepage narrative.
 - `src/app/ebooks/[slug]/page.tsx` — eBook detail page: a Netflix/Apple-TV-style layout with a
   large cover hero (back/close buttons), title/author/year/page-count/category
   metadata, a progress-aware CTA ("Commencer" vs "Reprendre" with page/percent/estimated time
@@ -399,21 +405,44 @@ why, since a couple of the source requests would have meant faking numbers:
     (`globals.css`, a slide + slight `rotateY` skew) keyed on the page `view` index — deliberately
     not a literal 3D page-curl, which would need canvas/drag-gesture work well beyond a CSS
     transition.
+  - **Lecture à voix haute avec surlignage mot-par-mot** (🎧): uses the browser's
+    `SpeechSynthesis`/`SpeechSynthesisUtterance` on the *current page's* text, with a voice
+    picker (French voices preferred, falling back to whatever the browser exposes — real browser
+    voices, same honesty convention as `KidsReader`, not distinct synthesized characters) and a
+    0.75×–1.5× speed control. Word highlighting comes from the utterance's `onboundary` event
+    (`event.charIndex`), mapped to a word index via `wordIndexAtCharIndex()`. The tricky part:
+    the *spoken* text and the *rendered* text must tokenize identically or the highlighted word
+    drifts from what's actually being read — `getCleanedText()` strips the same "> "/"- "
+    markers and reformats the same chapter-heading line that `renderBlock` already strips when
+    rendering, so both sides count words the same way. `renderTextWithMarks()` does the actual
+    per-word `<span>` wrapping, checking both the active TTS word (purple) and any saved
+    highlight range (yellow) in one pass. Finishing a page's utterance auto-advances to the next
+    page and keeps reading, matching a continuous audiobook-style flow; changing pages, speed, or
+    voice while listening restarts the utterance for the new page. This depends entirely on the
+    browser/OS having TTS voices installed — with none available (e.g. a bare Linux container),
+    `speechSynthesis` still exists but errors immediately, which the reader handles by silently
+    dropping back to "not listening" rather than hanging or crashing.
+  - **Surlignages permanents avec notes** (🖍, real `Highlight` Prisma model — `profileId`,
+    `ebookId`, `page`, `text`, optional `note`): selecting text now offers "🖍 Surligner" alongside
+    the existing copy/share pill, saving the exact selected substring via
+    `createHighlight()`. Saved highlights render as a yellow mark wherever their text is found on
+    that page (via the same `renderTextWithMarks()` pass used for TTS), persist across
+    reloads/devices (unlike the localStorage-only bookmarks), and get their own "Surlignages" tab
+    in the 📑 panel alongside Chapitres/Signets — each entry can jump to its page, get a short
+    note attached (`updateHighlightNote()`), or be deleted (`deleteHighlight()`). This is the
+    real per-profile model previously deferred; bookmarks stayed on localStorage since they don't
+    need the same cross-device guarantee.
   - **Deliberately not built in this pass** (would need real new assets, external services, or
-    schema work beyond what a client-side reader upgrade justifies): illustrations/diagrams
-    embedded every few pages (needs real per-book image assets — only a front/back cover exists
-    per book today, same constraint as "Cover art" above); audio read-aloud with word-level
-    highlighting sync (KidsReader already has a simpler, non-synced `SpeechSynthesis` voice
-    picker — word-boundary-synced highlighting for the adult reader is a real feature, not a
-    small add-on, and is a reasonable next step on its own); a species/quick-facts info box
+    schema work beyond what this reader pass justifies): illustrations/diagrams embedded every
+    few pages (needs real per-book image assets — only a front/back cover exists per book today,
+    same constraint as "Cover art" above); a species/quick-facts info box
     (taille/poids/habitat/etc.) — would need new structured per-book fields that don't exist and
     wouldn't apply to most of the catalog (fitness/mindset titles, not just the animal ones);
     instant word definitions/translation (needs a real dictionary/translation API, none
-    configured — see the Stripe-key pattern for how this app handles "not configured yet");
-    persistent text highlights and note-taking (would need a new `Highlight`/`Note` Prisma model,
-    a bigger addition than this pass); a reading-badges/achievements system beyond the streak and
-    goal tracking that already exists on `/p/[id]/compte`; offline download and multi-device sync
-    (see "Downloads" / offline reading above — unchanged, still intentionally not implemented).
+    configured — see the Stripe-key pattern for how this app handles "not configured yet"); a
+    reading-badges/achievements system beyond the streak and goal tracking that already exists on
+    `/p/[id]/compte`; offline download and multi-device sync (see "Downloads" / offline reading
+    above — unchanged, still intentionally not implemented).
 - `src/components/KidsReader.tsx` — adds on top of that pattern: a bouncing mascot emoji on page
   turn, a `SpeechSynthesis`-based read-aloud voice picker (Femme/Homme/Robot/Alien/Loup/Ours —
   pitch/rate presets on the browser's built-in voice, not distinct synthesized models), and a
@@ -564,8 +593,11 @@ purchases, optional `customerId`), `Admin`,
 `ReadingProgress` also carries `completed`, `lastPageAt`, `avgSecondsPerPage` — the same
 pace-tracking fields used to flag "very fast"/"posé" reading pace apply to any profile now, not
 just kids), `Collection`/`CollectionItem` (profile-scoped book shelves, unique on
-`[collectionId, ebookId]`), and `Catalog` (admin-curated shelves, many-to-many with `EBook` —
-see "Curated catalogs" above; not to be confused with the profile-scoped `Collection` above).
+`[collectionId, ebookId]`), `Highlight` (profile-scoped, `page`/`text`/optional `note` — the
+reader's persistent surlignages, see Reader above; deliberately not unique-constrained on
+`[profileId, ebookId, page]` since a profile can have several distinct highlights on one page),
+and `Catalog` (admin-curated shelves, many-to-many with `EBook` — see "Curated catalogs" above;
+not to be confused with the profile-scoped `Collection` above).
 
 There used to be a separate `ChildProfile`/`ChildReadingProgress` pair and `Customer` doubled as
 the implicit single "adult profile" — that was replaced by the unified `Profile` model above so

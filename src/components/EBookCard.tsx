@@ -4,6 +4,7 @@ type Props = {
   slug: string;
   title: string;
   category: string;
+  description?: string;
   coverEmoji: string;
   coverTheme: string;
   coverImageUrl?: string | null;
@@ -20,6 +21,7 @@ export default function EBookCard({
   slug,
   title,
   category,
+  description,
   coverEmoji,
   coverTheme,
   coverImageUrl,
@@ -67,6 +69,9 @@ export default function EBookCard({
           {category}
         </span>
         <h3 className="mt-1 text-lg font-extrabold tracking-tight">{title}</h3>
+        {description && (
+          <p className="mt-1 line-clamp-2 text-sm text-white/70">{description}</p>
+        )}
         {(pages || readingMinutes) && (
           <div className="mt-1.5 flex items-center gap-3 text-xs font-semibold text-white/0 transition-colors duration-300 group-hover:text-white/70">
             {pages ? <span>{`📖 ${pages} pages`}</span> : null}

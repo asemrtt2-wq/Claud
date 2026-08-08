@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { saveReadingProgress, incrementReadingMinutes, toggleFavorite } from "@/lib/profileActions";
+import {
+  saveReadingProgress,
+  incrementReadingMinutes,
+  toggleFavorite,
+  createHighlight,
+  updateHighlightNote,
+  deleteHighlight,
+} from "@/lib/profileActions";
 import BookRow from "@/components/BookRow";
 
 const FONT_SIZES = ["text-[17px]", "text-[19px]", "text-[21px]", "text-[23px]"];
@@ -17,10 +24,12 @@ const THEME_LABELS: Record<Theme, string> = {
   sombre: "Sombre",
   immersive: "Immersif",
 };
+const SPEEDS = [0.75, 1, 1.25, 1.5];
 const CHAPTER_RE = /^(Chapitre\s+\d+|Introduction)\s*(?:—|-|:)\s*(.+)$/i;
 
 type Theme = "clair" | "sepia" | "sombre" | "immersive";
 type Chapter = { number: number; title: string; pageIndex: number; estimatedMinutes: number };
+type HighlightData = { id: string; page: number; text: string; note: string | null };
 type RowBook = {
   id: string;
   slug: string;
@@ -37,10 +46,93 @@ type NextTome = {
   coverImageUrl?: string | null;
 } | null;
 
-function renderBlock(block: string, key: number) {
+function countWords(text: string) {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+/** Mirrors the marker-stripping renderBlock does, so the spoken text's word
+ * order/count matches exactly what gets rendered/highlighted — no drift from
+ * dropped "> "/"- " markers or the chapter heading's "—" separator. */
+function getCleanedText(pageText: string): string {
+  return pageText
+    .split(/\n\n+/)
+    .filter(Boolean)
+    .map((block) => {
+      const trimmed = block.trim();
+      const chapterMatch = trimmed.match(CHAPTER_RE);
+      if (chapterMatch) return `${chapterMatch[1]} ${chapterMatch[2]}`.trim();
+      if (trimmed.startsWith("> ")) return trimmed.replace(/^>\s?/, "");
+      const lines = trimmed.split("\n").filter(Boolean);
+      if (lines.length > 0 && lines.every((l) => l.trim().startsWith("- "))) {
+        return lines.map((l) => l.trim().replace(/^-\s?/, "")).join(". ");
+      }
+      return trimmed;
+    })
+    .join("\n\n");
+}
+
+function wordIndexAtCharIndex(text: string, charIndex: number): number {
+  return text.slice(0, charIndex).split(/\s+/).filter(Boolean).length;
+}
+
+type RenderCtx = {
+  highlights: HighlightData[];
+  wordCounter: { current: number };
+  activeWordIndex: number | null;
+};
+
+/** Tokenizes text into words, applying both a saved-highlight mark (yellow)
+ * and the currently-spoken-word mark (purple) from the same pass, since a
+ * word can be inside a saved highlight while also being read aloud. */
+function renderTextWithMarks(text: string, ctx: RenderCtx): React.ReactNode[] {
+  const ranges = ctx.highlights
+    .map((h) => {
+      const idx = text.indexOf(h.text);
+      return idx === -1 ? null : { start: idx, end: idx + h.text.length, id: h.id };
+    })
+    .filter((r): r is { start: number; end: number; id: string } => r !== null)
+    .sort((a, b) => a.start - b.start);
+
+  const tokens = text.split(/(\s+)/);
+  const nodes: React.ReactNode[] = [];
+  let charPos = 0;
+
+  tokens.forEach((tok, k) => {
+    const tokStart = charPos;
+    charPos += tok.length;
+    if (tok === "" || /^\s+$/.test(tok)) {
+      nodes.push(tok);
+      return;
+    }
+    const wordIdx = ctx.wordCounter.current++;
+    const isActive = ctx.activeWordIndex !== null && wordIdx === ctx.activeWordIndex;
+    const inHighlight = ranges.some((r) => tokStart >= r.start && tokStart + tok.length <= r.end);
+    if (!isActive && !inHighlight) {
+      nodes.push(tok);
+      return;
+    }
+    nodes.push(
+      <span
+        key={k}
+        className={
+          isActive
+            ? "rounded bg-[#7c5cff] px-0.5 text-white"
+            : "rounded bg-[#facc15]/35 px-0.5"
+        }
+      >
+        {tok}
+      </span>
+    );
+  });
+
+  return nodes;
+}
+
+function renderBlock(block: string, key: number, ctx: RenderCtx) {
   const trimmed = block.trim();
   const chapterMatch = trimmed.match(CHAPTER_RE);
   if (chapterMatch) {
+    ctx.wordCounter.current += countWords(`${chapterMatch[1]} ${chapterMatch[2]}`);
     return (
       <div key={key} className="mb-8 mt-2 first:mt-0">
         <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-50">{chapterMatch[1]}</p>
@@ -50,12 +142,13 @@ function renderBlock(block: string, key: number) {
     );
   }
   if (trimmed.startsWith("> ")) {
+    const quoteText = trimmed.replace(/^>\s?/, "");
     return (
       <blockquote
         key={key}
         className="my-6 rounded-r-xl border-l-4 border-[#7c5cff] bg-current/5 py-3 pl-5 pr-4 italic"
       >
-        {trimmed.replace(/^>\s?/, "")}
+        {renderTextWithMarks(quoteText, ctx)}
       </blockquote>
     );
   }
@@ -66,7 +159,7 @@ function renderBlock(block: string, key: number) {
         {lines.map((l, li) => (
           <li key={li} className="flex gap-3">
             <span className="mt-1 text-[#7c5cff]">●</span>
-            <span>{l.trim().replace(/^-\s?/, "")}</span>
+            <span>{renderTextWithMarks(l.trim().replace(/^-\s?/, ""), ctx)}</span>
           </li>
         ))}
       </ul>
@@ -74,20 +167,17 @@ function renderBlock(block: string, key: number) {
   }
   return (
     <p key={key} className="mb-6 last:mb-0">
-      {trimmed}
+      {renderTextWithMarks(trimmed, ctx)}
     </p>
   );
 }
 
-function renderPageContent(text: string) {
+function renderPageContent(text: string, highlights: HighlightData[], activeWordIndex: number | null) {
+  const ctx: RenderCtx = { highlights, wordCounter: { current: 0 }, activeWordIndex };
   return text
     .split(/\n\n+/)
     .filter(Boolean)
-    .map((block, i) => renderBlock(block, i));
-}
-
-function countWords(text: string) {
-  return text.split(/\s+/).filter(Boolean).length;
+    .map((block, i) => renderBlock(block, i, ctx));
 }
 
 export default function Reader({
@@ -106,6 +196,7 @@ export default function Reader({
   initialFavorited = false,
   nextTome = null,
   similarBooks = [],
+  initialHighlights = [],
 }: {
   profileId: string;
   ebookId: string;
@@ -122,6 +213,7 @@ export default function Reader({
   initialFavorited?: boolean;
   nextTome?: NextTome;
   similarBooks?: RowBook[];
+  initialHighlights?: HighlightData[];
 }) {
   const frontOffset = coverImageUrl ? 1 : 0;
   const totalSlots = pages.length + frontOffset + (backCoverImageUrl ? 1 : 0);
@@ -135,8 +227,8 @@ export default function Reader({
   const [mode, setMode] = useState<"pages" | "scroll">("pages");
   const [toolbarVisible, setToolbarVisible] = useState(true);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
-  const [panelOpen, setPanelOpen] = useState<"settings" | "toc" | "search" | null>(null);
-  const [tocTab, setTocTab] = useState<"chapters" | "bookmarks">("chapters");
+  const [panelOpen, setPanelOpen] = useState<"settings" | "toc" | "search" | "audio" | null>(null);
+  const [tocTab, setTocTab] = useState<"chapters" | "bookmarks" | "highlights">("chapters");
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [favorited, setFavorited] = useState(initialFavorited);
@@ -145,6 +237,16 @@ export default function Reader({
   const [isFavPending, startFavTransition] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [highlights, setHighlights] = useState<HighlightData[]>(initialHighlights);
+  const [editingHighlightId, setEditingHighlightId] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState("");
+
+  const [listening, setListening] = useState(false);
+  const [speechRate, setSpeechRate] = useState(1);
+  const [voiceURI, setVoiceURI] = useState<string | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [currentWordIndex, setCurrentWordIndex] = useState<number | null>(null);
 
   const dark = theme === "sombre" || theme === "immersive";
   const mutedTextClass = dark ? "text-white/60" : "text-black/50";
@@ -222,6 +324,36 @@ export default function Reader({
     setSelection(null);
   }
 
+  async function handleSaveHighlight() {
+    if (!selection) return;
+    const text = selection;
+    const page = contentPage;
+    setSelection(null);
+    const id = await createHighlight(profileId, ebookId, page, text);
+    setHighlights((prev) => [...prev, { id, page, text, note: null }]);
+  }
+
+  async function handleSaveNote(id: string) {
+    await updateHighlightNote(id, noteDraft);
+    setHighlights((prev) => prev.map((h) => (h.id === id ? { ...h, note: noteDraft.trim() || null } : h)));
+    setEditingHighlightId(null);
+  }
+
+  async function handleDeleteHighlight(id: string) {
+    setHighlights((prev) => prev.filter((h) => h.id !== id));
+    await deleteHighlight(id);
+  }
+
+  const highlightsByPage = useMemo(() => {
+    const map = new Map<number, HighlightData[]>();
+    for (const h of highlights) {
+      const list = map.get(h.page) ?? [];
+      list.push(h);
+      map.set(h.page, list);
+    }
+    return map;
+  }, [highlights]);
+
   function scrollStep(dir: 1 | -1) {
     scrollRef.current?.scrollBy({ top: dir * scrollRef.current.clientHeight * 0.85, behavior: "smooth" });
   }
@@ -236,6 +368,68 @@ export default function Reader({
   const isBackCover = !!backCoverImageUrl && view === totalSlots - 1;
   const isLastView = view === totalSlots - 1;
   const contentPage = Math.min(Math.max(view - frontOffset, 0), pages.length - 1);
+
+  const frenchVoices = useMemo(
+    () => availableVoices.filter((v) => v.lang.toLowerCase().startsWith("fr")),
+    [availableVoices]
+  );
+  const voiceOptions = frenchVoices.length > 0 ? frenchVoices : availableVoices;
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    function loadVoices() {
+      setAvailableVoices(window.speechSynthesis.getVoices());
+    }
+    loadVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+  }, []);
+
+  useEffect(() => {
+    if (!listening || pdfUrl || isFrontCover || isBackCover) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+    const text = getCleanedText(pages[contentPage]);
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = speechRate;
+    utterance.lang = "fr-FR";
+    const voice = voiceOptions.find((v) => v.voiceURI === voiceURI);
+    if (voice) utterance.voice = voice;
+    utterance.onboundary = (e) => {
+      if (e.name && e.name !== "word") return;
+      setCurrentWordIndex(wordIndexAtCharIndex(text, e.charIndex));
+    };
+    utterance.onend = () => {
+      setCurrentWordIndex(null);
+      setView((v) => {
+        if (v < totalSlots - 1) {
+          setDirection("forward");
+          return v + 1;
+        }
+        setListening(false);
+        return v;
+      });
+    };
+    utterance.onerror = () => {
+      setCurrentWordIndex(null);
+      setListening(false);
+    };
+    window.speechSynthesis.speak(utterance);
+
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listening, view, speechRate, voiceURI]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   const searchResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -370,6 +564,15 @@ export default function Reader({
           </Link>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setPanelOpen((p) => (p === "audio" ? null : "audio"))}
+              aria-label="Lecture à voix haute"
+              className={`h-8 w-8 rounded-lg border text-sm font-bold ${
+                listening ? "border-[#7c5cff] bg-[#7c5cff]/20" : dark ? "border-white/20" : "border-black/15"
+              }`}
+            >
+              🎧
+            </button>
+            <button
               onClick={() => setPanelOpen((p) => (p === "search" ? null : "search"))}
               aria-label="Rechercher dans le livre"
               className={`h-8 w-8 rounded-lg border text-sm font-bold ${dark ? "border-white/20" : "border-black/15"}`}
@@ -456,6 +659,62 @@ export default function Reader({
             dark ? "border-white/10 bg-[#14122a]/95 text-white" : "border-black/10 bg-white/95 text-[#181828]"
           }`}
         >
+          {panelOpen === "audio" && (
+            <div className="space-y-5">
+              <div>
+                <p className="mb-2 font-bold">Lecture à voix haute</p>
+                <p className={`mb-3 text-xs ${mutedTextClass}`}>
+                  Voix et surlignage des mots via la synthèse vocale de ton navigateur — la
+                  précision du surlignage dépend de la voix utilisée.
+                </p>
+                <button
+                  onClick={() => setListening((v) => !v)}
+                  className="w-full rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-4 py-2.5 text-center text-sm font-bold text-white"
+                >
+                  {listening ? "⏸ Arrêter la lecture" : "▶️ Écouter cette page"}
+                </button>
+              </div>
+              {voiceOptions.length > 0 && (
+                <div>
+                  <p className="mb-2 font-bold">Voix</p>
+                  <select
+                    value={voiceURI ?? voiceOptions[0]?.voiceURI ?? ""}
+                    onChange={(e) => setVoiceURI(e.target.value)}
+                    className={`w-full rounded-xl border px-3 py-2 text-xs ${
+                      dark ? "border-white/15 bg-white/5 text-white" : "border-black/10 bg-black/5"
+                    }`}
+                  >
+                    {voiceOptions.map((v) => (
+                      <option key={v.voiceURI} value={v.voiceURI} className="text-black">
+                        {`${v.name} (${v.lang})`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div>
+                <p className="mb-2 font-bold">Vitesse</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {SPEEDS.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSpeechRate(s)}
+                      className={`rounded-xl border py-2 text-xs font-bold ${
+                        speechRate === s
+                          ? "border-[#7c5cff] bg-[#7c5cff]/10"
+                          : dark
+                            ? "border-white/15"
+                            : "border-black/10"
+                      }`}
+                    >
+                      {`${s}×`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {panelOpen === "settings" && (
             <div className="space-y-5">
               <div>
@@ -575,6 +834,14 @@ export default function Reader({
                 >
                   Signets
                 </button>
+                <button
+                  onClick={() => setTocTab("highlights")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
+                    tocTab === "highlights" ? "bg-[#7c5cff] text-white" : dark ? "bg-white/10" : "bg-black/5"
+                  }`}
+                >
+                  Surlignages
+                </button>
               </div>
               {tocTab === "chapters" ? (
                 chapters.length > 0 ? (
@@ -593,7 +860,7 @@ export default function Reader({
                 ) : (
                   <p className="opacity-60">Aucun chapitre détecté pour ce livre.</p>
                 )
-              ) : (
+              ) : tocTab === "bookmarks" ? (
                 <div>
                   <button
                     onClick={() => toggleBookmark(contentPage)}
@@ -616,6 +883,68 @@ export default function Reader({
                     </div>
                   ) : (
                     <p className="opacity-60">Aucun signet pour ce livre.</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  {highlights.length > 0 ? (
+                    <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                      {highlights.map((h) => (
+                        <div
+                          key={h.id}
+                          className={`rounded-lg border p-3 ${dark ? "border-white/10" : "border-black/10"}`}
+                        >
+                          <button
+                            onClick={() => goToView(h.page + frontOffset)}
+                            className="mb-1.5 block text-left text-xs font-bold opacity-60"
+                          >
+                            {`Page ${h.page + 1}`}
+                          </button>
+                          <p className="mb-2 text-sm italic">{`« ${h.text} »`}</p>
+                          {editingHighlightId === h.id ? (
+                            <div className="flex gap-2">
+                              <input
+                                autoFocus
+                                value={noteDraft}
+                                onChange={(e) => setNoteDraft(e.target.value)}
+                                placeholder="Ta note…"
+                                className={`flex-1 rounded-lg border px-2 py-1 text-xs outline-none ${
+                                  dark ? "border-white/15 bg-white/5" : "border-black/10 bg-black/5"
+                                }`}
+                              />
+                              <button
+                                onClick={() => handleSaveNote(h.id)}
+                                className="rounded-lg bg-[#7c5cff] px-3 text-xs font-bold text-white"
+                              >
+                                OK
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingHighlightId(h.id);
+                                  setNoteDraft(h.note ?? "");
+                                }}
+                                className="truncate text-xs font-semibold opacity-70 hover:opacity-100"
+                              >
+                                {h.note ? `📝 ${h.note}` : "+ Ajouter une note"}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteHighlight(h.id)}
+                                className="shrink-0 opacity-50 hover:opacity-100"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="opacity-60">
+                      Sélectionne du texte dans une page pour créer ton premier surlignage.
+                    </p>
                   )}
                 </div>
               )}
@@ -682,7 +1011,13 @@ export default function Reader({
             }`}
           >
             <div className={`select-text rounded-[22px] p-8 ${dark ? "bg-black/40 backdrop-blur-sm" : ""}`}>
-              <div className={textClass}>{renderPageContent(pages[contentPage])}</div>
+              <div className={textClass}>
+                {renderPageContent(
+                  pages[contentPage],
+                  highlightsByPage.get(contentPage) ?? [],
+                  listening ? currentWordIndex : null
+                )}
+              </div>
             </div>
             {isLastView && endOfBookBlock}
           </div>
@@ -705,7 +1040,11 @@ export default function Reader({
             <div className={textClass}>
               {pages.map((pageText, i) => (
                 <div key={i}>
-                  {renderPageContent(pageText)}
+                  {renderPageContent(
+                    pageText,
+                    highlightsByPage.get(i) ?? [],
+                    listening && i === contentPage ? currentWordIndex : null
+                  )}
                   {i < pages.length - 1 && (
                     <div className="my-10 flex items-center justify-center gap-3 opacity-40">
                       <span className="h-px w-10 bg-current" />
@@ -734,6 +1073,8 @@ export default function Reader({
           <button onClick={handleCopyQuote}>📋 Copier</button>
           <span className="opacity-30">|</span>
           <button onClick={handleShareQuote}>↗ Partager</button>
+          <span className="opacity-30">|</span>
+          <button onClick={handleSaveHighlight}>🖍 Surligner</button>
         </div>
       )}
 

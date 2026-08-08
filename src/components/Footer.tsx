@@ -5,12 +5,15 @@ export default function Footer() {
     <footer id="contact" className="bg-navy-dark px-6 py-16 text-[#c3cee8]">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-start justify-between gap-10 border-b border-white/10 pb-10">
-          <Link href="/" className="flex items-center gap-2.5 text-xl font-extrabold text-white">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c5cff] to-navy text-white shadow-[0_8px_20px_rgba(124,92,255,0.35)]">
-              ✦
-            </span>
-            LUMINA
-          </Link>
+          <div>
+            <Link href="/" className="flex items-center gap-2.5 text-xl font-extrabold text-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c5cff] to-navy text-white shadow-[0_8px_20px_rgba(124,92,255,0.35)]">
+                ✦
+              </span>
+              LUMINA
+            </Link>
+            <p className="mt-2 text-sm text-[#7c88ab]">Des lectures qui vous accompagnent.</p>
+          </div>
           <div className="flex flex-wrap gap-14">
             <div>
               <h5 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-white">
