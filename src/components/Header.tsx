@@ -46,7 +46,7 @@ export default async function Header() {
               href="/signup"
               className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-6 py-2.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(124,92,255,0.35)] transition hover:-translate-y-0.5"
             >
-              Commencer gratuitement
+              ⚡ Commencer mon parcours
             </Link>
           </div>
         )}

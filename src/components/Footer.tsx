@@ -12,7 +12,9 @@ export default function Footer() {
               </span>
               LUMINA
             </Link>
-            <p className="mt-2 text-sm text-[#7c88ab]">Des lectures qui vous accompagnent.</p>
+            <p className="lumina-gold-text mt-2 text-sm font-semibold">
+              Lis. Apprends. Transforme-toi.
+            </p>
           </div>
           <div className="flex flex-wrap gap-14">
             <div>

@@ -116,16 +116,18 @@ export async function deleteEbook(id: string) {
 export async function createCatalog(formData: FormData) {
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
   if (!name) return;
-  await prisma.catalog.create({ data: { name } });
+  await prisma.catalog.create({ data: { name, description: description || null } });
   revalidatePath("/admin/catalogs");
 }
 
 export async function renameCatalog(id: string, formData: FormData) {
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
   if (!name) return;
-  await prisma.catalog.update({ where: { id }, data: { name } });
+  await prisma.catalog.update({ where: { id }, data: { name, description: description || null } });
   revalidatePath("/admin/catalogs");
   revalidatePath("/admin");
   revalidatePath("/");
@@ -151,7 +153,36 @@ export async function importRealBooks() {
     });
   }
 
+  const guerrier = await prisma.eBook.findUnique({ where: { slug: "le-code-du-guerrier" } });
+  await prisma.catalog.upsert({
+    where: { name: "Collection Guerrier" },
+    update: {
+      description: "Construis un mental que rien ne peut briser.",
+      ...(guerrier ? { ebooks: { connect: [{ id: guerrier.id }] } } : {}),
+    },
+    create: {
+      name: "Collection Guerrier",
+      description: "Construis un mental que rien ne peut briser.",
+      ...(guerrier ? { ebooks: { connect: [{ id: guerrier.id }] } } : {}),
+    },
+  });
+
+  const sparteTomes = await prisma.eBook.findMany({ where: { seriesName: "Sparte" } });
+  await prisma.catalog.upsert({
+    where: { name: "Collection Sparte" },
+    update: {
+      description: "Découvre la mentalité des guerriers.",
+      ebooks: { connect: sparteTomes.map((t) => ({ id: t.id })) },
+    },
+    create: {
+      name: "Collection Sparte",
+      description: "Découvre la mentalité des guerriers.",
+      ebooks: { connect: sparteTomes.map((t) => ({ id: t.id })) },
+    },
+  });
+
   revalidatePath("/admin");
+  revalidatePath("/admin/catalogs");
   revalidatePath("/");
   redirect("/admin");
 }

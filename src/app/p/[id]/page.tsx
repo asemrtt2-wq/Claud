@@ -230,6 +230,12 @@ export default async function ProfilePage({
 
   const library = Array.from(libraryMap.values());
   const continueReading = progressEntries[0] ? libraryMap.get(progressEntries[0].ebookId) : null;
+  const inProgressBooks = progressEntries
+    .filter((p) => !p.completed)
+    .map((p) => {
+      const totalPages = paginateContent(p.ebook.content).length;
+      return { ebook: p.ebook, percent: Math.round(((p.page + 1) / totalPages) * 100) };
+    });
   const recommendations = await getRecommendations(id, Array.from(libraryMap.keys()));
 
   const billboardBook = continueReading?.ebook ?? recommendations.newest[0] ?? library[0]?.ebook ?? null;
@@ -304,8 +310,8 @@ export default async function ProfilePage({
               />
             </div>
             <div className="relative z-10 max-w-md">
-              <span className="mb-2 inline-block text-xs font-bold uppercase tracking-wider text-white/70">
-                {continueReading ? "Continuer la lecture" : "Notre sélection pour toi"}
+              <span className="lumina-gold-text mb-2 inline-block text-xs font-bold uppercase tracking-wider">
+                {continueReading ? "Continuer la lecture" : "✨ Recommandé pour toi"}
               </span>
               <h2 className="mb-3 text-2xl font-extrabold leading-tight sm:text-3xl">
                 {billboardBook.title}
@@ -328,11 +334,51 @@ export default async function ProfilePage({
           </div>
         )}
 
+        {inProgressBooks.length > 0 && (
+          <section className="mb-12">
+            <h2 className="mb-5 text-lg font-extrabold">📖 Continuer ma lecture</h2>
+            <div className="scrollbar-hide -mx-6 flex snap-x gap-4 overflow-x-auto px-6 pb-1 sm:-mx-10 sm:px-10">
+              {inProgressBooks.map(({ ebook, percent }) => (
+                <div
+                  key={ebook.id}
+                  className="lumina-card-premium flex w-64 shrink-0 snap-start flex-col gap-3 rounded-2xl p-4 sm:w-72"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`${ebook.coverImageUrl ? "" : `cover-theme-${ebook.coverTheme}`} relative flex h-16 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg text-xl`}
+                    >
+                      {ebook.coverImageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={ebook.coverImageUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        ebook.coverEmoji
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-white">{ebook.title}</p>
+                      <p className="lumina-gold-text text-xs font-bold">{`${percent}% terminé`}</p>
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full lumina-progress-track">
+                    <div className="h-full lumina-progress-fill" style={{ width: `${percent}%` }} />
+                  </div>
+                  <Link
+                    href={`/p/${id}/read/${ebook.slug}`}
+                    className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-4 py-2 text-center text-sm font-bold text-white transition hover:-translate-y-0.5"
+                  >
+                    Continuer →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {catalogsWithBooks.length > 0 && (
           <section className="mb-12">
             <div className="flex flex-col gap-8">
               {catalogsWithBooks.map((cat) => (
-                <BookRow key={cat.id} label={cat.name} books={cat.ebooks} />
+                <BookRow key={cat.id} label={cat.name} tagline={cat.description} books={cat.ebooks} />
               ))}
             </div>
           </section>

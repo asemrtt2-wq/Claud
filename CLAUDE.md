@@ -230,6 +230,57 @@ why, since a couple of the source requests would have meant faking numbers:
   `getRecommendations()` engine is honestly documented as rule-based, no ML, so it keeps its
   honest "Recommandé pour toi" label rather than being rebranded "IA."
 
+### "Cinematic" gold/bordeaux pass ("Juste le look")
+
+The project owner asked for a much more premium/cinematic redesign built around a
+"warrior/mental/stoicism" repositioning (new nav, fake categories like GUERRIER/SPARTE/STOÏCISME,
+a hardcoded author, an invented star rating, invented "livres lus"-style stats as literal example
+numbers). Since that conflicted with the real, diverse catalog (Neurosciences, Biologie, Cuisine,
+Voyage, Fitness — not just warrior content) and with this codebase's standing rule against
+fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarifying question:
+**visual language only, real catalog/categories/authors/stats untouched.** What shipped:
+
+- **Expanded palette** (`globals.css` `@theme`): `--color-lumina-wine`/`--color-lumina-wine-light`
+  (deep bordeaux-red) and `--color-lumina-gold`/`--color-lumina-gold-light`, layered on top of
+  the existing violet/navy tokens rather than replacing them. `.lumina-shell`'s background gained
+  a wine-red radial glow and a deeper black tail. Two new utility classes: `.lumina-card-premium`
+  (a glass card with a subtle gold border that brightens + glows gold on hover, used for
+  higher-emphasis cards) and `.lumina-gold-text` (gold gradient text-clip, used for taglines/
+  section labels/stat headers that should read as a premium accent, not the default purple).
+- **"Continuer ma lecture"** — a new horizontal row on the adult `/p/[id]` dashboard, right after
+  the billboard, showing every in-progress (`ReadingProgress`, not `completed`) book as a
+  `.lumina-card-premium` tile with cover, title, a real `{percent}% terminé` (computed from
+  `page` / total pages, same math the billboard/ebook page already use) in gold, a progress bar,
+  and a "Continuer →" link straight into the reader at the saved page.
+- **Real curated collections with taglines**: `Catalog.description` (see "Curated catalogs"
+  above) plus two genuine collections ("Collection Guerrier", "Collection Sparte") built from
+  real books already in the catalog — not the fictional 5-collection lineup (Discipline, Pouvoir,
+  etc.) from the original spec, since those don't correspond to anything in the real library yet.
+- **"Ton parcours" real-stats section** (`/p/[id]/compte`, above the existing Niveau/XP card):
+  four `.lumina-card-premium` tiles — Livres lus (`completedBooksTotal`), Pages lues (a new
+  `pagesReadTotal`, summing `page + 1` across every tracked `ReadingProgress` row — genuinely
+  derived, not stored separately), Temps de lecture (`Profile.totalMinutesRead`), Série actuelle
+  (the existing streak calc). This mirrors the shape of the spec's example stat block
+  ("Livres lus: 12, Pages lues: 847...") using 100% real per-profile numbers instead of the
+  example values.
+- **Gold accents elsewhere**: category tiles (`src/app/page.tsx`) get a gold border/glow on
+  hover instead of just lifting; the billboard's "Recommandé pour toi" tag and "Continuer la
+  lecture" label render in `.lumina-gold-text`; the footer tagline is the requested
+  "Lis. Apprends. Transforme-toi." slogan in gold; the header's signed-out primary CTA became
+  "⚡ Commencer mon parcours" (only that one button — the hero and `FinalCtaBand`'s own
+  "Commencer gratuitement" CTAs were left as-is, this pass didn't do a copy sweep).
+- **Deliberately not built** (per the "Juste le look" scope decision): the header nav restructure
+  (Accueil/Explorer/Collections/Ma bibliothèque + search/notifications icons) — the existing
+  Accueil/Bibliothèque/Premium/Avis Clients nav already covers real site sections and a
+  notifications icon with nothing behind it would be a dead affordance; the six fictional
+  "CHOISIS TON MENTAL" categories (GUERRIER/MENTAL/SPARTE/POUVOIR/STOÏCISME/MOTIVATION) — real
+  `category` values already drive "Explorer par catégorie"/"Parcourir par catégorie", and
+  swapping in invented categories would disconnect those tiles from the real catalog they filter
+  into; a hardcoded "Auteur : Asem" on the book detail page — `EBook.author` is a real per-book
+  field already, overwriting it with one fixed name would be false for every other title; a star
+  rating control — no rating storage exists, same reasoning as the earlier "no fake ⭐" decision
+  above.
+
 ### Customer accounts & profiles
 - `src/lib/auth.ts` — NextAuth config with `admin-credentials` and `customer-credentials`
   providers; `token.role` / `session.user.role` distinguish which one signed in (see
@@ -606,6 +657,17 @@ why, since a couple of the source requests would have meant faking numbers:
   placement — a book can be in several catalogs (or none) independent of its category. Kids
   audience books are excluded from catalog rows since catalogs only ever render on
   adult-facing surfaces.
+- `Catalog.description` — an optional short tagline (e.g. "Construis un mental que rien ne peut
+  briser.") set from the same `/admin/catalogs` create/rename form, rendered as a small gold
+  (`.lumina-gold-text`) italic line under the row's label via `BookRow`'s optional `tagline`
+  prop. Two real catalogs ship with one — **"Collection Guerrier"** ("Construis un mental que
+  rien ne peut briser.", containing "Le Code du Guerrier") and **"Collection Sparte"**
+  ("Découvre la mentalité des guerriers.", containing the 5 real "Sparte" series tomes) — both
+  are genuine, curated groupings of real catalog books, not a themed re-skin of the whole site.
+  They're upserted (idempotently, safe to re-run) by `importRealBooks()` in `src/lib/actions.ts`
+  right after it imports the real book rows, so re-clicking "Importer mes livres" on
+  `/admin` is what syncs them to a deployed environment the same way it syncs everything else
+  `importRealBooks()` seeds.
 
 ### Series ("Épisodes")
 - `EBook.seriesName`/`seriesOrder` (both optional) group standalone `EBook` rows into a saga —

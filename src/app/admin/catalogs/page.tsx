@@ -28,51 +28,68 @@ export default async function AdminCatalogsPage() {
 
         <form
           action={createCatalog}
-          className="lumina-card mb-8 flex flex-wrap items-center gap-3 rounded-2xl p-5"
+          className="lumina-card mb-8 flex flex-col gap-3 rounded-2xl p-5"
         >
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              type="text"
+              name="name"
+              required
+              placeholder="Nom du catalogue (ex : Coup de cœur)"
+              className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#a78bfa]"
+            />
+            <button
+              type="submit"
+              className="shrink-0 rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(124,92,255,0.35)] transition hover:-translate-y-0.5"
+            >
+              + Créer
+            </button>
+          </div>
           <input
             type="text"
-            name="name"
-            required
-            placeholder="Nom du catalogue (ex : Coup de cœur)"
-            className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#a78bfa]"
+            name="description"
+            placeholder="Accroche (optionnel, ex : « Construis un mental que rien ne peut briser. »)"
+            className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#a78bfa]"
           />
-          <button
-            type="submit"
-            className="shrink-0 rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(124,92,255,0.35)] transition hover:-translate-y-0.5"
-          >
-            + Créer
-          </button>
         </form>
 
         <div className="flex flex-col gap-3">
           {catalogs.map((catalog) => (
             <div
               key={catalog.id}
-              className="lumina-card flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4"
+              className="lumina-card flex flex-col gap-3 rounded-2xl p-4"
             >
               <form
                 action={renameCatalog.bind(null, catalog.id)}
-                className="flex flex-1 items-center gap-2"
+                className="flex flex-col gap-2"
               >
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    defaultValue={catalog.name}
+                    className="min-w-0 flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-[#a78bfa]"
+                  />
+                  <span className="shrink-0 text-xs text-[color:var(--color-lumina-text-muted)]">
+                    {catalog._count.ebooks} livre{catalog._count.ebooks > 1 ? "s" : ""}
+                  </span>
+                  <button
+                    type="submit"
+                    className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-bold text-white transition hover:border-[#a78bfa]"
+                  >
+                    Enregistrer
+                  </button>
+                  <DeleteCatalogButton id={catalog.id} name={catalog.name} />
+                </div>
                 <input
                   type="text"
-                  name="name"
-                  required
-                  defaultValue={catalog.name}
-                  className="min-w-0 flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-[#a78bfa]"
+                  name="description"
+                  defaultValue={catalog.description ?? ""}
+                  placeholder="Accroche (optionnel)"
+                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#a78bfa]"
                 />
-                <button
-                  type="submit"
-                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-bold text-white transition hover:border-[#a78bfa]"
-                >
-                  Renommer
-                </button>
               </form>
-              <span className="text-xs text-[color:var(--color-lumina-text-muted)]">
-                {catalog._count.ebooks} livre{catalog._count.ebooks > 1 ? "s" : ""}
-              </span>
-              <DeleteCatalogButton id={catalog.id} name={catalog.name} />
             </div>
           ))}
           {catalogs.length === 0 && (

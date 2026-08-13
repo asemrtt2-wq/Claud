@@ -78,6 +78,7 @@ export default async function CompteObjectifsPage({
     );
   }).length;
   const completedBooksTotal = progressEntries.filter((p) => p.completed).length;
+  const pagesReadTotal = progressEntries.reduce((sum, p) => sum + p.page + 1, 0);
   const currentStreak =
     profile.lastReadDate === todayStr ||
     profile.lastReadDate === new Date(Date.now() - 86400000).toISOString().slice(0, 10)
@@ -155,6 +156,27 @@ export default async function CompteObjectifsPage({
             <p className="text-2xl font-extrabold">{currentStreak}</p>
           </div>
         </div>
+
+        <section className="mb-10">
+          <h2 className="lumina-gold-text mb-4 text-sm font-extrabold uppercase tracking-wider">
+            Ton parcours
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {[
+              { label: "Livres lus", value: completedBooksTotal },
+              { label: "Pages lues", value: pagesReadTotal },
+              { label: "Temps de lecture", value: formatMinutes(profile.totalMinutesRead) },
+              { label: "Série actuelle", value: `${currentStreak} j` },
+            ].map((stat) => (
+              <div key={stat.label} className="lumina-card-premium rounded-2xl p-5 text-center">
+                <p className="text-2xl font-extrabold">{stat.value}</p>
+                <p className="mt-1 text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <section className="lumina-card mb-10 rounded-[22px] p-6">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">

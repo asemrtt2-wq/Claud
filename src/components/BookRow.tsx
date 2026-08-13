@@ -16,11 +16,13 @@ type RowBook = {
 
 export default function BookRow({
   label,
+  tagline,
   books,
   hrefBase = "/ebooks",
   progressByEbookId,
 }: {
   label: string;
+  tagline?: string | null;
   books: RowBook[];
   hrefBase?: string;
   progressByEbookId?: Map<string, number>;
@@ -37,9 +39,14 @@ export default function BookRow({
   return (
     <div className="group/row relative">
       {label && (
-        <p className="mb-3 text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
-          {label}
-        </p>
+        <div className="mb-3">
+          <p className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
+            {label}
+          </p>
+          {tagline && (
+            <p className="lumina-gold-text mt-0.5 text-xs italic">{tagline}</p>
+          )}
+        </div>
       )}
       <div
         ref={scrollRef}

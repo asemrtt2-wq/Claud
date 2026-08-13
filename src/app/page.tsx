@@ -149,7 +149,7 @@ export default async function HomePage() {
                     key={category}
                     href={browseHref}
                     style={{ animationDelay: `${i * 60}ms` }}
-                    className={`animate-fade-in-up group flex flex-col items-center justify-center gap-2 rounded-2xl bg-gradient-to-br ${style.gradient} p-5 text-center shadow-[0_10px_28px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.05] hover:shadow-[0_20px_44px_rgba(124,92,255,0.4)]`}
+                    className={`animate-fade-in-up group flex flex-col items-center justify-center gap-2 rounded-2xl border border-transparent bg-gradient-to-br ${style.gradient} p-5 text-center shadow-[0_10px_28px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.05] hover:border-[#d4af37]/40 hover:shadow-[0_20px_44px_rgba(212,175,55,0.25)]`}
                   >
                     <span className="text-3xl transition-transform duration-300 group-hover:scale-110">
                       {style.emoji}
@@ -167,7 +167,12 @@ export default async function HomePage() {
         <section className="bg-[#0a0918] px-6 pb-4 pt-20 text-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-12">
             {catalogsWithBooks.map((catalog) => (
-              <BookRow key={catalog.id} label={catalog.name} books={catalog.ebooks} />
+              <BookRow
+                key={catalog.id}
+                label={catalog.name}
+                tagline={catalog.description}
+                books={catalog.ebooks}
+              />
             ))}
           </div>
         </section>
