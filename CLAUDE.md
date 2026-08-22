@@ -735,6 +735,20 @@ types) / `/p/[id]/read/[slug]` (reader, both profile types).
   `coverImageUrl`/`backCoverImageUrl`. This is the reference example for adding another book the
   same way: extract clean chapter text + save the two cover images under `public/covers/`, no
   file-upload storage needed since these ship as static files with the deployment itself.
+- A later batch added 30 more real books this same way (`src/lib/realBooks.ts`), including two
+  new partial series — **"Le Pouvoir en Soi"** (Développement personnel; tomes 1, 2, 4, 5, 6
+  supplied — tome 3 was never provided) and **"Mental du Combattant"** (Psychologie & Sport de
+  combat; tomes 1–6 and 8 supplied — tome 7 was never provided) — plus 18 standalone titles
+  (nature/biologie, philosophie, biographies, développement personnel). **Known issue inherited
+  from the source export, not introduced by the extraction:** the front/back covers for every
+  "Le Pouvoir en Soi" tome and for "Mental du Combattant" tomes 2–8 are duplicated/mismatched in
+  the HTML exports supplied (e.g. all five "Le Pouvoir en Soi" tomes shipped with the identical
+  "Devenir la Femme" cover instead of a per-tome one) — published as-is at the project owner's
+  explicit instruction rather than blocking on it. If corrected per-tome cover art is supplied
+  later, re-extract just the `coverImageUrl`/`backCoverImageUrl` pair for the affected slugs the
+  same way (decode the base64 `img-front`/`img-back` payloads from the new HTML export, save over
+  the existing `public/covers/{slug}-{front,back}.jpg`) — the chapter text for those books is
+  already correct and doesn't need to be touched again.
 
 ## Conventions
 
