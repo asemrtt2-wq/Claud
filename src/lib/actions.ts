@@ -145,13 +145,15 @@ export async function importRealBooks() {
   await requireAdmin();
 
   const { REAL_BOOKS } = await import("@/lib/realBooks");
-  for (const book of REAL_BOOKS) {
-    await prisma.eBook.upsert({
-      where: { slug: book.slug },
-      update: book,
-      create: book,
-    });
-  }
+  await Promise.all(
+    REAL_BOOKS.map((book) =>
+      prisma.eBook.upsert({
+        where: { slug: book.slug },
+        update: book,
+        create: book,
+      })
+    )
+  );
 
   const guerrier = await prisma.eBook.findUnique({ where: { slug: "le-code-du-guerrier" } });
   await prisma.catalog.upsert({

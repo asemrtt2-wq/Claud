@@ -6,6 +6,10 @@ import AdminNav from "@/components/AdminNav";
 import DeleteEbookButton from "@/components/DeleteEbookButton";
 import { importRealBooks } from "@/lib/actions";
 
+// The "Importer mes livres" action upserts dozens of real books at once — give it more
+// than the default serverless timeout so it doesn't silently fail on a slow connection.
+export const maxDuration = 60;
+
 function EbookTable({ ebooks }: { ebooks: Awaited<ReturnType<typeof prisma.eBook.findMany>> }) {
   return (
     <div className="lumina-card overflow-hidden rounded-2xl">
