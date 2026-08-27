@@ -12,8 +12,6 @@ type Props = {
   oldPrice: number | null;
   pages?: number;
   readingMinutes?: number;
-  isNew?: boolean;
-  isBestseller?: boolean;
   animationDelayMs?: number;
 };
 
@@ -29,8 +27,6 @@ export default function EBookCard({
   oldPrice,
   pages,
   readingMinutes,
-  isNew,
-  isBestseller,
   animationDelayMs = 0,
 }: Props) {
   return (
@@ -46,20 +42,6 @@ export default function EBookCard({
           alt=""
           className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-      )}
-      {(isBestseller || isNew) && (
-        <div className="absolute left-4 top-4 z-20 flex flex-col gap-1.5">
-          {isBestseller && (
-            <span className="rounded-full bg-gradient-to-r from-[#f59e0b] to-[#d97706] px-3 py-1 text-[0.65rem] font-extrabold uppercase tracking-wider text-white shadow-lg">
-              🔥 Bestseller
-            </span>
-          )}
-          {isNew && (
-            <span className="rounded-full bg-gradient-to-r from-[#7c5cff] to-[#5b3df0] px-3 py-1 text-[0.65rem] font-extrabold uppercase tracking-wider text-white shadow-lg">
-              🆕 Nouveau
-            </span>
-          )}
-        </div>
       )}
       <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 text-2xl backdrop-blur">
         {coverEmoji}

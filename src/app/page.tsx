@@ -206,8 +206,6 @@ export default async function HomePage() {
                 oldPrice={ebook.oldPrice}
                 pages={ebook.pdfUrl ? undefined : paginateContent(ebook.content).length}
                 readingMinutes={ebook.pdfUrl ? undefined : Math.max(1, Math.round(countWords(ebook.content) / 200))}
-                isNew={ebook.isNew}
-                isBestseller={ebook.isBestseller}
                 animationDelayMs={i * 80}
               />
             ))}

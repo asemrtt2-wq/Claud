@@ -2,40 +2,29 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import LibraryBookRow from "@/components/LibraryBookRow";
+import LibraryCatalogClient, {
+  type LibraryBook,
+  type LibrarySection,
+} from "@/components/LibraryCatalogClient";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { getActiveProfile } from "@/lib/activeProfile";
 import { hasAccessToEbook } from "@/lib/access";
 import { dedupeSeries } from "@/lib/series";
 import { getBestsellerIds, getSurpriseBook } from "@/lib/recommendations";
-import { isNewBook } from "@/lib/badges";
-import { getCategoryStyle } from "@/lib/categoryStyle";
 import { countWords } from "@/lib/paginate";
-
-function categoryAnchor(category: string) {
-  return category
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function withBadges<T extends { id: string; createdAt: Date }>(
-  books: T[],
-  bestsellerIds: Set<string>
-): (T & { isNew: boolean; isBestseller: boolean })[] {
-  return books.map((b) => ({ ...b, isNew: isNewBook(b.createdAt), isBestseller: bestsellerIds.has(b.id) }));
-}
 
 export default async function BibliothequePage() {
   const customer = await getCurrentCustomer();
   const activeProfile = customer ? await getActiveProfile(customer.id) : null;
 
-  const [ebooks, bestsellerIds, surpriseSlug] = await Promise.all([
+  const [ebooks, bestsellerIds, surpriseSlug, catalogs] = await Promise.all([
     prisma.eBook.findMany({ where: { audience: "adults" }, orderBy: { createdAt: "asc" } }),
     getBestsellerIds(),
     getSurpriseBook(activeProfile?.id ?? null),
+    prisma.catalog.findMany({
+      include: { ebooks: { where: { audience: "adults" } } },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
 
   let accessibleIds = new Set<string>();
@@ -52,39 +41,64 @@ export default async function BibliothequePage() {
     }
   }
 
+  function toLibraryBook(b: (typeof ebooks)[number]): LibraryBook {
+    const hasAccess = accessibleIds.has(b.id);
+    return {
+      id: b.id,
+      slug: b.slug,
+      title: b.title,
+      subtitle: b.subtitle,
+      author: b.author,
+      category: b.category,
+      coverEmoji: b.coverEmoji,
+      coverTheme: b.coverTheme,
+      coverImageUrl: b.coverImageUrl,
+      backCoverImageUrl: b.backCoverImageUrl,
+      price: b.price,
+      oldPrice: b.oldPrice,
+      readingMinutes: b.pdfUrl ? null : Math.max(1, Math.round(countWords(b.content) / 200)),
+      isBestseller: bestsellerIds.has(b.id),
+      hasAccess,
+      href:
+        hasAccess && activeProfile ? `/p/${activeProfile.id}/read/${b.slug}` : `/ebooks/${b.slug}`,
+    };
+  }
+
+  const allBooks = dedupeSeries(ebooks).map(toLibraryBook);
   const categories = Array.from(new Set(ebooks.map((e) => e.category)));
-  const categoriesMap = new Map<string, typeof ebooks>();
-  for (const book of dedupeSeries(ebooks)) {
+
+  const categoriesMap = new Map<string, LibraryBook[]>();
+  for (const book of allBooks) {
     const list = categoriesMap.get(book.category) ?? [];
     list.push(book);
     categoriesMap.set(book.category, list);
   }
-  const categoryRows = categories.map((category) => ({
-    category,
-    books: withBadges(categoriesMap.get(category) ?? [], bestsellerIds).map((b) => {
-      const hasAccess = accessibleIds.has(b.id);
-      return {
-        id: b.id,
-        slug: b.slug,
-        title: b.title,
-        subtitle: b.subtitle,
-        category: b.category,
-        coverEmoji: b.coverEmoji,
-        coverTheme: b.coverTheme,
-        coverImageUrl: b.coverImageUrl,
-        price: b.price,
-        oldPrice: b.oldPrice,
-        readingMinutes: b.pdfUrl ? null : Math.max(1, Math.round(countWords(b.content) / 200)),
-        isNew: b.isNew,
-        isBestseller: b.isBestseller,
-        hasAccess,
-        href:
-          hasAccess && activeProfile ? `/p/${activeProfile.id}/read/${b.slug}` : `/ebooks/${b.slug}`,
-      };
-    }),
-  }));
 
-  const featured = ebooks.find((e) => e.featured) ?? [...ebooks].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ?? null;
+  const popularBooks = allBooks.filter((b) => b.isBestseller);
+
+  const sections: LibrarySection[] = [
+    ...(popularBooks.length > 0
+      ? [{ key: "popular", label: "🔥 Les plus populaires", books: popularBooks }]
+      : []),
+    ...catalogs
+      .filter((c) => c.ebooks.length > 0)
+      .map((c) => ({
+        key: `catalog:${c.name}`,
+        label: c.name,
+        tagline: c.description,
+        books: dedupeSeries(c.ebooks).map(toLibraryBook),
+      })),
+    ...categories.map((category) => ({
+      key: category,
+      label: category,
+      books: categoriesMap.get(category) ?? [],
+    })),
+  ];
+
+  const featured =
+    ebooks.find((e) => e.featured) ??
+    [...ebooks].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ??
+    null;
   const featuredHasAccess =
     featured && customer ? await hasAccessToEbook(customer.id, featured.id) : false;
   const featuredHref = featured
@@ -103,35 +117,21 @@ export default async function BibliothequePage() {
       <div className="lumina-shell px-6 py-16">
         <div className="mx-auto max-w-6xl">
           <h1 className="mb-3 text-[2rem] font-extrabold tracking-tight md:text-[2.6rem]">
-            Bibliothèque
+            Bibliothèque LUMINA
           </h1>
-          <p className="mb-8 text-[color:var(--color-lumina-text-muted)]">
-            Explorez nos iBooks et trouvez votre prochaine lecture.
+          <p className="mb-2 text-[color:var(--color-lumina-text-muted)]">
+            Découvrez notre collection de livres numériques.
           </p>
-
-          <div className="mb-14 flex flex-wrap gap-2.5">
-            <a
-              href="#"
-              className="rounded-full border border-[#7c5cff] bg-[#7c5cff]/15 px-4 py-2 text-sm font-bold text-white"
-            >
-              Tous
-            </a>
-            {categories.map((category) => (
-              <a
-                key={category}
-                href={`#${categoryAnchor(category)}`}
-                className="rounded-full border border-white/15 px-4 py-2 text-sm font-bold text-white/80 transition hover:border-[#a78bfa] hover:text-white"
-              >
-                {category}
-              </a>
-            ))}
-          </div>
+          <p className="mb-10 text-sm font-bold text-[#a78bfa]">
+            {allBooks.length} livre{allBooks.length > 1 ? "s" : ""} disponible
+            {allBooks.length > 1 ? "s" : ""}
+          </p>
 
           {featured && featuredHref && (
             <section className="mb-16">
               <h2 className="mb-1 text-lg font-extrabold">À la une</h2>
               <p className="mb-5 text-sm text-[color:var(--color-lumina-text-muted)]">
-                Les lectures que nous vous recommandons cette semaine.
+                La lecture que nous vous recommandons cette semaine.
               </p>
               <div
                 className={`${featured.coverImageUrl ? "" : `cover-theme-${featured.coverTheme}`} relative flex h-[280px] flex-col justify-end overflow-hidden rounded-[26px] p-8 shadow-[0_25px_70px_rgba(0,0,0,0.4)] sm:h-[320px]`}
@@ -166,23 +166,7 @@ export default async function BibliothequePage() {
             </section>
           )}
 
-          <div className="flex flex-col gap-14">
-            {categoryRows.map(({ category, books }) => {
-              const style = getCategoryStyle(category, categories.indexOf(category));
-              return (
-                <section key={category} id={categoryAnchor(category)} className="scroll-mt-24">
-                  <h2 className="mb-1 flex items-center gap-2 text-lg font-extrabold">
-                    <span>{style.emoji}</span>
-                    {category}
-                  </h2>
-                  <p className="mb-5 text-sm text-[color:var(--color-lumina-text-muted)]">
-                    {books.length} iBook{books.length > 1 ? "s" : ""} dans cette catégorie.
-                  </p>
-                  <LibraryBookRow books={books} />
-                </section>
-              );
-            })}
-          </div>
+          <LibraryCatalogClient sections={sections} allBooks={allBooks} categories={categories} />
 
           {surpriseSlug && (
             <section className="mt-20 rounded-[26px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] p-10 text-center text-white shadow-strong">

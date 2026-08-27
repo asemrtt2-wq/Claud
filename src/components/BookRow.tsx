@@ -74,17 +74,6 @@ export default function BookRow({
                 ) : (
                   book.coverEmoji
                 )}
-                {(book.isBestseller || book.isNew) && (
-                  <span
-                    className={`absolute left-1.5 top-1.5 rounded-full px-2 py-0.5 text-[0.55rem] font-extrabold uppercase tracking-wide text-white shadow-lg ${
-                      book.isBestseller
-                        ? "bg-gradient-to-r from-[#f59e0b] to-[#d97706]"
-                        : "bg-gradient-to-r from-[#7c5cff] to-[#5b3df0]"
-                    }`}
-                  >
-                    {book.isBestseller ? "🔥" : "🆕"}
-                  </span>
-                )}
               </div>
               <p className="truncate text-xs font-bold text-white">{book.title}</p>
               {percent !== undefined && (

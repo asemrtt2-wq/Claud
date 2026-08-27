@@ -9,7 +9,7 @@ import { getChapters } from "@/lib/chapters";
 import { getRecommendations } from "@/lib/recommendations";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import BuyButton from "@/components/BuyButton";
+import EbookHero from "@/components/EbookHero";
 import FavoriteButton from "@/components/FavoriteButton";
 import AddToCollectionButton from "@/components/AddToCollectionButton";
 import ExpandableText from "@/components/ExpandableText";
@@ -152,123 +152,53 @@ export default async function EBookPage({
       ].filter((row) => row.books.length > 0)
     : [];
 
+  const progressLabel =
+    !isPdf && progress
+      ? {
+          percent,
+          text: `Page ${progress.page + 1} sur ${pages.length} · ${percent}% terminé · Temps restant estimé : ${formatDuration(remainingMinutes)}`,
+        }
+      : null;
+
   return (
     <>
       <Header />
       <div className="lumina-shell">
-        <div
-          className={`${ebook.coverImageUrl ? "" : `cover-theme-${ebook.coverTheme}`} relative flex h-[48vh] min-h-[360px] flex-col justify-between overflow-hidden p-6`}
-        >
-          {ebook.coverImageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={ebook.coverImageUrl}
-              alt=""
-              className="absolute inset-0 h-full w-full scale-110 object-cover object-top blur-2xl brightness-[0.55]"
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0918] via-black/25 to-black/30" />
-          <div className="relative z-10 flex items-center justify-between">
-            <BackButton />
-            <Link
-              href={activeProfile ? `/p/${activeProfile.id}` : "/"}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-lg text-white backdrop-blur-sm transition hover:bg-black/60"
-              aria-label="Fermer"
-            >
-              ✕
-            </Link>
-          </div>
-          {ebook.coverImageUrl ? (
-            <div className="relative z-10 flex flex-1 items-center justify-center py-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={ebook.coverImageUrl}
-                alt={`Couverture de ${ebook.title}`}
-                className="h-full max-h-[280px] w-auto rounded-xl object-contain shadow-[0_25px_60px_rgba(0,0,0,0.6)] ring-1 ring-white/10"
-              />
-            </div>
-          ) : (
-            <div className="relative z-10 flex flex-1 items-center justify-center text-8xl">
-              {ebook.coverEmoji}
-            </div>
-          )}
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 pt-6">
+          <BackButton />
+          <Link
+            href={activeProfile ? `/p/${activeProfile.id}` : "/"}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-lg text-white transition hover:bg-white/10"
+            aria-label="Fermer"
+          >
+            ✕
+          </Link>
         </div>
 
-        <div className="mx-auto max-w-3xl px-6 pb-20 pt-8">
-          <h1 className="mb-1 text-3xl font-extrabold tracking-tight text-white">
-            {ebook.title}
-          </h1>
-          {ebook.author && (
-            <p className="mb-2 text-lg font-semibold text-[#a78bfa]">{ebook.author}</p>
-          )}
-          {ebook.seriesName && (
-            <p className="mb-2 text-sm font-bold uppercase tracking-wide text-[#a78bfa]">
-              {ebook.seriesName}
-              {ebook.seriesOrder ? ` · Tome ${ebook.seriesOrder}` : ""}
-            </p>
-          )}
-          <p className="mb-6 text-sm text-[color:var(--color-lumina-text-muted)]">
-            {[
-              ebook.publishedYear,
-              isPdf ? "PDF" : `${pages.length} page${pages.length > 1 ? "s" : ""}`,
-              ebook.category,
-              "Français",
-            ]
-              .filter(Boolean)
-              .join(" • ")}
-          </p>
+        <EbookHero
+          ebookId={ebook.id}
+          title={ebook.title}
+          author={ebook.author}
+          seriesName={ebook.seriesName}
+          seriesOrder={ebook.seriesOrder}
+          category={ebook.category}
+          publishedYear={ebook.publishedYear}
+          isPdf={isPdf}
+          pagesCount={pages.length}
+          coverEmoji={ebook.coverEmoji}
+          coverTheme={ebook.coverTheme}
+          coverImageUrl={ebook.coverImageUrl}
+          backCoverImageUrl={ebook.backCoverImageUrl}
+          price={ebook.price}
+          oldPrice={ebook.oldPrice}
+          discount={discount}
+          hasAccess={hasAccess}
+          isLoggedIn={isLoggedIn}
+          readHref={readHref}
+          progressLabel={progressLabel}
+        />
 
-          {hasAccess ? (
-            <div className="mb-6">
-              <Link
-                href={readHref ?? "/profiles"}
-                className="block rounded-2xl bg-white px-7 py-3.5 text-center text-sm font-bold text-navy shadow-[0_12px_30px_rgba(255,255,255,0.15)] transition hover:-translate-y-0.5"
-              >
-                {!isPdf && progress && progress.page > 0
-                  ? "▶ Reprendre la lecture"
-                  : "📖 Commencer la lecture"}
-              </Link>
-              {!isPdf && progress && (
-                <div className="mt-4">
-                  <div className="mb-1.5 h-1.5 w-full overflow-hidden rounded-full lumina-progress-track">
-                    <div className="h-full lumina-progress-fill" style={{ width: `${percent}%` }} />
-                  </div>
-                  <p className="text-xs text-[color:var(--color-lumina-text-muted)]">
-                    {`Page ${progress.page + 1} sur ${pages.length} · ${percent}% terminé · Temps restant estimé : ${formatDuration(remainingMinutes)}`}
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="lumina-card mb-6 max-w-sm rounded-[22px] p-6">
-              <div className="mb-3 flex items-baseline gap-3">
-                {ebook.oldPrice && (
-                  <span className="text-lg font-bold text-white/40 line-through">
-                    {ebook.oldPrice} €
-                  </span>
-                )}
-                <span className="text-3xl font-extrabold tracking-tight text-white">
-                  {ebook.price} €
-                </span>
-                {discount && (
-                  <span className="rounded-full bg-gradient-to-br from-[#ff3b3b] to-[#c9192a] px-3 py-1 text-xs font-extrabold text-white">
-                    -{discount}%
-                  </span>
-                )}
-              </div>
-              <BuyButton ebookId={ebook.id} isLoggedIn={isLoggedIn} />
-              <Link
-                href="/premium"
-                className="mt-3 block rounded-2xl border border-white/15 px-7 py-3 text-center text-sm font-bold text-white transition hover:border-[#7c5cff]"
-              >
-                ✨ Lire gratuitement avec Premium
-              </Link>
-              <p className="mt-4 text-xs text-[color:var(--color-lumina-text-muted)]">
-                🔒 Paiement sécurisé via Stripe — accès immédiat après paiement.
-              </p>
-            </div>
-          )}
-
+        <div className="mx-auto max-w-3xl px-6 pb-20 pt-10">
           <div className="mb-8">
             <ExpandableText text={ebook.description} />
           </div>
