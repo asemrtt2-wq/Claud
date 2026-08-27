@@ -20,12 +20,14 @@ export default function BookRow({
   books,
   hrefBase = "/ebooks",
   progressByEbookId,
+  light = false,
 }: {
   label: string;
   tagline?: string | null;
   books: RowBook[];
   hrefBase?: string;
   progressByEbookId?: Map<string, number>;
+  light?: boolean;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -33,19 +35,20 @@ export default function BookRow({
     scrollRef.current?.scrollBy({ left: amount, behavior: "smooth" });
   }
 
-  const arrowClass =
-    "absolute top-0 z-10 hidden h-40 w-12 items-center justify-center text-2xl text-white opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 sm:flex";
+  const arrowClass = `absolute top-0 z-10 hidden h-40 w-12 items-center justify-center text-2xl opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 sm:flex ${light ? "text-[#1d1d1f]" : "text-white"}`;
+  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumina-text-muted)]";
+  const titleColor = light ? "text-[#1d1d1f]" : "text-white";
+  const progressTrack = light ? "ibook-progress-track" : "lumina-progress-track";
+  const progressFill = light ? "ibook-progress-fill" : "lumina-progress-fill";
+  const edgeFadeFrom = light ? "from-[#f5f5f7]" : "from-[#0a0918]";
+  const edgeFadeTo = light ? "to-[#f5f5f7]" : "to-[#0a0918]";
 
   return (
     <div className="group/row relative">
       {label && (
         <div className="mb-3">
-          <p className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
-            {label}
-          </p>
-          {tagline && (
-            <p className="lumina-gold-text mt-0.5 text-xs italic">{tagline}</p>
-          )}
+          <p className={`text-sm font-semibold ${muted}`}>{label}</p>
+          {tagline && <p className="lumina-gold-text mt-0.5 text-xs italic">{tagline}</p>}
         </div>
       )}
       <div
@@ -75,10 +78,10 @@ export default function BookRow({
                   book.coverEmoji
                 )}
               </div>
-              <p className="truncate text-xs font-bold text-white">{book.title}</p>
+              <p className={`truncate text-xs font-bold ${titleColor}`}>{book.title}</p>
               {percent !== undefined && (
-                <div className="mt-1 h-1 w-full overflow-hidden rounded-full lumina-progress-track">
-                  <div className="h-full lumina-progress-fill" style={{ width: `${percent}%` }} />
+                <div className={`mt-1 h-1 w-full overflow-hidden rounded-full ${progressTrack}`}>
+                  <div className={`h-full ${progressFill}`} style={{ width: `${percent}%` }} />
                 </div>
               )}
             </Link>
@@ -92,7 +95,7 @@ export default function BookRow({
             type="button"
             onClick={() => scrollBy(-(scrollRef.current?.clientWidth ?? 0) * 0.8)}
             aria-label="Voir précédent"
-            className={`${arrowClass} left-0 justify-start rounded-r-2xl bg-gradient-to-r from-[#0a0918] to-transparent pl-2`}
+            className={`${arrowClass} left-0 justify-start rounded-r-2xl bg-gradient-to-r ${edgeFadeFrom} to-transparent pl-2`}
           >
             ‹
           </button>
@@ -100,7 +103,7 @@ export default function BookRow({
             type="button"
             onClick={() => scrollBy((scrollRef.current?.clientWidth ?? 0) * 0.8)}
             aria-label="Voir plus"
-            className={`${arrowClass} right-0 justify-end rounded-l-2xl bg-gradient-to-l from-[#0a0918] to-transparent pr-2`}
+            className={`${arrowClass} right-0 justify-end rounded-l-2xl bg-gradient-to-l ${edgeFadeTo} pr-2`}
           >
             ›
           </button>

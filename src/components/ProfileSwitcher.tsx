@@ -18,9 +18,11 @@ type ProfileSummary = {
 export default function ProfileSwitcher({
   profiles,
   activeProfileId,
+  light = false,
 }: {
   profiles: ProfileSummary[];
   activeProfileId: string;
+  light?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -49,6 +51,15 @@ export default function ProfileSwitcher({
     });
   }
 
+  const card = light ? "ibook-card" : "lumina-card";
+  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumina-text-muted)]";
+  const text = light ? "text-[#1d1d1f]" : "text-white";
+  const hoverBg = light ? "hover:bg-black/[0.04]" : "hover:bg-white/5";
+  const activeBg = light ? "bg-black/[0.04]" : "bg-white/5";
+  const divider = light ? "border-black/10" : "border-white/10";
+  const accent = light ? "text-[#5b3df0]" : "text-[#a78bfa]";
+  const caret = light ? "text-black/50" : "text-white/70";
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -62,12 +73,12 @@ export default function ProfileSwitcher({
         >
           {active?.avatarEmoji ?? "🙂"}
         </span>
-        <span className="hidden text-xs text-white/70 sm:inline">▾</span>
+        <span className={`hidden text-xs sm:inline ${caret}`}>▾</span>
       </button>
 
       {open && (
-        <div className="lumina-card absolute right-0 top-12 z-50 w-64 rounded-2xl p-2 shadow-strong">
-          <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-[color:var(--color-lumina-text-muted)]">
+        <div className={`${card} absolute right-0 top-12 z-50 w-64 rounded-2xl p-2 shadow-strong`}>
+          <p className={`px-3 py-2 text-xs font-bold uppercase tracking-wider ${muted}`}>
             Changer de profil
           </p>
 
@@ -75,8 +86,8 @@ export default function ProfileSwitcher({
             <button
               key={p.id}
               onClick={() => handleSelect(p)}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-white/5 ${
-                p.id === activeProfileId ? "bg-white/5" : ""
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${hoverBg} ${
+                p.id === activeProfileId ? activeBg : ""
               }`}
             >
               <span
@@ -85,33 +96,33 @@ export default function ProfileSwitcher({
               >
                 {p.avatarEmoji}
               </span>
-              <span className="flex-1 text-sm font-semibold text-white">{p.name}</span>
+              <span className={`flex-1 text-sm font-semibold ${text}`}>{p.name}</span>
               {p.hasPin && <span className="text-xs">🔒</span>}
             </button>
           ))}
 
-          <div className="my-1 border-t border-white/10" />
+          <div className={`my-1 border-t ${divider}`} />
 
           <Link
             href="/profiles"
             onClick={() => setOpen(false)}
-            className="block rounded-xl px-3 py-2 text-sm font-semibold text-[#a78bfa] transition hover:bg-white/5"
+            className={`block rounded-xl px-3 py-2 text-sm font-semibold transition ${hoverBg} ${accent}`}
           >
             ⚙️ Gérer les profils
           </Link>
           <Link
             href={`/p/${activeProfileId}/compte`}
             onClick={() => setOpen(false)}
-            className="block rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/5"
+            className={`block rounded-xl px-3 py-2 text-sm font-semibold transition ${hoverBg} ${text}`}
           >
             👤 Compte
           </Link>
 
-          <div className="my-1 border-t border-white/10" />
+          <div className={`my-1 border-t ${divider}`} />
 
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-white transition hover:bg-white/5"
+            className={`block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold transition ${hoverBg} ${text}`}
           >
             ↪ Se déconnecter
           </button>

@@ -256,25 +256,25 @@ export default async function ProfilePage({
   );
 
   return (
-    <div className="lumina-shell pb-24">
+    <div className="ibook-shell pb-24">
       <header id="accueil" className="flex items-center justify-between px-6 py-6 sm:px-10">
-        <Link href="/" className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
+        <Link href="/" className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight text-[#1d1d1f]">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white">
             ✦
           </span>
           LUMINA
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-lg opacity-70">🔍</span>
-          <ProfileSwitcher profiles={switcherProfiles} activeProfileId={id} />
+          <span className="text-lg text-[#6e6e73]">🔍</span>
+          <ProfileSwitcher profiles={switcherProfiles} activeProfileId={id} light />
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-6 sm:px-10">
-        <h1 className="mb-1 text-2xl font-extrabold tracking-tight">
+        <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-[#1d1d1f]">
           {`Bonsoir, ${profile.name} 👋`}
         </h1>
-        <p className="mb-8 text-sm text-[color:var(--color-lumina-text-muted)]">
+        <p className="mb-8 text-sm text-[#6e6e73]">
           Prêt pour une nouvelle aventure ?
         </p>
 
@@ -282,6 +282,7 @@ export default async function ProfilePage({
           reminderTime={profile.reminderTime}
           hasReadToday={hasReadToday}
           name={profile.name}
+          light
         />
 
         {billboardBook && billboardHref && (
@@ -341,7 +342,7 @@ export default async function ProfilePage({
               {inProgressBooks.map(({ ebook, percent }) => (
                 <div
                   key={ebook.id}
-                  className="lumina-card-premium flex w-64 shrink-0 snap-start flex-col gap-3 rounded-2xl p-4 sm:w-72"
+                  className="ibook-card flex w-64 shrink-0 snap-start flex-col gap-3 rounded-2xl p-4 sm:w-72"
                 >
                   <div className="flex items-center gap-3">
                     <span
@@ -355,12 +356,12 @@ export default async function ProfilePage({
                       )}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-white">{ebook.title}</p>
-                      <p className="lumina-gold-text text-xs font-bold">{`${percent}% terminé`}</p>
+                      <p className="truncate text-sm font-bold text-[#1d1d1f]">{ebook.title}</p>
+                      <p className="text-xs font-bold text-[#5b3df0]">{`${percent}% terminé`}</p>
                     </div>
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full lumina-progress-track">
-                    <div className="h-full lumina-progress-fill" style={{ width: `${percent}%` }} />
+                  <div className="h-1.5 w-full overflow-hidden rounded-full ibook-progress-track">
+                    <div className="h-full ibook-progress-fill" style={{ width: `${percent}%` }} />
                   </div>
                   <Link
                     href={`/p/${id}/read/${ebook.slug}`}
@@ -378,7 +379,7 @@ export default async function ProfilePage({
           <section className="mb-12">
             <div className="flex flex-col gap-8">
               {catalogsWithBooks.map((cat) => (
-                <BookRow key={cat.id} label={cat.name} tagline={cat.description} books={cat.ebooks} />
+                <BookRow key={cat.id} label={cat.name} tagline={cat.description} books={cat.ebooks} light />
               ))}
             </div>
           </section>
@@ -389,7 +390,7 @@ export default async function ProfilePage({
             <h2 className="mb-5 text-lg font-extrabold">Parcourir par catégorie</h2>
             <div className="flex flex-col gap-8">
               {categoryRows.map(([category, books]) => (
-                <BookRow key={category} label={category} books={books} />
+                <BookRow key={category} label={category} books={books} light />
               ))}
             </div>
           </section>
@@ -418,7 +419,7 @@ export default async function ProfilePage({
               ]
                 .filter((row) => row.books.length > 0)
                 .map((row) => (
-                  <BookRow key={row.label} label={row.label} books={row.books} />
+                  <BookRow key={row.label} label={row.label} books={row.books} light />
                 ))}
             </div>
           </section>
@@ -427,9 +428,9 @@ export default async function ProfilePage({
         <section id="bibliotheque" className="mb-12 scroll-mt-24">
           <h2 className="mb-5 text-lg font-extrabold">Ma bibliothèque</h2>
           {library.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+            <p className="text-sm text-[#6e6e73]">
               Ta bibliothèque est vide.{" "}
-              <Link href="/#catalogue" className="font-semibold text-[#a78bfa] hover:underline">
+              <Link href="/#catalogue" className="font-semibold text-[#5b3df0] hover:underline">
                 Découvrir des eBooks
               </Link>
             </p>
@@ -438,6 +439,7 @@ export default async function ProfilePage({
               label=""
               books={library.map(({ ebook }) => ebook)}
               hrefBase={`/p/${id}/read`}
+              light
               progressByEbookId={
                 new Map(
                   library.map(({ ebook, page, totalPages }) => [
@@ -453,11 +455,9 @@ export default async function ProfilePage({
         <section id="favoris" className="mb-12 scroll-mt-24">
           <h2 className="mb-5 text-lg font-extrabold">Mes favoris</h2>
           {favorites.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
-              Tu n&apos;as pas encore de favoris.
-            </p>
+            <p className="text-sm text-[#6e6e73]">Tu n&apos;as pas encore de favoris.</p>
           ) : (
-            <BookRow label="" books={favorites.map((f) => f.ebook)} />
+            <BookRow label="" books={favorites.map((f) => f.ebook)} light />
           )}
         </section>
 
@@ -469,9 +469,7 @@ export default async function ProfilePage({
         <section id="historique" className="mb-12 scroll-mt-24">
           <h2 className="mb-5 text-lg font-extrabold">Historique</h2>
           {progressEntries.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
-              Ton historique de lecture est vide.
-            </p>
+            <p className="text-sm text-[#6e6e73]">Ton historique de lecture est vide.</p>
           ) : (
             <div className="flex flex-col gap-2">
               {progressEntries.map((p) => {
@@ -481,7 +479,7 @@ export default async function ProfilePage({
                   <Link
                     key={p.id}
                     href={`/p/${id}/read/${p.ebook.slug}`}
-                    className="lumina-card flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5"
+                    className="ibook-card flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5"
                   >
                     <span
                       className={`${p.ebook.coverImageUrl ? "" : `cover-theme-${p.ebook.coverTheme}`} relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg text-xl`}
@@ -494,12 +492,12 @@ export default async function ProfilePage({
                       )}
                     </span>
                     <div className="flex-1">
-                      <p className="text-sm font-bold">{p.ebook.title}</p>
-                      <p className="text-xs text-[color:var(--color-lumina-text-muted)]">
+                      <p className="text-sm font-bold text-[#1d1d1f]">{p.ebook.title}</p>
+                      <p className="text-xs text-[#6e6e73]">
                         {p.completed ? "Terminé" : `${percent}% lu`} · {relativeDate(p.updatedAt)}
                       </p>
                     </div>
-                    {p.completed && <span className="text-[#7ee0a8]">✓</span>}
+                    {p.completed && <span className="text-[#0a8a3f]">✓</span>}
                   </Link>
                 );
               })}

@@ -38,9 +38,11 @@ function toLightboxBook(book: LibraryBook): LightboxBook {
 
 function BookGrid({
   books,
+  light,
   onOpen,
 }: {
   books: LibraryBook[];
+  light: boolean;
   onOpen: (books: LibraryBook[], index: number) => void;
 }) {
   return (
@@ -49,6 +51,7 @@ function BookGrid({
         <BookCoverCard
           key={book.id}
           book={book}
+          light={light}
           animationDelayMs={Math.min(i, 10) * 40}
           onOpen={() => onOpen(books, i)}
         />
@@ -61,10 +64,12 @@ export default function LibraryCatalogClient({
   sections,
   allBooks,
   categories,
+  light = false,
 }: {
   sections: LibrarySection[];
   allBooks: LibraryBook[];
   categories: string[];
+  light?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -99,11 +104,25 @@ export default function LibraryCatalogClient({
   const catalogSections = sections.filter((s) => s.key.startsWith("catalog:"));
   const categorySections = sections.filter((s) => !s.key.startsWith("catalog:"));
 
+  const heading = light ? "text-[#1d1d1f]" : "text-white";
+  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumina-text-muted)]";
+  const link = light ? "text-[#5b3df0]" : "text-[#a78bfa]";
+  const searchWrap = light
+    ? "border-black/10 bg-black/[0.03] text-[#1d1d1f] placeholder:text-black/35 focus:border-[#7c5cff]"
+    : "border-white/10 bg-white/[0.04] text-white placeholder:text-white/40 focus:border-[#7c5cff]";
+  const searchIcon = light ? "text-black/30" : "text-white/40";
+  const pillActive = light
+    ? "border-[#7c5cff] bg-[#7c5cff]/10 text-[#1d1d1f]"
+    : "border-[#7c5cff] bg-[#7c5cff]/15 text-white";
+  const pillInactive = light
+    ? "border-black/10 text-[#3a3a3c] hover:border-[#7c5cff]/50 hover:text-[#1d1d1f]"
+    : "border-white/15 text-white/80 hover:border-[#a78bfa] hover:text-white";
+
   return (
     <div>
       <div className="mb-6">
         <div className="relative">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
+          <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 ${searchIcon}`}>
             🔍
           </span>
           <input
@@ -111,7 +130,7 @@ export default function LibraryCatalogClient({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher un titre, un auteur, une catégorie…"
-            className="w-full rounded-2xl border border-white/10 bg-white/[0.04] py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-white/40 outline-none transition focus:border-[#7c5cff]"
+            className={`w-full rounded-2xl border py-3.5 pl-11 pr-4 text-sm outline-none transition ${searchWrap}`}
           />
         </div>
       </div>
@@ -121,9 +140,7 @@ export default function LibraryCatalogClient({
           type="button"
           onClick={() => setActiveFilter(null)}
           className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${
-            !activeFilter
-              ? "border-[#7c5cff] bg-[#7c5cff]/15 text-white"
-              : "border-white/15 text-white/80 hover:border-[#a78bfa] hover:text-white"
+            !activeFilter ? pillActive : pillInactive
           }`}
         >
           Tous
@@ -134,9 +151,7 @@ export default function LibraryCatalogClient({
             type="button"
             onClick={() => setActiveFilter(category)}
             className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${
-              activeFilter === category
-                ? "border-[#7c5cff] bg-[#7c5cff]/15 text-white"
-                : "border-white/15 text-white/80 hover:border-[#a78bfa] hover:text-white"
+              activeFilter === category ? pillActive : pillInactive
             }`}
           >
             {category}
@@ -164,7 +179,7 @@ export default function LibraryCatalogClient({
       {flatResults ? (
         <section>
           <div className="mb-5 flex items-center justify-between">
-            <p className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
+            <p className={`text-sm font-semibold ${muted}`}>
               {flatResults.length} résultat{flatResults.length > 1 ? "s" : ""}
             </p>
             <button
@@ -173,17 +188,15 @@ export default function LibraryCatalogClient({
                 setQuery("");
                 setActiveFilter(null);
               }}
-              className="text-sm font-bold text-[#a78bfa] hover:underline"
+              className={`text-sm font-bold hover:underline ${link}`}
             >
               ✕ Réinitialiser
             </button>
           </div>
           {flatResults.length > 0 ? (
-            <BookGrid books={flatResults} onOpen={openLightbox} />
+            <BookGrid books={flatResults} light={light} onOpen={openLightbox} />
           ) : (
-            <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
-              Aucun livre ne correspond à ta recherche.
-            </p>
+            <p className={`text-sm ${muted}`}>Aucun livre ne correspond à ta recherche.</p>
           )}
         </section>
       ) : (
@@ -191,27 +204,27 @@ export default function LibraryCatalogClient({
           {catalogSections.map((section) => (
             <section key={section.key}>
               <div className="mb-5">
-                <h2 className="text-lg font-extrabold text-white">{section.label}</h2>
+                <h2 className={`text-lg font-extrabold ${heading}`}>{section.label}</h2>
                 {section.tagline && (
                   <p className="lumina-gold-text mt-0.5 text-xs italic">{section.tagline}</p>
                 )}
               </div>
-              <BookGrid books={section.books} onOpen={openLightbox} />
+              <BookGrid books={section.books} light={light} onOpen={openLightbox} />
             </section>
           ))}
           {categorySections.map((section) => (
             <section key={section.key}>
               <div className="mb-5 flex items-center justify-between">
-                <h2 className="text-lg font-extrabold text-white">{section.label}</h2>
+                <h2 className={`text-lg font-extrabold ${heading}`}>{section.label}</h2>
                 <button
                   type="button"
                   onClick={() => setActiveFilter(section.label)}
-                  className="text-sm font-bold text-[#a78bfa] hover:underline"
+                  className={`text-sm font-bold hover:underline ${link}`}
                 >
                   Voir tout →
                 </button>
               </div>
-              <BookGrid books={section.books.slice(0, 5)} onOpen={openLightbox} />
+              <BookGrid books={section.books.slice(0, 5)} light={light} onOpen={openLightbox} />
             </section>
           ))}
         </div>

@@ -7,8 +7,7 @@ import { getActiveProfile } from "@/lib/activeProfile";
 import { paginateContent } from "@/lib/paginate";
 import { getChapters } from "@/lib/chapters";
 import { getRecommendations } from "@/lib/recommendations";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import LightHeader from "@/components/LightHeader";
 import EbookHero from "@/components/EbookHero";
 import FavoriteButton from "@/components/FavoriteButton";
 import AddToCollectionButton from "@/components/AddToCollectionButton";
@@ -162,13 +161,13 @@ export default async function EBookPage({
 
   return (
     <>
-      <Header />
-      <div className="lumina-shell">
+      <LightHeader />
+      <div className="ibook-shell">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 pt-6">
           <BackButton />
           <Link
             href={activeProfile ? `/p/${activeProfile.id}` : "/"}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-lg text-white transition hover:bg-white/10"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-black/[0.04] text-lg text-[#1d1d1f] transition hover:bg-black/[0.08]"
             aria-label="Fermer"
           >
             ✕
@@ -200,7 +199,7 @@ export default async function EBookPage({
 
         <div className="mx-auto max-w-3xl px-6 pb-20 pt-10">
           <div className="mb-8">
-            <ExpandableText text={ebook.description} />
+            <ExpandableText text={ebook.description} light />
           </div>
 
           <div className="mb-10 flex flex-wrap items-center gap-2">
@@ -209,6 +208,7 @@ export default async function EBookPage({
               slug={ebook.slug}
               initialFavorited={Boolean(favorite)}
               profileId={activeProfile?.id ?? null}
+              light
             />
             <AddToCollectionButton
               ebookId={ebook.id}
@@ -224,54 +224,55 @@ export default async function EBookPage({
               readHref={readHref}
               similarBooks={similarBooks}
               episodes={episodes}
+              light
             />
           </div>
 
           {recommendedRows.length > 0 && (
             <section className="mb-12">
-              <h2 className="mb-5 text-lg font-extrabold text-white">Recommandés pour vous</h2>
+              <h2 className="mb-5 text-lg font-extrabold text-[#1d1d1f]">Recommandés pour vous</h2>
               <div className="flex flex-col gap-8">
                 {recommendedRows.map((row) => (
-                  <BookRow key={row.label} label={row.label} books={row.books} />
+                  <BookRow key={row.label} label={row.label} books={row.books} light />
                 ))}
               </div>
             </section>
           )}
 
-          <section className="lumina-card rounded-[22px] p-6">
-            <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[color:var(--color-lumina-text-muted)]">
+          <section className="ibook-card rounded-[22px] p-6">
+            <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[#6e6e73]">
               Informations
             </h2>
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
               {ebook.author && (
                 <div>
-                  <dt className="text-[color:var(--color-lumina-text-muted)]">Auteur</dt>
-                  <dd className="font-semibold text-white">{ebook.author}</dd>
+                  <dt className="text-[#6e6e73]">Auteur</dt>
+                  <dd className="font-semibold text-[#1d1d1f]">{ebook.author}</dd>
                 </div>
               )}
               <div>
-                <dt className="text-[color:var(--color-lumina-text-muted)]">Catégorie</dt>
-                <dd className="font-semibold text-white">{ebook.category}</dd>
+                <dt className="text-[#6e6e73]">Catégorie</dt>
+                <dd className="font-semibold text-[#1d1d1f]">{ebook.category}</dd>
               </div>
               {!isPdf && (
                 <div>
-                  <dt className="text-[color:var(--color-lumina-text-muted)]">Pages</dt>
-                  <dd className="font-semibold text-white">{pages.length}</dd>
+                  <dt className="text-[#6e6e73]">Pages</dt>
+                  <dd className="font-semibold text-[#1d1d1f]">{pages.length}</dd>
                 </div>
               )}
               <div>
-                <dt className="text-[color:var(--color-lumina-text-muted)]">Langue</dt>
-                <dd className="font-semibold text-white">Français</dd>
+                <dt className="text-[#6e6e73]">Langue</dt>
+                <dd className="font-semibold text-[#1d1d1f]">Français</dd>
               </div>
               {ebook.publishedYear && (
                 <div>
-                  <dt className="text-[color:var(--color-lumina-text-muted)]">Année</dt>
-                  <dd className="font-semibold text-white">{ebook.publishedYear}</dd>
+                  <dt className="text-[#6e6e73]">Année</dt>
+                  <dd className="font-semibold text-[#1d1d1f]">{ebook.publishedYear}</dd>
                 </div>
               )}
               <div>
-                <dt className="text-[color:var(--color-lumina-text-muted)]">Ajouté au catalogue</dt>
-                <dd className="font-semibold text-white">
+                <dt className="text-[#6e6e73]">Ajouté au catalogue</dt>
+                <dd className="font-semibold text-[#1d1d1f]">
                   {ebook.createdAt.toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
                 </dd>
               </div>
@@ -279,7 +280,6 @@ export default async function EBookPage({
           </section>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

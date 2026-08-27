@@ -32,19 +32,29 @@ export default function BookDetailTabs({
   readHref,
   similarBooks,
   episodes,
+  light = false,
 }: {
   chapters: ChapterInfo[];
   readHref: string | null;
   similarBooks: SimilarBook[];
   episodes: Episode[];
+  light?: boolean;
 }) {
   const [tab, setTab] = useState<"chapters" | "similar" | "episodes">(
     episodes.length > 0 ? "episodes" : "chapters"
   );
 
+  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumina-text-muted)]";
+  const activeTab = light ? "text-[#1d1d1f]" : "text-white";
+  const card = light ? "ibook-card" : "lumina-card";
+  const accent = light ? "text-[#5b3df0]" : "text-[#a78bfa]";
+  const chapterBadge = light ? "bg-black/[0.05] text-[#1d1d1f]" : "bg-white/10 text-white";
+  const progressTrack = light ? "ibook-progress-track" : "lumina-progress-track";
+  const progressFill = light ? "ibook-progress-fill" : "lumina-progress-fill";
+
   return (
     <div>
-      <div className="mb-5 flex gap-6 border-b border-white/10">
+      <div className={`mb-5 flex gap-6 border-b ${light ? "border-black/10" : "border-white/10"}`}>
         {(
           [
             ...(episodes.length > 0 ? ([["episodes", "Épisodes"]] as const) : []),
@@ -55,9 +65,7 @@ export default function BookDetailTabs({
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`relative pb-3 text-sm font-bold transition ${
-              tab === key ? "text-white" : "text-[color:var(--color-lumina-text-muted)]"
-            }`}
+            className={`relative pb-3 text-sm font-bold transition ${tab === key ? activeTab : muted}`}
           >
             {label}
             {tab === key && (
@@ -73,7 +81,7 @@ export default function BookDetailTabs({
             <Link
               key={ep.id}
               href={`/ebooks/${ep.slug}`}
-              className={`lumina-card flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5 ${
+              className={`${card} flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5 ${
                 ep.isCurrent ? "border-[#a78bfa]/60" : ""
               }`}
             >
@@ -88,42 +96,40 @@ export default function BookDetailTabs({
                 )}
               </span>
               <div className="flex-1">
-                <p className="text-xs font-bold uppercase tracking-wide text-[#a78bfa]">
+                <p className={`text-xs font-bold uppercase tracking-wide ${accent}`}>
                   Tome {ep.seriesOrder}
                   {ep.isCurrent && " · Vous êtes ici"}
                 </p>
-                <p className="text-sm font-bold">{ep.title}</p>
+                <p className={`text-sm font-bold ${light ? "text-[#1d1d1f]" : ""}`}>{ep.title}</p>
                 {ep.progressPercent !== null && (
-                  <div className="mt-1.5 h-1 w-full max-w-[160px] overflow-hidden rounded-full lumina-progress-track">
+                  <div className={`mt-1.5 h-1 w-full max-w-[160px] overflow-hidden rounded-full ${progressTrack}`}>
                     <div
-                      className="h-full lumina-progress-fill"
+                      className={`h-full ${progressFill}`}
                       style={{ width: `${ep.progressPercent}%` }}
                     />
                   </div>
                 )}
               </div>
-              {ep.completed && <span className="text-[#7ee0a8]">✓</span>}
+              {ep.completed && <span className="text-[#0a8a3f]">✓</span>}
             </Link>
           ))}
         </div>
       ) : tab === "chapters" ? (
         chapters.length === 0 ? (
-          <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
-            Ce livre n&apos;a pas de chapitres identifiés.
-          </p>
+          <p className={`text-sm ${muted}`}>Ce livre n&apos;a pas de chapitres identifiés.</p>
         ) : (
           <div className="flex flex-col gap-2">
             {chapters.map((c) => {
               const content = (
                 <>
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/10 text-sm font-bold">
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${chapterBadge}`}
+                  >
                     {c.number}
                   </span>
                   <div className="flex-1">
-                    <p className="text-sm font-bold">{c.title}</p>
-                    <p className="text-xs text-[color:var(--color-lumina-text-muted)]">
-                      {c.estimatedMinutes} min
-                    </p>
+                    <p className={`text-sm font-bold ${light ? "text-[#1d1d1f]" : ""}`}>{c.title}</p>
+                    <p className={`text-xs ${muted}`}>{c.estimatedMinutes} min</p>
                   </div>
                 </>
               );
@@ -131,15 +137,12 @@ export default function BookDetailTabs({
                 <Link
                   key={c.number}
                   href={`${readHref}?page=${c.pageIndex}`}
-                  className="lumina-card flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5"
+                  className={`${card} flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5`}
                 >
                   {content}
                 </Link>
               ) : (
-                <div
-                  key={c.number}
-                  className="lumina-card flex items-center gap-4 rounded-2xl p-3 opacity-70"
-                >
+                <div key={c.number} className={`${card} flex items-center gap-4 rounded-2xl p-3 opacity-70`}>
                   {content}
                 </div>
               );
@@ -147,11 +150,9 @@ export default function BookDetailTabs({
           </div>
         )
       ) : similarBooks.length === 0 ? (
-        <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
-          Aucun livre similaire pour l&apos;instant.
-        </p>
+        <p className={`text-sm ${muted}`}>Aucun livre similaire pour l&apos;instant.</p>
       ) : (
-        <BookRow label="" books={similarBooks} />
+        <BookRow label="" books={similarBooks} light={light} />
       )}
     </div>
   );

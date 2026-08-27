@@ -56,26 +56,24 @@ export default function CollectionsManager({
       {collections.length > 0 && (
         <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collections.map((c) => (
-            <div key={c.id} className="lumina-card rounded-2xl p-4">
+            <div key={c.id} className="ibook-card rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
                 <button
                   onClick={() => setExpandedId((v) => (v === c.id ? null : c.id))}
-                  className="text-sm font-bold hover:underline"
+                  className="text-sm font-bold text-[#1d1d1f] hover:underline"
                 >
                   📁 {c.name}
                 </button>
                 <button
                   onClick={() => handleDelete(c.id)}
                   disabled={isPending}
-                  className="text-xs font-bold text-[#ff8a8a] hover:underline"
+                  className="text-xs font-bold text-[#d92626] hover:underline"
                 >
                   Supprimer
                 </button>
               </div>
               {c.items.length === 0 ? (
-                <p className="text-xs text-[color:var(--color-lumina-text-muted)]">
-                  Aucun livre pour l&apos;instant.
-                </p>
+                <p className="text-xs text-[#6e6e73]">Aucun livre pour l&apos;instant.</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {c.items.slice(0, expandedId === c.id ? undefined : 6).map((item) => (
@@ -91,7 +89,7 @@ export default function CollectionsManager({
                       {expandedId === c.id && (
                         <button
                           onClick={() => handleRemoveBook(c.id, item.ebook.id)}
-                          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#ff8a8a] text-xs font-bold text-navy"
+                          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#d92626] text-xs font-bold text-white"
                           title="Retirer"
                         >
                           ×
@@ -109,7 +107,7 @@ export default function CollectionsManager({
       {!showForm ? (
         <button
           onClick={() => setShowForm(true)}
-          className="rounded-xl border border-dashed border-white/20 px-5 py-3 text-sm font-bold text-[color:var(--color-lumina-text-muted)] transition hover:border-[#a78bfa] hover:text-white"
+          className="rounded-xl border border-dashed border-black/20 px-5 py-3 text-sm font-bold text-[#6e6e73] transition hover:border-[#7c5cff] hover:text-[#1d1d1f]"
         >
           + Nouvelle collection
         </button>
@@ -121,7 +119,7 @@ export default function CollectionsManager({
             placeholder="Nom de la collection"
             required
             autoFocus
-            className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-[color:var(--color-lumina-text-muted)] focus:border-[#7c5cff]"
+            className="flex-1 rounded-xl border border-black/10 bg-black/[0.03] px-4 py-2.5 text-sm text-[#1d1d1f] outline-none placeholder:text-[#8a8a8e] focus:border-[#7c5cff]"
           />
           <button
             type="submit"
@@ -133,7 +131,7 @@ export default function CollectionsManager({
           <button
             type="button"
             onClick={() => setShowForm(false)}
-            className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-bold transition hover:border-white/30"
+            className="rounded-xl border border-black/10 px-4 py-2.5 text-sm font-bold text-[#1d1d1f] transition hover:border-black/30"
           >
             Annuler
           </button>

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import LightHeader from "@/components/LightHeader";
 import LibraryCatalogClient, {
   type LibraryBook,
   type LibrarySection,
@@ -114,17 +113,17 @@ export default async function BibliothequePage() {
 
   return (
     <>
-      <Header />
+      <LightHeader />
 
-      <div className="lumina-shell px-6 py-16">
+      <div className="ibook-shell px-6 py-16">
         <div className="mx-auto max-w-6xl">
           <h1 className="mb-3 text-[2rem] font-extrabold tracking-tight md:text-[2.6rem]">
             Bibliothèque LUMINA
           </h1>
-          <p className="mb-2 text-[color:var(--color-lumina-text-muted)]">
+          <p className="mb-2 text-[#6e6e73]">
             Découvrez notre collection de livres numériques.
           </p>
-          <p className="mb-10 text-sm font-bold text-[#a78bfa]">
+          <p className="mb-10 text-sm font-bold text-[#5b3df0]">
             {allBooks.length} livre{allBooks.length > 1 ? "s" : ""} disponible
             {allBooks.length > 1 ? "s" : ""}
           </p>
@@ -132,7 +131,7 @@ export default async function BibliothequePage() {
           {featured && featuredHref && (
             <section className="mb-16">
               <h2 className="mb-1 text-lg font-extrabold">À la une</h2>
-              <p className="mb-5 text-sm text-[color:var(--color-lumina-text-muted)]">
+              <p className="mb-5 text-sm text-[#6e6e73]">
                 La lecture que nous vous recommandons cette semaine.
               </p>
               <div
@@ -168,7 +167,12 @@ export default async function BibliothequePage() {
             </section>
           )}
 
-          <LibraryCatalogClient sections={sections} allBooks={allBooks} categories={categoryGroups} />
+          <LibraryCatalogClient
+            sections={sections}
+            allBooks={allBooks}
+            categories={categoryGroups}
+            light
+          />
 
           {surpriseSlug && (
             <section className="mt-20 rounded-[26px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] p-10 text-center text-white shadow-strong">
@@ -188,8 +192,6 @@ export default async function BibliothequePage() {
           )}
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }

@@ -6,10 +6,12 @@ export default function BedtimeReminder({
   reminderTime,
   hasReadToday,
   name,
+  light = false,
 }: {
   reminderTime: string | null;
   hasReadToday: boolean;
   name: string;
+  light?: boolean;
 }) {
   const [show, setShow] = useState(false);
 
@@ -29,9 +31,11 @@ export default function BedtimeReminder({
   if (!show) return null;
 
   return (
-    <div className="lumina-card mb-6 flex items-center gap-3 rounded-2xl border-[#a78bfa]/40 p-4">
+    <div
+      className={`${light ? "ibook-card" : "lumina-card"} mb-6 flex items-center gap-3 rounded-2xl border-[#a78bfa]/40 p-4`}
+    >
       <span className="text-2xl">🌙</span>
-      <p className="text-sm font-semibold">
+      <p className={`text-sm font-semibold ${light ? "text-[#1d1d1f]" : ""}`}>
         {`C'est l'heure de l'histoire du soir de ${name} !`}
       </p>
     </div>

@@ -22,7 +22,7 @@ export default function ShareButton({ title, url }: { title: string; url: string
   return (
     <button
       onClick={handleShare}
-      className="flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:border-[#7c5cff]"
+      className="flex items-center gap-2 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-bold text-[#1d1d1f] transition hover:border-[#7c5cff]"
     >
       {copied ? "✓ Lien copié" : "↗️ Partager"}
     </button>

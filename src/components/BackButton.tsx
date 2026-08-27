@@ -8,7 +8,7 @@ export default function BackButton() {
   return (
     <button
       onClick={() => router.back()}
-      className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-lg text-white backdrop-blur-sm transition hover:bg-black/60"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-black/[0.04] text-lg text-[#1d1d1f] transition hover:bg-black/[0.08]"
       aria-label="Retour"
     >
       ←

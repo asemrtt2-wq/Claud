@@ -128,6 +128,31 @@ body {
   background: linear-gradient(90deg, var(--color-lumina-purple), var(--color-lumina-purple-light));
 }
 
+/* "ibook" light theme — used only on the bibliothèque, ebook detail, and dashboard
+   pages (an Apple Books-style reading surface), kept separate from .lumina-shell/
+   .lumina-card since those stay dark everywhere else on the site. */
+.ibook-shell {
+  min-height: 100vh;
+  background: #f5f5f7;
+  color: #1d1d1f;
+}
+
+.ibook-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ibook-progress-track {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.ibook-progress-fill {
+  background: linear-gradient(90deg, var(--color-lumina-purple), var(--color-lumina-purple-light));
+}
+
 .scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;

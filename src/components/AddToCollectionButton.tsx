@@ -33,7 +33,7 @@ export default function AddToCollectionButton({
     return (
       <Link
         href="/profiles"
-        className="flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:border-[#7c5cff]"
+        className="flex items-center gap-2 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-bold text-[#1d1d1f] transition hover:border-[#7c5cff]"
       >
         📁 Choisir un profil
       </Link>
@@ -62,15 +62,15 @@ export default function AddToCollectionButton({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:border-[#7c5cff]"
+        className="flex items-center gap-2 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-bold text-[#1d1d1f] transition hover:border-[#7c5cff]"
       >
         📁 Ajouter à une collection
       </button>
 
       {open && (
-        <div className="lumina-card absolute right-0 top-12 z-50 w-64 rounded-2xl p-3">
+        <div className="ibook-card absolute right-0 top-12 z-50 w-64 rounded-2xl p-3 text-[#1d1d1f]">
           {collections.length === 0 ? (
-            <p className="mb-2 px-1 text-xs text-[color:var(--color-lumina-text-muted)]">
+            <p className="mb-2 px-1 text-xs text-[#6e6e73]">
               Aucune collection pour l&apos;instant.
             </p>
           ) : (
@@ -79,19 +79,19 @@ export default function AddToCollectionButton({
                 key={c.id}
                 onClick={() => handleAdd(c.id)}
                 disabled={isPending || c.hasBook || added[c.id]}
-                className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition hover:bg-white/5 disabled:opacity-60"
+                className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition hover:bg-black/[0.04] disabled:opacity-60"
               >
                 {c.name}
-                {(c.hasBook || added[c.id]) && <span className="text-[#7ee0a8]">✓</span>}
+                {(c.hasBook || added[c.id]) && <span className="text-[#0a8a3f]">✓</span>}
               </button>
             ))
           )}
-          <form onSubmit={handleCreateAndAdd} className="mt-2 flex gap-1.5 border-t border-white/10 pt-2">
+          <form onSubmit={handleCreateAndAdd} className="mt-2 flex gap-1.5 border-t border-black/10 pt-2">
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Nouvelle collection"
-              className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-white outline-none placeholder:text-[color:var(--color-lumina-text-muted)] focus:border-[#7c5cff]"
+              className="flex-1 rounded-lg border border-black/10 bg-black/[0.03] px-2.5 py-1.5 text-xs text-[#1d1d1f] outline-none placeholder:text-[#8a8a8e] focus:border-[#7c5cff]"
             />
             <button
               type="submit"

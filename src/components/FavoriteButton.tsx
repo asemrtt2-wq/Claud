@@ -9,21 +9,26 @@ export default function FavoriteButton({
   slug,
   initialFavorited,
   profileId,
+  light = false,
 }: {
   ebookId: string;
   slug: string;
   initialFavorited: boolean;
   profileId: string | null;
+  light?: boolean;
 }) {
   const [favorited, setFavorited] = useState(initialFavorited);
   const [isPending, startTransition] = useTransition();
   const [popping, setPopping] = useState(false);
 
+  const border = light ? "border-black/10" : "border-white/15";
+  const text = light ? "text-[#1d1d1f]" : "text-white";
+
   if (!profileId) {
     return (
       <Link
         href="/profiles"
-        className="flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:border-[#7c5cff]"
+        className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition hover:border-[#7c5cff] ${border} ${text}`}
       >
         🤍 Choisir un profil
       </Link>
@@ -43,9 +48,7 @@ export default function FavoriteButton({
       onClick={handleClick}
       disabled={isPending}
       className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
-        favorited
-          ? "border-[#7c5cff] bg-[#7c5cff]/10 text-[#7c5cff]"
-          : "border-white/15 text-white hover:border-[#7c5cff]"
+        favorited ? `border-[#7c5cff] bg-[#7c5cff]/10 text-[#7c5cff]` : `${border} ${text} hover:border-[#7c5cff]`
       }`}
     >
       <span className={popping ? "heart-pop" : ""} onAnimationEnd={() => setPopping(false)}>
