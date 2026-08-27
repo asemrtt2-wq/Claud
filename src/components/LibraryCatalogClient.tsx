@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { getCategoryGroup } from "@/lib/categoryGroups";
 import BookCoverCard, { type CoverCardBook } from "./BookCoverCard";
 import CoverLightbox, { type LightboxBook } from "./CoverLightbox";
 
@@ -43,7 +44,7 @@ function BookGrid({
   onOpen: (books: LibraryBook[], index: number) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]">
       {books.map((book, i) => (
         <BookCoverCard
           key={book.id}
@@ -86,7 +87,7 @@ export default function LibraryCatalogClient({
       const name = activeFilter.slice("catalog:".length);
       return sections.find((s) => s.key === `catalog:${name}`)?.books ?? [];
     }
-    return allBooks.filter((b) => b.category === activeFilter);
+    return allBooks.filter((b) => getCategoryGroup(b.category) === activeFilter);
   }, [normalizedQuery, activeFilter, allBooks, sections]);
 
   const flatResults = searchResults ?? filterResults;

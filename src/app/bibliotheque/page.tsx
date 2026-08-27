@@ -12,6 +12,7 @@ import { hasAccessToEbook } from "@/lib/access";
 import { dedupeSeries } from "@/lib/series";
 import { getBestsellerIds, getSurpriseBook } from "@/lib/recommendations";
 import { countWords } from "@/lib/paginate";
+import { getCategoryGroup } from "@/lib/categoryGroups";
 
 export default async function BibliothequePage() {
   const customer = await getCurrentCustomer();
@@ -65,13 +66,14 @@ export default async function BibliothequePage() {
   }
 
   const allBooks = dedupeSeries(ebooks).map(toLibraryBook);
-  const categories = Array.from(new Set(ebooks.map((e) => e.category)));
+  const categoryGroups = Array.from(new Set(ebooks.map((e) => getCategoryGroup(e.category))));
 
-  const categoriesMap = new Map<string, LibraryBook[]>();
+  const groupsMap = new Map<string, LibraryBook[]>();
   for (const book of allBooks) {
-    const list = categoriesMap.get(book.category) ?? [];
+    const group = getCategoryGroup(book.category);
+    const list = groupsMap.get(group) ?? [];
     list.push(book);
-    categoriesMap.set(book.category, list);
+    groupsMap.set(group, list);
   }
 
   const popularBooks = allBooks.filter((b) => b.isBestseller);
@@ -88,10 +90,10 @@ export default async function BibliothequePage() {
         tagline: c.description,
         books: dedupeSeries(c.ebooks).map(toLibraryBook),
       })),
-    ...categories.map((category) => ({
-      key: category,
-      label: category,
-      books: categoriesMap.get(category) ?? [],
+    ...categoryGroups.map((group) => ({
+      key: group,
+      label: group,
+      books: groupsMap.get(group) ?? [],
     })),
   ];
 
@@ -166,7 +168,7 @@ export default async function BibliothequePage() {
             </section>
           )}
 
-          <LibraryCatalogClient sections={sections} allBooks={allBooks} categories={categories} />
+          <LibraryCatalogClient sections={sections} allBooks={allBooks} categories={categoryGroups} />
 
           {surpriseSlug && (
             <section className="mt-20 rounded-[26px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] p-10 text-center text-white shadow-strong">
