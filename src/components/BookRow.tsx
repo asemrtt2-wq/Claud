@@ -65,7 +65,7 @@ export default function BookRow({
               className="group relative w-32 shrink-0 snap-start transition hover:z-10 sm:w-36 animate-fade-in-up"
             >
               <div
-                className={`cover-theme-${book.coverTheme} relative mb-2 flex h-40 items-center justify-center overflow-hidden rounded-2xl text-4xl shadow-[0_10px_24px_rgba(0,0,0,0.45)] ring-1 ring-white/10 transition duration-300 group-hover:-translate-y-1 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-[0_20px_44px_rgba(124,92,255,0.45)]`}
+                className={`${book.coverImageUrl ? "" : `cover-theme-${book.coverTheme}`} relative mb-2 flex aspect-[0.5628] w-full items-center justify-center overflow-hidden rounded-2xl text-4xl shadow-[0_10px_24px_rgba(0,0,0,0.45)] transition duration-300 group-hover:-translate-y-1 group-hover:scale-[1.04] group-hover:shadow-[0_20px_44px_rgba(124,92,255,0.45)]`}
               >
                 {book.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

@@ -56,7 +56,7 @@ export default async function HomePage() {
   const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
   const categories = Array.from(new Set(ebooks.map((e) => e.category)));
   const categoryCount = categories.length;
-  const browseHref = activeProfile ? `/p/${activeProfile.id}#parcourir` : "/login";
+  const browseHref = activeProfile ? `/p/${activeProfile.id}` : "/login";
 
   return (
     <>

@@ -168,7 +168,7 @@ export default async function ProfilePage({
   }
 
   // Adult profile dashboard
-  const [orders, favorites, progressEntries, collections, catalog, catalogs, bestsellerIds] =
+  const [orders, favorites, progressEntries, collections, catalogs, bestsellerIds] =
     await Promise.all([
       prisma.order.findMany({
         where: { customerId: customer.id, status: "paid" },
@@ -189,7 +189,6 @@ export default async function ProfilePage({
         include: { items: { include: { ebook: true } } },
         orderBy: { createdAt: "desc" },
       }),
-      prisma.eBook.findMany({ where: { audience: "adults" }, orderBy: { category: "asc" } }),
       prisma.catalog.findMany({
         include: { ebooks: { where: { audience: "adults" } } },
         orderBy: { createdAt: "asc" },
@@ -199,16 +198,6 @@ export default async function ProfilePage({
   const catalogsWithBooks = catalogs
     .filter((c) => c.ebooks.length > 0)
     .map((c) => ({ ...c, ebooks: withBadges(dedupeSeries(c.ebooks), bestsellerIds) }));
-
-  const categoriesMap = new Map<string, typeof catalog>();
-  for (const book of dedupeSeries(catalog)) {
-    const list = categoriesMap.get(book.category) ?? [];
-    list.push(book);
-    categoriesMap.set(book.category, list);
-  }
-  const categoryRows = Array.from(categoriesMap.entries()).map(
-    ([category, books]) => [category, withBadges(books, bestsellerIds)] as const
-  );
 
   const progressByEbookId = new Map(progressEntries.map((p) => [p.ebookId, p]));
   const libraryMap = new Map<
@@ -380,17 +369,6 @@ export default async function ProfilePage({
             <div className="flex flex-col gap-8">
               {catalogsWithBooks.map((cat) => (
                 <BookRow key={cat.id} label={cat.name} tagline={cat.description} books={cat.ebooks} light />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {categoryRows.length > 0 && (
-          <section id="parcourir" className="mb-12 scroll-mt-24">
-            <h2 className="mb-5 text-lg font-extrabold">Parcourir par catégorie</h2>
-            <div className="flex flex-col gap-8">
-              {categoryRows.map(([category, books]) => (
-                <BookRow key={category} label={category} books={books} light />
               ))}
             </div>
           </section>
