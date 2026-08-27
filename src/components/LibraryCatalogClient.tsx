@@ -60,6 +60,36 @@ function BookGrid({
   );
 }
 
+// A tight, fixed-width horizontal shelf (Apple Books "Reading Now" style) — used for
+// the grouped catalog/category sections, where a category with only 1-2 books would
+// otherwise sit inside a wrapping grid that reserves the full row width and reads as
+// mostly empty. BookGrid (above) stays for the flat search/filter results, where many
+// items genuinely fill the width and wrapping into rows makes sense.
+function BookShelf({
+  books,
+  light,
+  onOpen,
+}: {
+  books: LibraryBook[];
+  light: boolean;
+  onOpen: (books: LibraryBook[], index: number) => void;
+}) {
+  return (
+    <div className="scrollbar-hide -mx-6 flex snap-x gap-4 overflow-x-auto px-6 pb-1 sm:-mx-10 sm:gap-5 sm:px-10">
+      {books.map((book, i) => (
+        <div key={book.id} className="w-28 shrink-0 snap-start sm:w-36">
+          <BookCoverCard
+            book={book}
+            light={light}
+            animationDelayMs={Math.min(i, 10) * 40}
+            onOpen={() => onOpen(books, i)}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function LibraryCatalogClient({
   sections,
   allBooks,
@@ -209,7 +239,7 @@ export default function LibraryCatalogClient({
                   <p className="lumina-gold-text mt-0.5 text-xs italic">{section.tagline}</p>
                 )}
               </div>
-              <BookGrid books={section.books} light={light} onOpen={openLightbox} />
+              <BookShelf books={section.books} light={light} onOpen={openLightbox} />
             </section>
           ))}
           {categorySections.map((section) => (
@@ -224,7 +254,7 @@ export default function LibraryCatalogClient({
                   Voir tout →
                 </button>
               </div>
-              <BookGrid books={section.books.slice(0, 5)} light={light} onOpen={openLightbox} />
+              <BookShelf books={section.books.slice(0, 10)} light={light} onOpen={openLightbox} />
             </section>
           ))}
         </div>

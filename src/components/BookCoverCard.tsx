@@ -26,7 +26,7 @@ export default function BookCoverCard({
       type="button"
       onClick={onOpen}
       style={{ animationDelay: `${animationDelayMs}ms` }}
-      className="group flex flex-col text-left animate-fade-in-up"
+      className="group flex w-full flex-col text-left animate-fade-in-up"
     >
       <div
         className={`relative overflow-hidden rounded-2xl transition-all duration-300 ease-out group-hover:-translate-y-1.5 ${
