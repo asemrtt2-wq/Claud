@@ -7,11 +7,9 @@ import LibraryCatalogClient, {
 } from "@/components/LibraryCatalogClient";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { getActiveProfile } from "@/lib/activeProfile";
-import { hasAccessToEbook } from "@/lib/access";
 import { dedupeSeries } from "@/lib/series";
 import { getBestsellerIds, getSurpriseBook } from "@/lib/recommendations";
 import { countWords } from "@/lib/paginate";
-import { getCategoryGroup } from "@/lib/categoryGroups";
 
 export default async function BibliothequePage() {
   const customer = await getCurrentCustomer();
@@ -65,16 +63,6 @@ export default async function BibliothequePage() {
   }
 
   const allBooks = dedupeSeries(ebooks).map(toLibraryBook);
-  const categoryGroups = Array.from(new Set(ebooks.map((e) => getCategoryGroup(e.category))));
-
-  const groupsMap = new Map<string, LibraryBook[]>();
-  for (const book of allBooks) {
-    const group = getCategoryGroup(book.category);
-    const list = groupsMap.get(group) ?? [];
-    list.push(book);
-    groupsMap.set(group, list);
-  }
-
   const popularBooks = allBooks.filter((b) => b.isBestseller);
 
   const sections: LibrarySection[] = [
@@ -89,27 +77,7 @@ export default async function BibliothequePage() {
         tagline: c.description,
         books: dedupeSeries(c.ebooks).map(toLibraryBook),
       })),
-    ...categoryGroups.map((group) => ({
-      key: group,
-      label: group,
-      books: groupsMap.get(group) ?? [],
-    })),
   ];
-
-  const featured =
-    ebooks.find((e) => e.featured) ??
-    [...ebooks].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ??
-    null;
-  const featuredHasAccess =
-    featured && customer ? await hasAccessToEbook(customer.id, featured.id) : false;
-  const featuredHref = featured
-    ? featuredHasAccess && activeProfile
-      ? `/p/${activeProfile.id}/read/${featured.slug}`
-      : `/ebooks/${featured.slug}`
-    : null;
-  const featuredMinutes = featured
-    ? Math.max(1, Math.round(countWords(featured.content) / 200))
-    : null;
 
   return (
     <>
@@ -117,62 +85,15 @@ export default async function BibliothequePage() {
 
       <div className="ibook-shell px-6 py-16">
         <div className="mx-auto max-w-6xl">
-          <h1 className="mb-3 text-[2rem] font-extrabold tracking-tight md:text-[2.6rem]">
-            Bibliothèque LUMINA
+          <h1 className="mb-1 text-[2rem] font-extrabold tracking-tight md:text-[2.6rem]">
+            Bibliothèque
           </h1>
-          <p className="mb-2 text-[#6e6e73]">
-            Découvrez notre collection de livres numériques.
-          </p>
-          <p className="mb-10 text-sm font-bold text-[#5b3df0]">
+          <p className="mb-10 text-sm font-semibold text-[#6e6e73]">
             {allBooks.length} livre{allBooks.length > 1 ? "s" : ""} disponible
             {allBooks.length > 1 ? "s" : ""}
           </p>
 
-          {featured && featuredHref && (
-            <section className="mb-16">
-              <h2 className="mb-1 text-lg font-extrabold">À la une</h2>
-              <p className="mb-5 text-sm text-[#6e6e73]">
-                La lecture que nous vous recommandons cette semaine.
-              </p>
-              <div
-                className={`${featured.coverImageUrl ? "" : `cover-theme-${featured.coverTheme}`} relative flex h-[280px] flex-col justify-end overflow-hidden rounded-[26px] p-8 shadow-[0_25px_70px_rgba(0,0,0,0.4)] sm:h-[320px]`}
-              >
-                {featured.coverImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={featured.coverImageUrl}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="absolute right-8 top-8 text-8xl opacity-80">{featured.coverEmoji}</div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                <div className="relative z-10 max-w-lg">
-                  <h3 className="mb-2 text-2xl font-extrabold leading-tight sm:text-3xl">
-                    {featured.title}
-                  </h3>
-                  <p className="mb-4 line-clamp-2 text-sm text-white/80">{featured.subtitle}</p>
-                  <p className="mb-5 text-sm font-semibold text-white/70">
-                    {`${featuredMinutes} min · ${featured.price} €`}
-                  </p>
-                  <Link
-                    href={featuredHref}
-                    className="inline-block rounded-xl bg-white px-6 py-3 text-sm font-bold text-navy shadow-[0_10px_28px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5"
-                  >
-                    {featuredHasAccess ? "Lire →" : "Découvrir →"}
-                  </Link>
-                </div>
-              </div>
-            </section>
-          )}
-
-          <LibraryCatalogClient
-            sections={sections}
-            allBooks={allBooks}
-            categories={categoryGroups}
-            light
-          />
+          <LibraryCatalogClient sections={sections} allBooks={allBooks} light />
 
           {surpriseSlug && (
             <section className="mt-20 rounded-[26px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] p-10 text-center text-white shadow-strong">
