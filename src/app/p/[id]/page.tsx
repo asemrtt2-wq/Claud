@@ -13,7 +13,7 @@ import BedtimeReminder from "@/components/BedtimeReminder";
 import PinGate from "@/components/PinGate";
 import FavoriteButton from "@/components/FavoriteButton";
 import ContinueReadingRow from "@/components/ContinueReadingRow";
-import BookCoverGrid from "@/components/BookCoverGrid";
+import BookCoverShelf from "@/components/BookCoverShelf";
 import DashboardSearch from "@/components/DashboardSearch";
 import LogoMark from "@/components/Logo";
 import { profileGradient } from "@/lib/profileColors";
@@ -421,7 +421,7 @@ export default async function ProfilePage({
         {allAdultBooks.length > 0 && (
           <section id="catalogue" className="mb-12 scroll-mt-24">
             <h2 className="mb-5 text-lg font-extrabold">Tous les livres</h2>
-            <BookCoverGrid books={allAdultBooks} light />
+            <BookCoverShelf books={allAdultBooks} light />
           </section>
         )}
 

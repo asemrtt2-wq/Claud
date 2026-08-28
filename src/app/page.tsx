@@ -18,7 +18,7 @@ import { getSiteSettings } from "@/lib/siteSettings";
 import { dedupeSeries } from "@/lib/series";
 import { getBestsellerIds } from "@/lib/recommendations";
 import { isNewBook } from "@/lib/badges";
-import { getCategoryStyle } from "@/lib/categoryStyle";
+import { getCategoryStyle, getCuratedCategories } from "@/lib/categoryStyle";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { getActiveProfile } from "@/lib/activeProfile";
 import { countWords, paginateContent } from "@/lib/paginate";
@@ -55,8 +55,9 @@ export default async function HomePage() {
   );
   const featured = ebooks.filter((e) => e.featured);
   const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
-  const categories = Array.from(new Set(ebooks.map((e) => e.category)));
-  const categoryCount = categories.length;
+  const allCategories = Array.from(new Set(ebooks.map((e) => e.category)));
+  const categoryCount = allCategories.length;
+  const featuredCategories = getCuratedCategories(allCategories);
   const browseHref = activeProfile ? `/p/${activeProfile.id}` : "/login";
 
   return (
@@ -138,12 +139,12 @@ export default async function HomePage() {
 
       <FeatureHighlights />
 
-      {categories.length > 0 && (
+      {featuredCategories.length > 0 && (
         <section className="bg-[#0d0b22] px-6 py-20 text-white">
           <div className="mx-auto max-w-6xl">
             <h2 className="mb-8 text-lg font-extrabold">Explorer par catégorie</h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-              {categories.map((category, i) => {
+              {featuredCategories.map((category, i) => {
                 const style = getCategoryStyle(category, i);
                 return (
                   <Link

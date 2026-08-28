@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 export type CoverCardBook = {
   id: string;
   slug: string;
@@ -21,6 +23,9 @@ export default function BookCoverCard({
   light?: boolean;
   animationDelayMs?: number;
 }) {
+  const [imgError, setImgError] = useState(false);
+  const showImage = Boolean(book.coverImageUrl) && !imgError;
+
   return (
     <button
       type="button"
@@ -36,14 +41,15 @@ export default function BookCoverCard({
         }`}
       >
         <div
-          className={`${book.coverImageUrl ? (light ? "bg-black/[0.04]" : "bg-black/40") : `cover-theme-${book.coverTheme}`} relative flex aspect-[0.5628] w-full items-center justify-center transition-transform duration-300 ease-out group-hover:scale-[1.035]`}
+          className={`${showImage ? (light ? "bg-black/[0.04]" : "bg-black/40") : `cover-theme-${book.coverTheme}`} relative flex aspect-[0.5628] w-full items-center justify-center transition-transform duration-300 ease-out group-hover:scale-[1.035]`}
         >
-          {book.coverImageUrl ? (
+          {showImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={book.coverImageUrl}
+              src={book.coverImageUrl ?? undefined}
               alt={`Couverture de ${book.title}`}
               className="h-full w-full object-contain"
+              onError={() => setImgError(true)}
             />
           ) : (
             <span className="text-5xl">{book.coverEmoji}</span>

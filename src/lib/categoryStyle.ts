@@ -24,3 +24,14 @@ export function getCategoryStyle(category: string, index: number) {
   if (known) return known;
   return { emoji: "📚", gradient: FALLBACK_GRADIENTS[index % FALLBACK_GRADIENTS.length] };
 }
+
+/**
+ * For a curated tile section (e.g. the homepage's "Explorer par catégorie"),
+ * only the categories with a real, distinct icon/gradient defined above —
+ * with dozens of real categories in the catalog now, showing every single one
+ * meant most tiles fell back to the same generic 📚 icon on a repeating
+ * 4-color cycle, which read as broken rather than curated.
+ */
+export function getCuratedCategories(categories: string[]): string[] {
+  return categories.filter((c) => Boolean(CATEGORY_STYLES[c]));
+}

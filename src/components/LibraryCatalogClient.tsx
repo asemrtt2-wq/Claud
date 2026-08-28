@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import BookCoverCard, { type CoverCardBook } from "./BookCoverCard";
 import CoverLightbox, { type LightboxBook } from "./CoverLightbox";
 
@@ -60,10 +60,11 @@ function BookGrid({
 }
 
 // A tight, fixed-width horizontal shelf (Apple Books "Reading Now" style) — used for
-// the curated catalog shelves, where a shelf with only 1-2 books would otherwise sit
-// inside a wrapping grid that reserves the full row width and reads as mostly empty.
-// BookGrid (above) stays for the search results and the full catalog, where many
-// items genuinely fill the width and wrapping into rows makes sense.
+// the curated catalog shelves and the full catalog alike, so a shelf with only 1-2
+// books never sits inside a wrapping grid that reserves the full row width and reads
+// as mostly empty, and every "browse everything" row shares one consistent style.
+// BookGrid (above) stays for search results, where surveying an arbitrary-length
+// filtered list benefits more from wrapping rows than a single scrollable line.
 function BookShelf({
   books,
   light,
@@ -73,18 +74,56 @@ function BookShelf({
   light: boolean;
   onOpen: (books: LibraryBook[], index: number) => void;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  function scrollBy(amount: number) {
+    scrollRef.current?.scrollBy({ left: amount, behavior: "smooth" });
+  }
+
+  const arrowBase =
+    "absolute inset-y-0 z-10 hidden w-14 items-center text-3xl opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 sm:flex";
+  const arrowColor = light ? "text-[#1d1d1f]" : "text-white";
+  const edgeFrom = light ? "from-[#f5f5f7]" : "from-[#0a0918]";
+  const edgeTo = light ? "to-[#f5f5f7]" : "to-[#0a0918]";
+
   return (
-    <div className="scrollbar-hide -mx-6 flex snap-x gap-4 overflow-x-auto px-6 pb-1 sm:-mx-10 sm:gap-5 sm:px-10">
-      {books.map((book, i) => (
-        <div key={book.id} className="w-28 shrink-0 snap-start sm:w-36">
-          <BookCoverCard
-            book={book}
-            light={light}
-            animationDelayMs={Math.min(i, 10) * 40}
-            onOpen={() => onOpen(books, i)}
-          />
-        </div>
-      ))}
+    <div className="group/row relative">
+      <div
+        ref={scrollRef}
+        className="scrollbar-hide -mx-6 flex snap-x gap-4 overflow-x-auto px-6 pb-1 sm:-mx-10 sm:gap-5 sm:px-10"
+      >
+        {books.map((book, i) => (
+          <div key={book.id} className="w-28 shrink-0 snap-start sm:w-36">
+            <BookCoverCard
+              book={book}
+              light={light}
+              animationDelayMs={Math.min(i, 10) * 40}
+              onOpen={() => onOpen(books, i)}
+            />
+          </div>
+        ))}
+      </div>
+
+      {books.length > 4 && (
+        <>
+          <button
+            type="button"
+            onClick={() => scrollBy(-(scrollRef.current?.clientWidth ?? 0) * 0.8)}
+            aria-label="Voir précédent"
+            className={`${arrowBase} left-0 justify-start rounded-r-2xl bg-gradient-to-r ${edgeFrom} to-transparent pl-2 ${arrowColor}`}
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollBy((scrollRef.current?.clientWidth ?? 0) * 0.8)}
+            aria-label="Voir plus"
+            className={`${arrowBase} right-0 justify-end rounded-l-2xl bg-gradient-to-l ${edgeTo} from-transparent pr-2 ${arrowColor}`}
+          >
+            ›
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -179,7 +218,7 @@ export default function LibraryCatalogClient({
 
           <section>
             <h2 className={`mb-5 text-lg font-extrabold ${heading}`}>Tous les livres</h2>
-            <BookGrid books={allBooks} light={light} onOpen={openLightbox} />
+            <BookShelf books={allBooks} light={light} onOpen={openLightbox} />
           </section>
         </div>
       )}
