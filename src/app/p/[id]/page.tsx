@@ -12,6 +12,9 @@ import CollectionsManager from "@/components/CollectionsManager";
 import BedtimeReminder from "@/components/BedtimeReminder";
 import PinGate from "@/components/PinGate";
 import FavoriteButton from "@/components/FavoriteButton";
+import ContinueReadingRow from "@/components/ContinueReadingRow";
+import CategoryAccordion from "@/components/CategoryAccordion";
+import DashboardSearch from "@/components/DashboardSearch";
 import { profileGradient } from "@/lib/profileColors";
 import { dedupeSeries } from "@/lib/series";
 import { isNewBook } from "@/lib/badges";
@@ -21,13 +24,6 @@ function withBadges<T extends { id: string; createdAt: Date }>(
   bestsellerIds: Set<string>
 ): (T & { isNew: boolean; isBestseller: boolean })[] {
   return books.map((b) => ({ ...b, isNew: isNewBook(b.createdAt), isBestseller: bestsellerIds.has(b.id) }));
-}
-
-function relativeDate(date: Date) {
-  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (days <= 0) return "aujourd'hui";
-  if (days === 1) return "hier";
-  return `il y a ${days} jours`;
 }
 
 export default async function ProfilePage({
@@ -168,7 +164,7 @@ export default async function ProfilePage({
   }
 
   // Adult profile dashboard
-  const [orders, favorites, progressEntries, collections, catalogs, bestsellerIds] =
+  const [orders, favorites, progressEntries, collections, catalogs, bestsellerIds, allAdultBooks] =
     await Promise.all([
       prisma.order.findMany({
         where: { customerId: customer.id, status: "paid" },
@@ -194,10 +190,31 @@ export default async function ProfilePage({
         orderBy: { createdAt: "asc" },
       }),
       getBestsellerIds(),
+      prisma.eBook.findMany({ where: { audience: "adults" }, orderBy: { category: "asc" } }),
     ]);
   const catalogsWithBooks = catalogs
     .filter((c) => c.ebooks.length > 0)
     .map((c) => ({ ...c, ebooks: withBadges(dedupeSeries(c.ebooks), bestsellerIds) }));
+
+  const categoryMap = new Map<string, typeof allAdultBooks>();
+  for (const book of allAdultBooks) {
+    const arr = categoryMap.get(book.category) ?? [];
+    arr.push(book);
+    categoryMap.set(book.category, arr);
+  }
+  const categoryRows = Array.from(categoryMap.entries())
+    .map(([name, books]) => ({ name, books: dedupeSeries(books) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const searchBooks = allAdultBooks.map((b) => ({
+    id: b.id,
+    slug: b.slug,
+    title: b.title,
+    category: b.category,
+    author: b.author,
+    coverEmoji: b.coverEmoji,
+    coverTheme: b.coverTheme,
+    coverImageUrl: b.coverImageUrl,
+  }));
 
   const progressByEbookId = new Map(progressEntries.map((p) => [p.ebookId, p]));
   const libraryMap = new Map<
@@ -254,7 +271,7 @@ export default async function ProfilePage({
           LUMINA
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-lg text-[#6e6e73]">🔍</span>
+          <DashboardSearch books={searchBooks} />
           <ProfileSwitcher profiles={switcherProfiles} activeProfileId={id} light />
         </div>
       </header>
@@ -327,40 +344,7 @@ export default async function ProfilePage({
         {inProgressBooks.length > 0 && (
           <section className="mb-12">
             <h2 className="mb-5 text-lg font-extrabold">📖 Continuer ma lecture</h2>
-            <div className="scrollbar-hide -mx-6 flex snap-x gap-4 overflow-x-auto px-6 pb-1 sm:-mx-10 sm:px-10">
-              {inProgressBooks.map(({ ebook, percent }) => (
-                <div
-                  key={ebook.id}
-                  className="ibook-card flex w-64 shrink-0 snap-start flex-col gap-3 rounded-2xl p-4 sm:w-72"
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`${ebook.coverImageUrl ? "" : `cover-theme-${ebook.coverTheme}`} relative flex h-16 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg text-xl`}
-                    >
-                      {ebook.coverImageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={ebook.coverImageUrl} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        ebook.coverEmoji
-                      )}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-[#1d1d1f]">{ebook.title}</p>
-                      <p className="text-xs font-bold text-[#5b3df0]">{`${percent}% terminé`}</p>
-                    </div>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full ibook-progress-track">
-                    <div className="h-full ibook-progress-fill" style={{ width: `${percent}%` }} />
-                  </div>
-                  <Link
-                    href={`/p/${id}/read/${ebook.slug}`}
-                    className="rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-4 py-2 text-center text-sm font-bold text-white transition hover:-translate-y-0.5"
-                  >
-                    Continuer →
-                  </Link>
-                </div>
-              ))}
-            </div>
+            <ContinueReadingRow profileId={id} books={inProgressBooks} />
           </section>
         )}
 
@@ -444,44 +428,12 @@ export default async function ProfilePage({
           <CollectionsManager profileId={id} collections={collections} />
         </section>
 
-        <section id="historique" className="mb-12 scroll-mt-24">
-          <h2 className="mb-5 text-lg font-extrabold">Historique</h2>
-          {progressEntries.length === 0 ? (
-            <p className="text-sm text-[#6e6e73]">Ton historique de lecture est vide.</p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {progressEntries.map((p) => {
-                const totalPages = paginateContent(p.ebook.content).length;
-                const percent = Math.round(((p.page + 1) / totalPages) * 100);
-                return (
-                  <Link
-                    key={p.id}
-                    href={`/p/${id}/read/${p.ebook.slug}`}
-                    className="ibook-card flex items-center gap-4 rounded-2xl p-3 transition hover:-translate-y-0.5"
-                  >
-                    <span
-                      className={`${p.ebook.coverImageUrl ? "" : `cover-theme-${p.ebook.coverTheme}`} relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg text-xl`}
-                    >
-                      {p.ebook.coverImageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.ebook.coverImageUrl} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        p.ebook.coverEmoji
-                      )}
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-[#1d1d1f]">{p.ebook.title}</p>
-                      <p className="text-xs text-[#6e6e73]">
-                        {p.completed ? "Terminé" : `${percent}% lu`} · {relativeDate(p.updatedAt)}
-                      </p>
-                    </div>
-                    {p.completed && <span className="text-[#0a8a3f]">✓</span>}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </section>
+        {categoryRows.length > 0 && (
+          <section id="categories" className="mb-12 scroll-mt-24">
+            <h2 className="mb-5 text-lg font-extrabold">Tous les livres par catégorie</h2>
+            <CategoryAccordion categories={categoryRows} />
+          </section>
+        )}
 
       </main>
 
