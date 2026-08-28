@@ -6,6 +6,7 @@ import { hasAccessToEbook } from "@/lib/access";
 import { getActiveProfile } from "@/lib/activeProfile";
 import { paginateContent } from "@/lib/paginate";
 import { getChapters } from "@/lib/chapters";
+import { getBestExcerpt } from "@/lib/excerpt";
 import { getRecommendations } from "@/lib/recommendations";
 import LightHeader from "@/components/LightHeader";
 import EbookHero from "@/components/EbookHero";
@@ -125,6 +126,7 @@ export default async function EBookPage({
   const isPdf = Boolean(ebook.pdfUrl);
   const pages = isPdf ? [] : paginateContent(ebook.content);
   const chapters = isPdf ? [] : getChapters(ebook.content);
+  const excerpt = isPdf ? null : getBestExcerpt(pages, chapters);
   const readHref = activeProfile ? `/p/${activeProfile.id}/read/${ebook.slug}` : null;
 
   const percent =
@@ -195,6 +197,7 @@ export default async function EBookPage({
           isLoggedIn={isLoggedIn}
           readHref={readHref}
           progressLabel={progressLabel}
+          excerpt={excerpt}
         />
 
         <div className="mx-auto max-w-3xl px-6 pb-20 pt-10">

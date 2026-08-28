@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import BuyButton from "./BuyButton";
 import CoverLightbox, { type LightboxBook } from "./CoverLightbox";
+import ExcerptModal from "./ExcerptModal";
 
 export default function EbookHero({
   ebookId,
@@ -26,6 +27,7 @@ export default function EbookHero({
   isLoggedIn,
   readHref,
   progressLabel,
+  excerpt,
 }: {
   ebookId: string;
   title: string;
@@ -47,8 +49,10 @@ export default function EbookHero({
   isLoggedIn: boolean;
   readHref: string | null;
   progressLabel: { percent: number; text: string } | null;
+  excerpt: { chapterTitle: string | null; text: string } | null;
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [excerptOpen, setExcerptOpen] = useState(false);
 
   const lightboxBook: LightboxBook = {
     slug: "",
@@ -129,6 +133,15 @@ export default function EbookHero({
                   <p className="text-xs text-[#6e6e73]">{progressLabel.text}</p>
                 </div>
               )}
+              {excerpt && (
+                <button
+                  type="button"
+                  onClick={() => setExcerptOpen(true)}
+                  className="mt-3 block w-full rounded-2xl border border-black/10 px-7 py-3 text-center text-sm font-bold text-[#1d1d1f] transition hover:border-[#7c5cff]"
+                >
+                  📖 Lire un extrait
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setPreviewOpen(true)}
@@ -161,6 +174,15 @@ export default function EbookHero({
               >
                 ✨ Lire gratuitement avec Premium
               </Link>
+              {excerpt && (
+                <button
+                  type="button"
+                  onClick={() => setExcerptOpen(true)}
+                  className="mt-3 block w-full rounded-2xl border border-black/10 px-7 py-3 text-center text-sm font-bold text-[#1d1d1f] transition hover:border-[#7c5cff]"
+                >
+                  📖 Lire un extrait
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setPreviewOpen(true)}
@@ -183,6 +205,15 @@ export default function EbookHero({
           onClose={() => setPreviewOpen(false)}
           onNavigate={() => {}}
           hideViewLink
+        />
+      )}
+
+      {excerptOpen && excerpt && (
+        <ExcerptModal
+          title={title}
+          chapterTitle={excerpt.chapterTitle}
+          text={excerpt.text}
+          onClose={() => setExcerptOpen(false)}
         />
       )}
     </div>
