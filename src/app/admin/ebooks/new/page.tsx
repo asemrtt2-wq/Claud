@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AdminNav from "@/components/AdminNav";
-import EbookForm from "@/components/EbookForm";
+import AdminEbookComposer from "@/components/AdminEbookComposer";
 import { createEbook } from "@/lib/actions";
 
 export default async function NewEbookPage({
@@ -23,9 +23,9 @@ export default async function NewEbookPage({
         <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-white">
           Nouvel eBook {audience === "kids" ? "(Enfants)" : "(Adultes)"}
         </h1>
-        <EbookForm
+        <AdminEbookComposer
           action={createEbook}
-          defaults={{ audience: audience === "kids" ? "kids" : "adults" }}
+          initialAudience={audience === "kids" ? "kids" : "adults"}
           submitLabel="Créer l'eBook"
           catalogs={catalogs}
         />
