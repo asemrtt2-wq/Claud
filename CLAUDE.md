@@ -253,9 +253,10 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   `page` / total pages, same math the billboard/ebook page already use) in gold, a progress bar,
   and a "Continuer →" link straight into the reader at the saved page.
 - **Real curated collections with taglines**: `Catalog.description` (see "Curated catalogs"
-  above) plus two genuine collections ("Collection Guerrier", "Collection Sparte") built from
-  real books already in the catalog — not the fictional 5-collection lineup (Discipline, Pouvoir,
-  etc.) from the original spec, since those don't correspond to anything in the real library yet.
+  above) plus a genuine collection ("Collection Guerrier") built from a real book already in the
+  catalog — not the fictional 5-collection lineup (Discipline, Pouvoir, etc.) from the original
+  spec, since those don't correspond to anything in the real library yet. A second one,
+  "Collection Sparte", shipped the same way but was removed later — see "Curated catalogs" below.
 - **"Ton parcours" real-stats section** (`/p/[id]/compte`, above the existing Niveau/XP card):
   four `.lumina-card-premium` tiles — Livres lus (`completedBooksTotal`), Pages lues (a new
   `pagesReadTotal`, summing `page + 1` across every tracked `ReadingProgress` row — genuinely
@@ -649,25 +650,29 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   follow the same admin-session-gated pattern as the rest of that file.
 - Any catalog with at least one **adult** book renders as its own `BookRow` — on the homepage
   (`src/app/page.tsx`, right after the feature-highlight row, before the plain "Nos eBooks
-  populaires" grid) and on the adult `/p/[id]` dashboard (right before "Parcourir par
-  catégorie") — in both places ordered by the catalog's `createdAt`. This is deliberately
-  separate from `category` (the existing single free-text field every book has, which drives the
-  "Parcourir par catégorie" rows and the homepage grid's implicit grouping): `category` is one
-  value per book describing what it's about, while `Catalog` is admin-curated editorial
-  placement — a book can be in several catalogs (or none) independent of its category. Kids
-  audience books are excluded from catalog rows since catalogs only ever render on
+  populaires" grid), on the adult `/p/[id]` dashboard, and on `/bibliotheque` — ordered by the
+  catalog's `createdAt`. This is deliberately separate from `category` (the existing single
+  free-text field every book has, which the homepage grid's implicit grouping is based on):
+  `category` is one value per book describing what it's about, while `Catalog` is admin-curated
+  editorial placement — a book can be in several catalogs (or none) independent of its category.
+  Kids audience books are excluded from catalog rows since catalogs only ever render on
   adult-facing surfaces.
 - `Catalog.description` — an optional short tagline (e.g. "Construis un mental que rien ne peut
   briser.") set from the same `/admin/catalogs` create/rename form, rendered as a small gold
   (`.lumina-gold-text`) italic line under the row's label via `BookRow`'s optional `tagline`
-  prop. Two real catalogs ship with one — **"Collection Guerrier"** ("Construis un mental que
-  rien ne peut briser.", containing "Le Code du Guerrier") and **"Collection Sparte"**
-  ("Découvre la mentalité des guerriers.", containing the 5 real "Sparte" series tomes) — both
-  are genuine, curated groupings of real catalog books, not a themed re-skin of the whole site.
-  They're upserted (idempotently, safe to re-run) by `importRealBooks()` in `src/lib/actions.ts`
-  right after it imports the real book rows, so re-clicking "Importer mes livres" on
-  `/admin` is what syncs them to a deployed environment the same way it syncs everything else
-  `importRealBooks()` seeds.
+  prop. One real catalog ships this way — **"Collection Guerrier"** ("Construis un mental que
+  rien ne peut briser.", containing "Le Code du Guerrier") — a genuine, curated grouping of a
+  real catalog book, not a themed re-skin of the whole site. It's upserted (idempotently, safe to
+  re-run) by `importRealBooks()` in `src/lib/actions.ts` right after it imports the real book
+  rows, so re-clicking "Importer mes livres" on `/admin` is what syncs it to a deployed
+  environment the same way it syncs everything else `importRealBooks()` seeds. A second catalog,
+  **"Collection Sparte"**, shipped the same way (containing the "Sparte" series tomes) but was
+  later removed: Prisma's implicit m2m `connect` only ever adds books to a catalog, never removes
+  ones that no longer belong, so a book unrelated to the Sparte series that got connected to it
+  during earlier iterations stayed stuck there forever across every re-import, and the catalog
+  never actually reflected the current 5 real tomes. Rather than special-case a cleanup for that
+  one catalog's data, `importRealBooks()` now deletes the "Collection Sparte" row outright on
+  every run — its Sparte tomes just show up as regular, uncollected catalog books instead.
 
 ### Series ("Épisodes")
 - `EBook.seriesName`/`seriesOrder` (both optional) group standalone `EBook` rows into a saga —

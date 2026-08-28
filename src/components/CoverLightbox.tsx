@@ -27,11 +27,13 @@ export default function CoverLightbox({
   hideViewLink?: boolean;
 }) {
   const [showBack, setShowBack] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const book = books[index];
 
   useEffect(() => {
     setShowBack(false);
+    setZoomed(false);
   }, [index]);
 
   useEffect(() => {
@@ -105,12 +107,27 @@ export default function CoverLightbox({
       <div className="mx-auto flex min-h-full max-w-[90vw] flex-col items-center justify-center py-10">
         <div className="flex max-w-full flex-col items-center">
           {activeImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={activeImage}
-              alt={`Couverture de ${book.title}`}
-              className="max-h-[68vh] w-auto rounded-xl object-contain shadow-[0_30px_80px_rgba(0,0,0,0.6)]"
-            />
+            <button
+              type="button"
+              onClick={() => setZoomed((z) => !z)}
+              aria-label={zoomed ? "Réduire la couverture" : "Zoomer sur la couverture"}
+              className={`block ${zoomed ? "cursor-zoom-out" : "cursor-zoom-in"}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={activeImage}
+                alt={`Couverture de ${book.title}`}
+                className={`rounded-xl object-contain shadow-[0_30px_80px_rgba(0,0,0,0.6)] ${
+                  zoomed ? "h-auto max-h-none max-w-none" : "max-h-[68vh] w-auto"
+                }`}
+                style={zoomed ? { width: "min(1100px, 92vw)" } : undefined}
+              />
+              <span
+                className={`mt-2 block text-center text-xs font-semibold text-white/50 ${zoomed ? "hidden" : ""}`}
+              >
+                🔍 Toucher pour zoomer
+              </span>
+            </button>
           ) : (
             <div
               className={`cover-theme-${book.coverTheme} flex h-[55vh] w-[38vh] items-center justify-center rounded-xl text-8xl shadow-[0_30px_80px_rgba(0,0,0,0.6)]`}

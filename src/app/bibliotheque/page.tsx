@@ -5,11 +5,14 @@ import LibraryCatalogClient, {
   type LibraryBook,
   type LibrarySection,
 } from "@/components/LibraryCatalogClient";
+import BookRow from "@/components/BookRow";
+import ContinueReadingRow from "@/components/ContinueReadingRow";
+import CollectionsManager from "@/components/CollectionsManager";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { getActiveProfile } from "@/lib/activeProfile";
 import { dedupeSeries } from "@/lib/series";
-import { getBestsellerIds, getSurpriseBook } from "@/lib/recommendations";
-import { countWords } from "@/lib/paginate";
+import { getBestsellerIds, getSurpriseBook, getRecommendations } from "@/lib/recommendations";
+import { countWords, paginateContent } from "@/lib/paginate";
 
 export default async function BibliothequePage() {
   const customer = await getCurrentCustomer();
@@ -79,6 +82,85 @@ export default async function BibliothequePage() {
       })),
   ];
 
+  // For a logged-in member with an active profile, the library also surfaces the
+  // same personalized rows as the /p/[id] dashboard (recommendations, favorites,
+  // collections, owned library, in-progress reads) so members see everything —
+  // the full catalog and "their" books — in one place instead of two separate pages.
+  let personalized: {
+    continueReading: { ebook: (typeof ebooks)[number]; percent: number }[];
+    recommendedRows: { label: string; books: LibraryBook[] }[];
+    favorites: LibraryBook[];
+    library: LibraryBook[];
+    collections: {
+      id: string;
+      name: string;
+      items: { ebook: { id: string; slug: string; title: string; coverEmoji: string; coverTheme: string } }[];
+    }[];
+  } | null = null;
+
+  if (customer && activeProfile) {
+    const [orders, favoriteRows, collectionRows, progressEntries] = await Promise.all([
+      prisma.order.findMany({
+        where: { customerId: customer.id, status: "paid" },
+        include: { ebook: true },
+      }),
+      prisma.favorite.findMany({
+        where: { profileId: activeProfile.id },
+        include: { ebook: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.collection.findMany({
+        where: { profileId: activeProfile.id },
+        include: { items: { include: { ebook: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.readingProgress.findMany({
+        where: { profileId: activeProfile.id },
+        include: { ebook: true },
+        orderBy: { updatedAt: "desc" },
+      }),
+    ]);
+
+    // "Ma bibliothèque" mirrors the /p/[id] dashboard's own definition: books this
+    // profile actually bought/favorited/read — not every book a Premium subscription
+    // unlocks, which for a subscriber is the entire catalog and would otherwise
+    // exclude every book from "Recommandé pour toi" (nothing left to recommend).
+    const libraryMap = new Map<string, (typeof ebooks)[number]>();
+    for (const entry of [...orders, ...favoriteRows, ...progressEntries]) {
+      if (!libraryMap.has(entry.ebook.id)) libraryMap.set(entry.ebook.id, entry.ebook);
+    }
+    const libraryEbooks = Array.from(libraryMap.values());
+    const recommendations = await getRecommendations(activeProfile.id, Array.from(libraryMap.keys()));
+
+    const continueReading = progressEntries
+      .filter((p) => !p.completed)
+      .map((p) => {
+        const totalPages = paginateContent(p.ebook.content).length;
+        return { ebook: p.ebook, percent: Math.round(((p.page + 1) / totalPages) * 100) };
+      });
+
+    const recommendedRows = [
+      {
+        label: recommendations.topCategory ? `Parce que tu aimes ${recommendations.topCategory}` : "",
+        books: dedupeSeries(recommendations.byCategory).map(toLibraryBook),
+      },
+      {
+        label: recommendations.topAuthor ? `Auteurs favoris : ${recommendations.topAuthor}` : "",
+        books: dedupeSeries(recommendations.byAuthor).map(toLibraryBook),
+      },
+      { label: "Nouveautés", books: dedupeSeries(recommendations.newest).map(toLibraryBook) },
+      { label: "Les plus populaires", books: dedupeSeries(recommendations.popular).map(toLibraryBook) },
+    ].filter((row) => row.books.length > 0);
+
+    personalized = {
+      continueReading,
+      recommendedRows,
+      favorites: favoriteRows.map((f) => toLibraryBook(f.ebook)),
+      library: libraryEbooks.map(toLibraryBook),
+      collections: collectionRows,
+    };
+  }
+
   return (
     <>
       <LightHeader />
@@ -92,6 +174,63 @@ export default async function BibliothequePage() {
             {allBooks.length} livre{allBooks.length > 1 ? "s" : ""} disponible
             {allBooks.length > 1 ? "s" : ""}
           </p>
+
+          {personalized && (
+            <div className="mb-14 flex flex-col gap-12">
+              {personalized.continueReading.length > 0 && (
+                <section>
+                  <h2 className="mb-5 text-lg font-extrabold text-[#1d1d1f]">
+                    📖 Continuer ma lecture
+                  </h2>
+                  <ContinueReadingRow
+                    profileId={activeProfile!.id}
+                    books={personalized.continueReading}
+                  />
+                </section>
+              )}
+
+              {personalized.recommendedRows.length > 0 && (
+                <section>
+                  <h2 className="mb-5 text-lg font-extrabold text-[#1d1d1f]">
+                    ✨ Recommandé pour toi
+                  </h2>
+                  <div className="flex flex-col gap-8">
+                    {personalized.recommendedRows.map((row) => (
+                      <BookRow key={row.label} label={row.label} books={row.books} light />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              <section>
+                <h2 className="mb-5 text-lg font-extrabold text-[#1d1d1f]">Mes favoris</h2>
+                {personalized.favorites.length === 0 ? (
+                  <p className="text-sm text-[#6e6e73]">Tu n&apos;as pas encore de favoris.</p>
+                ) : (
+                  <BookRow label="" books={personalized.favorites} light />
+                )}
+              </section>
+
+              <section>
+                <h2 className="mb-5 text-lg font-extrabold text-[#1d1d1f]">Mes collections</h2>
+                <CollectionsManager profileId={activeProfile!.id} collections={personalized.collections} />
+              </section>
+
+              <section>
+                <h2 className="mb-5 text-lg font-extrabold text-[#1d1d1f]">Ma bibliothèque</h2>
+                {personalized.library.length === 0 ? (
+                  <p className="text-sm text-[#6e6e73]">
+                    Ta bibliothèque est vide.{" "}
+                    <Link href="/premium" className="font-semibold text-[#5b3df0] hover:underline">
+                      Découvrir Premium
+                    </Link>
+                  </p>
+                ) : (
+                  <BookRow label="" books={personalized.library} light />
+                )}
+              </section>
+            </div>
+          )}
 
           <LibraryCatalogClient sections={sections} allBooks={allBooks} light />
 

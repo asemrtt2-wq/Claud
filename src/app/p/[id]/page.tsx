@@ -13,7 +13,7 @@ import BedtimeReminder from "@/components/BedtimeReminder";
 import PinGate from "@/components/PinGate";
 import FavoriteButton from "@/components/FavoriteButton";
 import ContinueReadingRow from "@/components/ContinueReadingRow";
-import CategoryAccordion from "@/components/CategoryAccordion";
+import BookCoverGrid from "@/components/BookCoverGrid";
 import DashboardSearch from "@/components/DashboardSearch";
 import { profileGradient } from "@/lib/profileColors";
 import { dedupeSeries } from "@/lib/series";
@@ -196,15 +196,6 @@ export default async function ProfilePage({
     .filter((c) => c.ebooks.length > 0)
     .map((c) => ({ ...c, ebooks: withBadges(dedupeSeries(c.ebooks), bestsellerIds) }));
 
-  const categoryMap = new Map<string, typeof allAdultBooks>();
-  for (const book of allAdultBooks) {
-    const arr = categoryMap.get(book.category) ?? [];
-    arr.push(book);
-    categoryMap.set(book.category, arr);
-  }
-  const categoryRows = Array.from(categoryMap.entries())
-    .map(([name, books]) => ({ name, books: dedupeSeries(books) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
   const searchBooks = allAdultBooks.map((b) => ({
     id: b.id,
     slug: b.slug,
@@ -428,10 +419,10 @@ export default async function ProfilePage({
           <CollectionsManager profileId={id} collections={collections} />
         </section>
 
-        {categoryRows.length > 0 && (
-          <section id="categories" className="mb-12 scroll-mt-24">
-            <h2 className="mb-5 text-lg font-extrabold">Tous les livres par catégorie</h2>
-            <CategoryAccordion categories={categoryRows} />
+        {allAdultBooks.length > 0 && (
+          <section id="catalogue" className="mb-12 scroll-mt-24">
+            <h2 className="mb-5 text-lg font-extrabold">Tous les livres</h2>
+            <BookCoverGrid books={allAdultBooks} light />
           </section>
         )}
 

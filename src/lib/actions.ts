@@ -169,19 +169,12 @@ export async function importRealBooks() {
     },
   });
 
-  const sparteTomes = await prisma.eBook.findMany({ where: { seriesName: "Sparte" } });
-  await prisma.catalog.upsert({
-    where: { name: "Collection Sparte" },
-    update: {
-      description: "Découvre la mentalité des guerriers.",
-      ebooks: { connect: sparteTomes.map((t) => ({ id: t.id })) },
-    },
-    create: {
-      name: "Collection Sparte",
-      description: "Découvre la mentalité des guerriers.",
-      ebooks: { connect: sparteTomes.map((t) => ({ id: t.id })) },
-    },
-  });
+  // "Collection Sparte" used to be seeded here, but `connect` on an implicit
+  // m2m relation only ever adds books, never removes stale ones — so an
+  // unrelated book connected to it during earlier iterations stayed stuck
+  // there forever across every re-import. Rather than re-seed it, drop it:
+  // its Sparte tomes just fall back to appearing as regular catalog books.
+  await prisma.catalog.deleteMany({ where: { name: "Collection Sparte" } });
 
   revalidatePath("/admin");
   revalidatePath("/admin/catalogs");
