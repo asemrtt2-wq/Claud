@@ -17,6 +17,11 @@ export default function HeroDeviceShowcase({ books }: { books: ShowcaseBook[] })
     .slice(0, 420)
     .trim();
 
+  // Always show a full-looking row of 5 in the mockup, cycling through whatever
+  // real covers are available rather than a sparse row when few books are featured.
+  const libraryPool = rest.length > 0 ? rest : [main];
+  const library = Array.from({ length: 5 }, (_, i) => libraryPool[i % libraryPool.length]);
+
   return (
     <div className="relative flex items-center justify-center py-6">
       <div className="absolute h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(124,92,255,0.25),transparent_70%)]" />
@@ -32,7 +37,7 @@ export default function HeroDeviceShowcase({ books }: { books: ShowcaseBook[] })
       <PhoneFrame className="relative z-10 -rotate-3">
         <MiniDashboardScreen
           continuing={{ ...main, progress: 48 }}
-          library={rest.length > 0 ? rest : [main, main, main]}
+          library={library}
         />
       </PhoneFrame>
     </div>

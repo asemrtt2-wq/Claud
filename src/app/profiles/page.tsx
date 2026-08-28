@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import ProfilePicker from "@/components/ProfilePicker";
+import LogoMark from "@/components/Logo";
 
 export default async function ProfilesPage() {
   const customer = await getCurrentCustomer();
@@ -26,9 +27,7 @@ export default async function ProfilesPage() {
   return (
     <div className="lumina-shell flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <Link href="/" className="mb-10 flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white">
-          ✦
-        </span>
+        <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />
         LUMINA
       </Link>
       <h1 className="mb-10 text-2xl font-extrabold tracking-tight text-white">

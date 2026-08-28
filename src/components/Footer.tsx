@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoMark from "@/components/Logo";
 
 export default function Footer() {
   return (
@@ -7,9 +8,7 @@ export default function Footer() {
         <div className="flex flex-wrap items-start justify-between gap-10 border-b border-white/10 pb-10">
           <div>
             <Link href="/" className="flex items-center gap-2.5 text-xl font-extrabold text-white">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c5cff] to-navy text-white shadow-[0_8px_20px_rgba(124,92,255,0.35)]">
-                ✦
-              </span>
+              <LogoMark className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c5cff] to-navy text-white shadow-[0_8px_20px_rgba(124,92,255,0.35)]" />
               LUMINA
             </Link>
             <p className="lumina-gold-text mt-2 text-sm font-semibold">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import LogoMark from "@/components/Logo";
 
 export default function AdminNav({ email }: { email?: string | null }) {
   return (
@@ -9,9 +10,7 @@ export default function AdminNav({ email }: { email?: string | null }) {
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-6">
           <Link href="/admin" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white">
-              ✦
-            </span>
+            <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />
             Admin
           </Link>
           <Link

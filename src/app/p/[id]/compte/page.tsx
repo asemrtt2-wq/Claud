@@ -7,6 +7,7 @@ import ProfileSwitcher from "@/components/ProfileSwitcher";
 import ReadingReminderSetting from "@/components/ReadingReminderSetting";
 import ReadingGoalSetting from "@/components/ReadingGoalSetting";
 import SignOutButton from "@/components/SignOutButton";
+import LogoMark from "@/components/Logo";
 
 function formatMinutes(minutes: number) {
   if (minutes < 60) return `${minutes} min`;
@@ -106,9 +107,7 @@ export default async function CompteObjectifsPage({
     <div className="lumina-shell pb-24">
       <header className="flex items-center justify-between px-6 py-6 sm:px-10">
         <Link href={`/p/${id}`} className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white">
-            ✦
-          </span>
+          <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />
           LUMINA
         </Link>
         <div className="flex items-center gap-4">

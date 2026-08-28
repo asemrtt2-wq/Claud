@@ -1,3 +1,5 @@
+import LogoMark from "@/components/Logo";
+
 type MiniBook = {
   title: string;
   coverEmoji: string;
@@ -18,7 +20,8 @@ export function MiniDashboardScreen({
     <div className="lumina-shell flex h-full flex-col px-3.5 pb-3 pt-4 text-white">
       <div className="mb-3 flex items-center justify-between">
         <span className="flex items-center gap-1 text-[0.65rem] font-extrabold tracking-wide">
-          <span className="text-[#a78bfa]">✦</span> LUMINA
+          <LogoMark className="flex h-3.5 w-3.5 items-center justify-center rounded-[4px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />{" "}
+          LUMINA
         </span>
         <div className="h-4 w-4 rounded-full bg-gradient-to-br from-[#7c5cff] to-[#5b3df0]" />
       </div>
@@ -43,11 +46,11 @@ export function MiniDashboardScreen({
       <p className="mb-1.5 text-[0.6rem] font-bold text-[color:var(--color-lumina-text-muted)]">
         Ma bibliothèque
       </p>
-      <div className="flex gap-1.5">
-        {library.slice(0, 3).map((book) => (
+      <div className="flex gap-1">
+        {library.slice(0, 5).map((book, i) => (
           <div
-            key={book.title}
-            className={`cover-theme-${book.coverTheme} flex h-14 flex-1 items-center justify-center rounded-lg text-base`}
+            key={`${book.title}-${i}`}
+            className={`cover-theme-${book.coverTheme} flex h-12 flex-1 items-center justify-center rounded-lg text-sm`}
           >
             {book.coverEmoji}
           </div>
@@ -70,7 +73,8 @@ export function MiniLibraryScreen({ books }: { books: MiniBook[] }) {
     <div className="lumina-shell flex h-full flex-col gap-3 px-4 pb-4 pt-4 text-white">
       <div className="flex items-center justify-between text-[0.75rem] font-extrabold">
         <span className="flex items-center gap-1">
-          <span className="text-[#a78bfa]">✦</span> LUMINA
+          <LogoMark className="flex h-3.5 w-3.5 items-center justify-center rounded-[4px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />{" "}
+          LUMINA
         </span>
         <span className="text-[color:var(--color-lumina-text-muted)]">Bibliothèque</span>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import LogoMark from "@/components/Logo";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -39,9 +40,7 @@ export default function AdminLoginPage() {
         className="lumina-card w-full max-w-sm rounded-[22px] p-9 shadow-strong"
       >
         <div className="mb-6 flex items-center gap-2.5 text-lg font-extrabold tracking-tight text-white">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white">
-            ✦
-          </span>
+          <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />
           Espace admin
         </div>
         <p className="mb-7 text-sm text-[color:var(--color-lumina-text-muted)]">

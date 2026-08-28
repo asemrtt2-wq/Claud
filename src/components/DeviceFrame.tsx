@@ -7,10 +7,18 @@ export function PhoneFrame({
 }) {
   return (
     <div
-      className={`relative aspect-[9/19] w-56 shrink-0 rounded-[2.2rem] border-[6px] border-[#1c1a33] bg-[#0a0918] shadow-[0_30px_70px_rgba(0,0,0,0.55)] ${className ?? ""}`}
+      className={`relative aspect-[9/19] w-56 shrink-0 rounded-[2.4rem] bg-gradient-to-br from-[#38355c] via-[#1c1a33] to-[#100e20] p-[5px] shadow-[0_30px_70px_rgba(0,0,0,0.55)] ${className ?? ""}`}
     >
-      <div className="absolute left-1/2 top-2 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-black/60" />
-      <div className="relative h-full w-full overflow-hidden rounded-[1.7rem]">{children}</div>
+      {/* side buttons */}
+      <span className="absolute -left-[2px] top-[22%] h-7 w-[3px] rounded-l-full bg-[#100e20]" />
+      <span className="absolute -left-[2px] top-[30%] h-11 w-[3px] rounded-l-full bg-[#100e20]" />
+      <span className="absolute -right-[2px] top-[26%] h-14 w-[3px] rounded-r-full bg-[#100e20]" />
+
+      <div className="relative h-full w-full overflow-hidden rounded-[2.05rem] bg-[#0a0918] ring-1 ring-inset ring-white/[0.08]">
+        <div className="absolute left-1/2 top-2 z-20 h-[1.35rem] w-[5.5rem] -translate-x-1/2 rounded-full bg-black" />
+        {children}
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent" />
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import HeroDeviceShowcase from "@/components/HeroDeviceShowcase";
 import EBookCard from "@/components/EBookCard";
 import BookRow from "@/components/BookRow";
+import BookCoverShelf from "@/components/BookCoverShelf";
 import {
   CompatibilitySection,
   FeatureHighlights,
@@ -174,6 +175,15 @@ export default async function HomePage() {
                 books={catalog.ebooks}
               />
             ))}
+          </div>
+        </section>
+      )}
+
+      {ebooks.length > 0 && (
+        <section className="bg-[#0a0918] px-6 pb-4 pt-20 text-white">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="mb-8 text-lg font-extrabold">Tous les livres</h2>
+            <BookCoverShelf books={dedupeSeries(ebooks)} />
           </div>
         </section>
       )}
