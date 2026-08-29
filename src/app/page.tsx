@@ -16,6 +16,7 @@ import {
 } from "@/components/HomeMarketingSections";
 import { getSiteSettings } from "@/lib/siteSettings";
 import { dedupeSeries } from "@/lib/series";
+import { chunk } from "@/lib/chunk";
 import { getBestsellerIds } from "@/lib/recommendations";
 import { isNewBook } from "@/lib/badges";
 import { getCategoryStyle, getCuratedCategories } from "@/lib/categoryStyle";
@@ -184,7 +185,11 @@ export default async function HomePage() {
         <section className="bg-[#0a0918] px-6 pb-4 pt-20 text-white">
           <div className="mx-auto max-w-6xl">
             <h2 className="mb-8 text-lg font-extrabold">Tous les livres</h2>
-            <BookCoverShelf books={dedupeSeries(ebooks)} />
+            <div className="flex flex-col gap-10">
+              {chunk(dedupeSeries(ebooks), 20).map((group, i) => (
+                <BookCoverShelf key={i} books={group} />
+              ))}
+            </div>
           </div>
         </section>
       )}

@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import BookCoverCard, { type CoverCardBook } from "./BookCoverCard";
 import CoverLightbox, { type LightboxBook } from "./CoverLightbox";
+import { chunk } from "@/lib/chunk";
 
 export type LibraryBook = CoverCardBook & {
   subtitle: string;
@@ -218,7 +219,11 @@ export default function LibraryCatalogClient({
 
           <section>
             <h2 className={`mb-5 text-lg font-extrabold ${heading}`}>Tous les livres</h2>
-            <BookShelf books={allBooks} light={light} onOpen={openLightbox} />
+            <div className="flex flex-col gap-8">
+              {chunk(allBooks, 20).map((group, i) => (
+                <BookShelf key={i} books={group} light={light} onOpen={openLightbox} />
+              ))}
+            </div>
           </section>
         </div>
       )}

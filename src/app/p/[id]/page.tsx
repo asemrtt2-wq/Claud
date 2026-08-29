@@ -19,6 +19,7 @@ import LogoMark from "@/components/Logo";
 import { profileGradient } from "@/lib/profileColors";
 import { dedupeSeries } from "@/lib/series";
 import { isNewBook } from "@/lib/badges";
+import { chunk } from "@/lib/chunk";
 
 function withBadges<T extends { id: string; createdAt: Date }>(
   books: T[],
@@ -421,7 +422,11 @@ export default async function ProfilePage({
         {allAdultBooks.length > 0 && (
           <section id="catalogue" className="mb-12 scroll-mt-24">
             <h2 className="mb-5 text-lg font-extrabold">Tous les livres</h2>
-            <BookCoverShelf books={allAdultBooks} light />
+            <div className="flex flex-col gap-8">
+              {chunk(allAdultBooks, 20).map((group, i) => (
+                <BookCoverShelf key={i} books={group} light />
+              ))}
+            </div>
           </section>
         )}
 
