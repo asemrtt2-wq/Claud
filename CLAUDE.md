@@ -429,7 +429,8 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   "scroll" (continuous, all pages concatenated with a thin `···` divider between them) mode
   toggle remains. All of these plus font family (sans/serif), text size (17–23px), line-height
   (1.6/1.8/2, "Compact/Confort/Aéré"), and content width (620/720/860px, "Étroit/Confort/Large")
-  live in a single "Aa" **Réglages** dropdown instead of cluttering the toolbar — they're plain
+  live in a single "Aa" **Réglages** dropdown instead of cluttering the toolbar (font family
+  defaults to **serif** now, since the paged view is meant to read like a printed book) — they're plain
   `useState` UI prefs (not persisted server-side; they reset per session, same tier as the
   existing font-size control that was already client-only).
   - **Content rendering**: page text is split on blank lines and each block is classified —
@@ -469,8 +470,13 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
     **no** star-rating control — this app has no rating storage, and a rating UI that doesn't
     save anywhere would be exactly the kind of fake feature this codebase avoids.
   - Border/background colors on every control branch on `dark` (not raw `immersive` anymore) so
-    they stay legible across all four themes. The always-visible bottom bar (← Précédent / page
-    position / Suivant →, present in both pages/scroll modes) is unchanged. In scroll mode the
+    they stay legible across all four themes. **In paged mode the chrome starts hidden** and the
+    reader shows only a running head (current chapter) and a page counter, like a real book;
+    tapping the middle of the page toggles the toolbar and the bottom bar back, and a faint ⌄
+    button in the corner does the same for mouse users. The toolbar and bottom bar are
+    *overlaid* (absolutely positioned) in paged mode rather than taking flex space, because
+    otherwise revealing them would shrink the page box and re-flow the text under the reader's
+    eyes mid-sentence. Scroll mode keeps both in normal flow and always visible. In scroll mode the
     same two buttons call `scrollStep(±1)` (~85% of visible height via
     `scrollBy({ behavior: "smooth" })`) and are never `disabled`; in "pages" mode they call
     `handleNext()`/`handlePrev()`, which route to a real page-turn (see below) for content pages
@@ -483,34 +489,42 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
     CSS keyframe (`globals.css`, a slide + slight `rotateY` skew) — a real 3D flip on a full-bleed
     cover image added little over the simpler slide, so it was left as-is; only content-page
     navigation got the full treatment below.
-  - **`src/components/BookFlip.tsx`** — a real, physically-modeled page-turn for content pages
-    (not a fade or a slide): CSS 3D transforms (`perspective`, `rotateY`, `transform-origin`,
-    `backface-visibility: hidden`) on a small overlay that sits on top of the page being turned.
-    That overlay has two faces — front (what's currently showing, so it's pixel-identical to the
-    static page underneath at rest) and back (the incoming page, pre-rotated 180° so it reads
-    correctly once the flip passes 90°) — plus a shadow gradient whose opacity peaks at 90° (the
-    "edge-on" moment) via `Math.sin(angle/180 × π)`. **Desktop** (`≥1024px`, matched live with
-    `matchMedia`) shows a real two-page spread — left = `pages[currentIndex]`, right =
-    `pages[currentIndex + 1]` — with a spine line and inward shadow gradients on both inner
-    edges; turning the right page forward reveals `pages[currentIndex + 2]` underneath (already
-    static, not freshly rendered mid-flip) exactly like a real book, where the page you're
-    turning and the page it lands on are different sheets from the one revealed beneath it.
-    Turning the left page backward is the exact mirror. Each turn advances/retreats by **2**
-    pages on desktop. **Mobile** shows one page; the overlay covers the entire page (front =
-    current, back = next/previous) and the static layer beneath must show the *target* page (not
-    a duplicate of the current one, which was an early bug here) since there's no second slot to
-    reveal it — turns move by **1** page. Both button clicks and drag/swipe funnel through the
-    same `beginFlip()`/`finishFlip()` pair via a `forwardRef` (`next()`/`prev()`), so there's one
-    code path for "how a turn looks," not two: a click starts the flip at angle 0 and immediately
-    animates to ±180° over ~640ms (`cubic-bezier(0.45,0,0.2,1)`); a drag (unified mouse + touch via
-    Pointer Events) sets the angle directly proportional to drag distance with no CSS transition,
-    so the page follows the cursor/finger 1:1, then on release either finishes the animation to
-    ±180° (if past a ~39% angle threshold) or animates back to 0° and cancels — matching a real
-    book's "let go too early and it falls back" behavior. The page's own background is real paper
-    (`#FAFAF7` for Clair/Immersif, a warm cream for Sépia, a dark gray with light text for Sombre
-    as a genuine night-reading option) regardless of the reader's outer theme, which stays applied
-    to the chrome/backdrop around the book — deliberately not stripping dark mode in favor of
-    literal realism, since night reading is too established a reader expectation to drop.
+  - **`src/components/BookPager.tsx`** — the paged reading surface, rebuilt to work the way
+    Apple Books does: **the text is re-flowed to fit the screen, so a page is never scrollable.**
+    The whole book is laid into CSS multi-columns (`column-width` = the measured page box,
+    `column-fill: auto`) inside a clipped viewport, and turning a page translates the flow by one
+    column. A `ResizeObserver` plus a `layoutKey` (font size, line height, font family, theme)
+    re-flows it whenever the shape of the text changes, so the reader can resize a window, rotate
+    a tablet or bump the type size and always get whole pages. Screens ≥900px get a real
+    **two-page spread** with a centre spine and turn 2 columns at a time; narrower screens show a
+    single page. Navigation is unified: swipe/drag, tapping the left/right ~28% of the page, the
+    ← Précédent / Suivant → buttons, and the ⬅/➡ arrow keys all funnel through one `goTo()`.
+    This replaced `BookFlip.tsx`'s 3D page-curl, which had to be removed rather than kept: it
+    rendered one fixed canonical page per sheet, and those 900-character pages overflowed their
+    sheet on most screens, leaving the reader scrolling *inside* a page — the specific thing the
+    redesign was asked to eliminate. Front/back cover transitions still use the older
+    `page-turn-forward`/`page-turn-backward` CSS keyframes.
+    - **Canonical vs. rendered pages.** Everything else in the app (progress, highlights,
+      bookmarks, chapters, search, TTS) still addresses pages by the canonical index from
+      `paginateContent()`, which must stay device-independent — a phone and a desktop have to
+      agree on where page 12 is. So each canonical page is rendered inside a `[data-cpage="i"]`
+      anchor, and after each layout pass the pager reads every anchor's `offsetLeft` to build an
+      exact two-way map between canonical pages and rendered columns. External jumps (a chapter
+      link, a search hit, a bookmark, resuming at the saved page) scroll to the mapped column;
+      user page-turns report the mapped canonical page back up.
+    - Only user-initiated turns report a page change (it happens inside `goTo()`, not in an
+      effect on the column index). Doing it in an effect also fired for layout-driven moves —
+      including the one on mount, which raced ahead of the measured columns, reported page 0 and
+      **wiped the reader's saved position** every time a book was opened.
+    - The page's own background is real paper (`#FAFAF7` for Clair/Immersif, a warm cream for
+      Sépia, a dark gray with light text for Sombre as a genuine night-reading option) regardless
+      of the reader's outer theme, which stays applied to the chrome/backdrop around the book —
+      deliberately not stripping dark mode in favor of literal realism, since night reading is
+      too established a reader expectation to drop.
+    - Book typography lives in `globals.css` under `.reader-justified`: justified text with
+      `hyphens: auto`, `break-inside: avoid` on headings/quotes/list items, and a
+      `p:last-child` margin override — Tailwind's `last:mb-0` was written for isolated pages and
+      swallowed the paragraph gap at every canonical page boundary once pages flow continuously.
   - **Lecture à voix haute avec surlignage mot-par-mot** (🎧): uses the browser's
     `SpeechSynthesis`/`SpeechSynthesisUtterance` on the *current page's* text, with a voice
     picker (French voices preferred, falling back to whatever the browser exposes — real browser

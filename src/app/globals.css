@@ -299,3 +299,28 @@ body {
   animation: skeleton-shimmer 1.6s ease infinite;
   border-radius: 16px;
 }
+
+/* ---- Paged reader (BookPager) ------------------------------------------------ */
+/* Book typography: justified with hyphenation, like a printed page. */
+.reader-justified p {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  orphans: 2;
+  widows: 2;
+}
+/* Canonical pages flow into one continuous column stream, so the last paragraph of each
+   one still needs its spacing — Tailwind's last:mb-0 was written for isolated pages. */
+.reader-justified p:last-child {
+  margin-bottom: 1.5rem;
+}
+/* Keep a chapter opening, a pull quote or a list item from being split down the
+   middle by a column break. */
+.reader-justified h2,
+.reader-justified blockquote,
+.reader-justified li {
+  break-inside: avoid;
+}
+.reader-justified h2 {
+  break-after: avoid;
+}

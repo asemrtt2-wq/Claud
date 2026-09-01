@@ -11,7 +11,7 @@ import {
   deleteHighlight,
 } from "@/lib/profileActions";
 import BookRow from "@/components/BookRow";
-import BookFlip, { type BookFlipHandle } from "@/components/BookFlip";
+import BookPager, { type BookPagerHandle } from "@/components/BookPager";
 import LogoMark from "@/components/Logo";
 
 const FONT_SIZES = ["text-[17px]", "text-[19px]", "text-[21px]", "text-[23px]"];
@@ -279,9 +279,10 @@ export default function Reader({
   const [fontSizeIndex, setFontSizeIndex] = useState(1);
   const [lineHeightIndex, setLineHeightIndex] = useState(1);
   const [widthIndex, setWidthIndex] = useState(1);
-  const [fontFamily, setFontFamily] = useState<"sans" | "serif">("sans");
+  const [fontFamily, setFontFamily] = useState<"sans" | "serif">("serif");
   const [mode, setMode] = useState<"pages" | "scroll">("pages");
-  const [toolbarVisible, setToolbarVisible] = useState(true);
+  // Chrome starts hidden so the book fills the screen; tapping the page reveals it.
+  const [toolbarVisible, setToolbarVisible] = useState(false);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const [panelOpen, setPanelOpen] = useState<"settings" | "toc" | "search" | "audio" | null>(null);
   const [tocTab, setTocTab] = useState<"chapters" | "bookmarks" | "highlights">("chapters");
@@ -290,10 +291,11 @@ export default function Reader({
   const [favorited, setFavorited] = useState(initialFavorited);
   const [favoritePopping, setFavoritePopping] = useState(false);
   const [selection, setSelection] = useState<string | null>(null);
+  const [showEndScreen, setShowEndScreen] = useState(false);
   const [isFavPending, startFavTransition] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const bookFlipRef = useRef<BookFlipHandle>(null);
+  const bookPagerRef = useRef<BookPagerHandle>(null);
 
   const [highlights, setHighlights] = useState<HighlightData[]>(initialHighlights);
   const [editingHighlightId, setEditingHighlightId] = useState<string | null>(null);
@@ -481,6 +483,20 @@ export default function Reader({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listening, view, speechRate, voiceCharacter, selectedVoice]);
 
+  // Desktop: arrow keys turn pages, like every real reader.
+  useEffect(() => {
+    if (mode !== "pages") return;
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && /input|textarea|select/i.test(target.tagName)) return;
+      if (e.key === "ArrowRight") handleNext();
+      else if (e.key === "ArrowLeft") handlePrev();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, view, totalSlots]);
+
   useEffect(() => {
     return () => {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -570,16 +586,15 @@ export default function Reader({
   const paperText = theme === "sombre" ? "#e8e8e8" : theme === "sepia" ? "#3f2f1d" : "#1a1a1a";
 
   function renderBookPage(index: number) {
-    return (
-      <div className={textClass}>
-        {renderPageContent(
-          pages[index],
-          highlightsByPage.get(index) ?? [],
-          listening && index === contentPage ? currentWordIndex : null
-        )}
-      </div>
+    return renderPageContent(
+      pages[index],
+      highlightsByPage.get(index) ?? [],
+      listening && index === contentPage ? currentWordIndex : null
     );
   }
+
+  // Any of these changes the shape of the text, so the pager must re-flow its columns.
+  const layoutKey = `${fontSizeIndex}-${lineHeightIndex}-${fontFamily}-${theme}`;
 
   function handleNext() {
     if (mode !== "pages") {
@@ -591,7 +606,7 @@ export default function Reader({
       return;
     }
     if (isBackCover) return;
-    bookFlipRef.current?.next();
+    bookPagerRef.current?.next();
   }
 
   function handlePrev() {
@@ -604,7 +619,7 @@ export default function Reader({
       return;
     }
     if (isFrontCover) return;
-    bookFlipRef.current?.prev();
+    bookPagerRef.current?.prev();
   }
 
   // Built unconditionally; the pages-mode call sites gate it on isLastView, while scroll
@@ -649,10 +664,12 @@ export default function Reader({
     >
       {theme === "immersive" && <div className="pointer-events-none absolute inset-0 bg-black/45" />}
 
+      {/* In paged mode the chrome floats over the page (as Apple Books does) so revealing it
+          never re-flows the text under the reader's eyes. Scroll mode keeps it in flow. */}
       <div
-        className={`z-20 shrink-0 overflow-hidden transition-[max-height] duration-300 ${
-          toolbarVisible ? "max-h-36" : "max-h-0"
-        }`}
+        className={`z-30 overflow-hidden transition-[max-height] duration-300 ${
+          mode === "pages" ? "absolute inset-x-0 top-0" : "shrink-0"
+        } ${toolbarVisible ? "max-h-36" : "max-h-0"}`}
       >
         <div
           className={`flex items-center justify-between border-b px-6 py-4 backdrop-blur-sm ${
@@ -754,17 +771,28 @@ export default function Reader({
         </div>
       </div>
 
+      {/* Chrome hidden: just the running head, the way a real book (and Apple Books) does it.
+          Tapping the middle of the page brings the controls back. */}
       {!toolbarVisible && (
-        <button
-          type="button"
-          onClick={() => setToolbarVisible(true)}
-          aria-label="Afficher les commandes"
-          className={`fixed left-1/2 top-3 z-20 flex h-8 w-10 -translate-x-1/2 items-center justify-center rounded-full text-sm font-bold shadow-lg backdrop-blur-sm ${
-            dark ? "bg-black/50 text-white" : "bg-white text-navy"
+        <div
+          className={`z-20 flex items-center justify-center px-12 pb-1 pt-3 ${
+            mode === "pages" ? "absolute inset-x-0 top-0" : "relative shrink-0"
           }`}
         >
-          ⌄
-        </button>
+          <span className={`truncate text-center text-xs font-semibold tracking-wide ${mutedTextClass}`}>
+            {currentChapter ? currentChapter.title : title}
+          </span>
+          <button
+            type="button"
+            onClick={() => setToolbarVisible(true)}
+            aria-label="Afficher les commandes"
+            className={`absolute right-3 top-2 flex h-7 w-9 items-center justify-center rounded-full text-xs font-bold opacity-45 transition hover:opacity-100 ${
+              dark ? "bg-white/10 text-white" : "bg-black/10 text-black"
+            }`}
+          >
+            ⌄
+          </button>
+        </div>
       )}
 
       {panelOpen && (
@@ -1131,19 +1159,39 @@ export default function Reader({
             {isLastView && endOfBookBlock}
           </div>
         ) : (
-          <div className={`flex h-full flex-col ${isLastView ? "overflow-y-auto" : ""}`}>
-            <div className="min-h-0 flex-1">
-              <BookFlip
-                ref={bookFlipRef}
-                pageCount={pages.length}
-                currentIndex={contentPage}
-                onCommit={(idx) => goToView(idx + frontOffset)}
-                renderPage={renderBookPage}
-                paperBg={paperBg}
-                paperText={paperText}
-              />
-            </div>
-            {isLastView && <div className="mx-auto px-6 pb-16">{endOfBookBlock}</div>}
+          <div className="relative h-full px-3 pb-3 pt-9 sm:px-6 sm:pb-5 sm:pt-11">
+            <BookPager
+              ref={bookPagerRef}
+              pageCount={pages.length}
+              currentPage={contentPage}
+              onCanonicalChange={(page) => goToView(page + frontOffset)}
+              renderCanonicalPage={renderBookPage}
+              paperBg={paperBg}
+              paperText={paperText}
+              contentClassName={`${textClass} reader-justified`}
+              layoutKey={layoutKey}
+              onTapCenter={() => {
+                setToolbarVisible((v) => !v);
+                setPanelOpen(null);
+              }}
+              onReachEnd={() => {
+                if (backCoverImageUrl) goToView(totalSlots - 1);
+                else setShowEndScreen(true);
+              }}
+            />
+
+            {showEndScreen && (
+              <div className="absolute inset-0 z-20 overflow-y-auto px-4 py-8 backdrop-blur-sm">
+                <button
+                  type="button"
+                  onClick={() => setShowEndScreen(false)}
+                  className={`mx-auto mb-4 block rounded-xl border px-4 py-2 text-sm font-bold ${dark ? "border-white/20" : "border-black/15"}`}
+                >
+                  ← Revenir au livre
+                </button>
+                {endOfBookBlock}
+              </div>
+            )}
           </div>
         )
       ) : (
@@ -1205,8 +1253,12 @@ export default function Reader({
         </div>
       )}
 
+      {/* In paged mode the page itself carries the counter and tap/swipe turns pages, so the
+          bar only appears with the rest of the chrome. Scroll mode always keeps it. */}
       <div
-        className={`z-10 flex shrink-0 items-center justify-between border-t px-6 py-4 ${
+        className={`z-30 items-center justify-between border-t px-6 py-4 ${
+          mode === "pages" ? "absolute inset-x-0 bottom-0" : "shrink-0"
+        } ${mode === "pages" && !toolbarVisible ? "hidden" : "flex"} ${
           dark ? "border-white/10 bg-black/50 backdrop-blur-sm" : "border-black/10 bg-white/80 backdrop-blur-sm"
         }`}
       >
