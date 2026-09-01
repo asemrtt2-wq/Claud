@@ -29,11 +29,13 @@ export default function ExcerptModal({
       role="dialog"
       aria-modal="true"
     >
+      {/* Stays reachable while a long excerpt scrolls. White on the dark backdrop so it
+          reads as a real control instead of a dark blob over the blurred page. */}
       <button
         type="button"
         onClick={onClose}
-        aria-label="Fermer"
-        className="fixed right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/10 text-xl text-[#1d1d1f] backdrop-blur transition hover:bg-black/20 sm:right-6 sm:top-6"
+        aria-label="Fermer l'extrait"
+        className="fixed right-4 top-[max(1rem,env(safe-area-inset-top))] z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-lg font-bold text-[#1d1d1f] shadow-[0_6px_20px_rgba(0,0,0,0.35)] ring-1 ring-black/5 transition hover:scale-105 hover:bg-[#f5f5f7] active:scale-95 sm:right-6"
       >
         ✕
       </button>

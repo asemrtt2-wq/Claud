@@ -173,9 +173,9 @@ const BookFlip = forwardRef<
   const staticRightIndex = flip && flip.dir === "forward" ? flip.targetIndex + 1 : currentIndex + 1;
 
   return (
-    <div className="flex min-h-[70vh] w-full items-center justify-center px-4 py-8">
+    <div className="flex h-full min-h-[360px] w-full items-center justify-center px-3 py-4 sm:px-4 sm:py-6">
       <div
-        className="relative"
+        className="relative h-full"
         style={{ perspective: "2200px" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -192,7 +192,10 @@ const BookFlip = forwardRef<
           className="relative flex touch-pan-y select-none"
           style={{
             width: isDesktop ? "min(1000px, 88vw)" : "min(480px, 90vw)",
-            height: "min(68vh, 720px)",
+            // Fills the reader's page area (the parent is a flex row of definite height)
+            // so the book reads full-screen like Apple Books instead of floating in it.
+            height: "100%",
+            maxHeight: "860px",
           }}
         >
           {/* LEFT PAGE (static) */}

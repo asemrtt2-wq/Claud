@@ -12,6 +12,7 @@ import {
 } from "@/lib/profileActions";
 import BookRow from "@/components/BookRow";
 import BookFlip, { type BookFlipHandle } from "@/components/BookFlip";
+import LogoMark from "@/components/Logo";
 
 const FONT_SIZES = ["text-[17px]", "text-[19px]", "text-[21px]", "text-[23px]"];
 const FONT_SIZE_PX = [17, 19, 21, 23];
@@ -26,6 +27,60 @@ const THEME_LABELS: Record<Theme, string> = {
   immersive: "Immersif",
 };
 const SPEEDS = [0.75, 1, 1.25, 1.5];
+
+/**
+ * Four read-aloud "characters". Like KidsReader, these are pitch/rate presets on top of
+ * the best French voice the browser exposes — not four distinct synthesized voice models,
+ * which a web app can't ship without a paid TTS API.
+ */
+type VoiceCharacter = "femme" | "homme" | "garcon" | "fille";
+
+const VOICE_CHARACTERS: Record<
+  VoiceCharacter,
+  { emoji: string; label: string; pitch: number; rate: number; gender: "female" | "male" }
+> = {
+  femme: { emoji: "👩", label: "Femme", pitch: 1.05, rate: 1, gender: "female" },
+  homme: { emoji: "👨", label: "Homme", pitch: 0.8, rate: 0.97, gender: "male" },
+  fille: { emoji: "👧", label: "Petite fille", pitch: 1.7, rate: 1.05, gender: "female" },
+  garcon: { emoji: "👦", label: "Petit garçon", pitch: 1.45, rate: 1.03, gender: "male" },
+};
+
+const FEMALE_VOICE_NAMES =
+  /amelie|amélie|audrey|aurelie|aurélie|marie|julie|virginie|chantal|celine|céline|denise|charlotte|lea|léa|jolie|flo|siri.*(female|f\b)/i;
+const MALE_VOICE_NAMES =
+  /thomas|nicolas|paul|daniel|henri|claude|mathieu|remy|rémy|guillaume|yannick|jacques|siri.*(male|m\b)/i;
+
+/**
+ * Ranks the browser's French voices so the best one wins: OS "enhanced"/"premium"/neural
+ * voices first, then locally-installed ones (no network hiccups mid-sentence), and the
+ * low-quality "compact" variants last. Matches the requested gender when it can.
+ */
+function pickVoice(
+  voices: SpeechSynthesisVoice[],
+  gender: "female" | "male"
+): SpeechSynthesisVoice | null {
+  const french = voices.filter((v) => v.lang.toLowerCase().startsWith("fr"));
+  const pool = french.length > 0 ? french : voices;
+  if (pool.length === 0) return null;
+
+  function score(v: SpeechSynthesisVoice) {
+    let s = 0;
+    const name = v.name.toLowerCase();
+    if (/enhanced|premium|neural|natural/.test(name)) s += 6;
+    if (/google|microsoft/.test(name)) s += 3;
+    if (v.localService) s += 2;
+    if (/compact|eloquence/.test(name)) s -= 5;
+    if (gender === "female" && FEMALE_VOICE_NAMES.test(name)) s += 4;
+    if (gender === "male" && MALE_VOICE_NAMES.test(name)) s += 4;
+    // Wrong-gender name: still usable (pitch carries the character), just not preferred.
+    if (gender === "female" && MALE_VOICE_NAMES.test(name)) s -= 3;
+    if (gender === "male" && FEMALE_VOICE_NAMES.test(name)) s -= 3;
+    if (v.lang.toLowerCase() === "fr-fr") s += 1;
+    return s;
+  }
+
+  return [...pool].sort((a, b) => score(b) - score(a))[0] ?? null;
+}
 const CHAPTER_RE = /^(Chapitre\s+\d+|Introduction)\s*(?:—|-|:)\s*(.+)$/i;
 
 type Theme = "clair" | "sepia" | "sombre" | "immersive";
@@ -246,7 +301,7 @@ export default function Reader({
 
   const [listening, setListening] = useState(false);
   const [speechRate, setSpeechRate] = useState(1);
-  const [voiceURI, setVoiceURI] = useState<string | null>(null);
+  const [voiceCharacter, setVoiceCharacter] = useState<VoiceCharacter>("femme");
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState<number | null>(null);
 
@@ -371,11 +426,10 @@ export default function Reader({
   const isLastView = view === totalSlots - 1;
   const contentPage = Math.min(Math.max(view - frontOffset, 0), pages.length - 1);
 
-  const frenchVoices = useMemo(
-    () => availableVoices.filter((v) => v.lang.toLowerCase().startsWith("fr")),
-    [availableVoices]
+  const selectedVoice = useMemo(
+    () => pickVoice(availableVoices, VOICE_CHARACTERS[voiceCharacter].gender),
+    [availableVoices, voiceCharacter]
   );
-  const voiceOptions = frenchVoices.length > 0 ? frenchVoices : availableVoices;
 
   useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -393,11 +447,13 @@ export default function Reader({
 
     const text = getCleanedText(pages[contentPage]);
     window.speechSynthesis.cancel();
+    const character = VOICE_CHARACTERS[voiceCharacter];
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = speechRate;
+    utterance.rate = speechRate * character.rate;
+    utterance.pitch = character.pitch;
+    utterance.volume = 1;
     utterance.lang = "fr-FR";
-    const voice = voiceOptions.find((v) => v.voiceURI === voiceURI);
-    if (voice) utterance.voice = voice;
+    if (selectedVoice) utterance.voice = selectedVoice;
     utterance.onboundary = (e) => {
       if (e.name && e.name !== "word") return;
       setCurrentWordIndex(wordIndexAtCharIndex(text, e.charIndex));
@@ -423,7 +479,7 @@ export default function Reader({
       window.speechSynthesis.cancel();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listening, view, speechRate, voiceURI]);
+  }, [listening, view, speechRate, voiceCharacter, selectedVoice]);
 
   useEffect(() => {
     return () => {
@@ -551,7 +607,9 @@ export default function Reader({
     bookFlipRef.current?.prev();
   }
 
-  const endOfBookBlock = isLastView ? (
+  // Built unconditionally; the pages-mode call sites gate it on isLastView, while scroll
+  // mode always appends it after the last page.
+  const endOfBookBlock = (
     <div className={`mx-auto mt-12 ${WIDTHS[widthIndex]} rounded-[26px] p-8 text-center ${dark ? "bg-white/5" : "bg-black/5"}`}>
       <p className="text-3xl">🎉</p>
       <h3 className="mt-3 text-xl font-extrabold">{`Merci d'avoir lu « ${title} » !`}</h3>
@@ -579,17 +637,20 @@ export default function Reader({
         </div>
       )}
     </div>
-  ) : null;
+  );
 
   return (
+    /* Full-height app shell: toolbar / page / bottom bar are flex rows, so the page fills
+       whatever height is left instead of leaving dead space under a short page. 100dvh (not
+       100vh) so the bottom bar isn't hidden behind mobile browser chrome. */
     <div
-      className={theme === "immersive" ? `cover-theme-${coverTheme} relative min-h-screen text-white` : "relative min-h-screen"}
+      className={`relative flex h-[100dvh] flex-col overflow-hidden ${theme === "immersive" ? `cover-theme-${coverTheme} text-white` : ""}`}
       style={theme === "clair" ? { background: "#FAFAFA", color: "#181828" } : theme === "sepia" ? { background: "#F4ECD8", color: "#3f2f1d" } : theme === "sombre" ? { background: "#161616", color: "#e9e9ec" } : undefined}
     >
       {theme === "immersive" && <div className="pointer-events-none absolute inset-0 bg-black/45" />}
 
       <div
-        className={`sticky top-0 z-20 overflow-hidden transition-[max-height] duration-300 ${
+        className={`z-20 shrink-0 overflow-hidden transition-[max-height] duration-300 ${
           toolbarVisible ? "max-h-36" : "max-h-0"
         }`}
       >
@@ -600,11 +661,22 @@ export default function Reader({
         >
           <Link
             href={`/p/${profileId}`}
-            className={`truncate text-sm font-semibold ${dark ? "text-white/70 hover:text-white" : "text-black/60 hover:text-black"}`}
+            aria-label="Retour à la bibliothèque"
+            title={title}
+            className={`group flex min-w-0 items-center gap-2 text-sm font-semibold ${dark ? "text-white/70 hover:text-white" : "text-black/60 hover:text-black"}`}
           >
-            ← {title}
+            <span
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-base transition group-hover:-translate-x-0.5 ${
+                dark ? "border-white/20" : "border-black/15"
+              }`}
+            >
+              ←
+            </span>
+            {/* Phones only have room for the back button next to the 7 controls on the right. */}
+            <LogoMark className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white shadow-[0_6px_16px_rgba(124,92,255,0.35)] sm:flex" />
+            <span className="hidden truncate md:inline">{title}</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setPanelOpen((p) => (p === "audio" ? null : "audio"))}
               aria-label="Lecture à voix haute"
@@ -706,8 +778,9 @@ export default function Reader({
               <div>
                 <p className="mb-2 font-bold">Lecture à voix haute</p>
                 <p className={`mb-3 text-xs ${mutedTextClass}`}>
-                  Voix et surlignage des mots via la synthèse vocale de ton navigateur — la
-                  précision du surlignage dépend de la voix utilisée.
+                  Les 4 voix sont des réglages de hauteur appliqués à la meilleure voix
+                  française de ton appareil — la qualité et la précision du surlignage
+                  dépendent donc des voix installées sur ton navigateur.
                 </p>
                 <button
                   onClick={() => setListening((v) => !v)}
@@ -716,24 +789,35 @@ export default function Reader({
                   {listening ? "⏸ Arrêter la lecture" : "▶️ Écouter cette page"}
                 </button>
               </div>
-              {voiceOptions.length > 0 && (
-                <div>
-                  <p className="mb-2 font-bold">Voix</p>
-                  <select
-                    value={voiceURI ?? voiceOptions[0]?.voiceURI ?? ""}
-                    onChange={(e) => setVoiceURI(e.target.value)}
-                    className={`w-full rounded-xl border px-3 py-2 text-xs ${
-                      dark ? "border-white/15 bg-white/5 text-white" : "border-black/10 bg-black/5"
-                    }`}
-                  >
-                    {voiceOptions.map((v) => (
-                      <option key={v.voiceURI} value={v.voiceURI} className="text-black">
-                        {`${v.name} (${v.lang})`}
-                      </option>
-                    ))}
-                  </select>
+              <div>
+                <p className="mb-2 font-bold">Voix</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(Object.keys(VOICE_CHARACTERS) as VoiceCharacter[]).map((key) => {
+                    const character = VOICE_CHARACTERS[key];
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setVoiceCharacter(key)}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-bold transition ${
+                          voiceCharacter === key
+                            ? "border-[#7c5cff] bg-[#7c5cff]/10"
+                            : dark
+                              ? "border-white/15 hover:border-white/30"
+                              : "border-black/10 hover:border-black/25"
+                        }`}
+                      >
+                        <span className="text-lg">{character.emoji}</span>
+                        {character.label}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
+                <p className={`mt-2 text-[0.7rem] ${mutedTextClass}`}>
+                  {selectedVoice
+                    ? `Voix du navigateur : ${selectedVoice.name}`
+                    : "Aucune voix installée sur cet appareil."}
+                </p>
+              </div>
               <div>
                 <p className="mb-2 font-bold">Vitesse</p>
                 <div className="grid grid-cols-4 gap-2">
@@ -1029,11 +1113,12 @@ export default function Reader({
         </div>
       )}
 
+      <div className="relative z-10 min-h-0 flex-1">
       {mode === "pages" ? (
         isFrontCover || isBackCover ? (
           <div
             key={view}
-            className={`relative z-10 mx-auto flex ${WIDTHS[widthIndex]} flex-col items-center justify-center px-6 py-16 ${
+            className={`mx-auto flex h-full ${WIDTHS[widthIndex]} flex-col items-center justify-center overflow-y-auto px-6 py-8 ${
               direction === "forward" ? "page-turn-forward" : "page-turn-backward"
             }`}
           >
@@ -1046,24 +1131,26 @@ export default function Reader({
             {isLastView && endOfBookBlock}
           </div>
         ) : (
-          <>
-            <BookFlip
-              ref={bookFlipRef}
-              pageCount={pages.length}
-              currentIndex={contentPage}
-              onCommit={(idx) => goToView(idx + frontOffset)}
-              renderPage={renderBookPage}
-              paperBg={paperBg}
-              paperText={paperText}
-            />
-            {isLastView && <div className="relative z-10 mx-auto px-6 pb-16">{endOfBookBlock}</div>}
-          </>
+          <div className={`flex h-full flex-col ${isLastView ? "overflow-y-auto" : ""}`}>
+            <div className="min-h-0 flex-1">
+              <BookFlip
+                ref={bookFlipRef}
+                pageCount={pages.length}
+                currentIndex={contentPage}
+                onCommit={(idx) => goToView(idx + frontOffset)}
+                renderPage={renderBookPage}
+                paperBg={paperBg}
+                paperText={paperText}
+              />
+            </div>
+            {isLastView && <div className="mx-auto px-6 pb-16">{endOfBookBlock}</div>}
+          </div>
         )
       ) : (
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className={`relative z-10 mx-auto h-[70vh] ${WIDTHS[widthIndex]} overflow-y-auto px-6 py-16`}
+          className={`mx-auto h-full ${WIDTHS[widthIndex]} overflow-y-auto px-6 py-8`}
         >
           {coverImageUrl && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -1101,9 +1188,12 @@ export default function Reader({
               className="mx-auto mt-10 max-h-[70vh] rounded-[18px] shadow-[0_30px_70px_rgba(0,0,0,0.5)]"
             />
           )}
+          {/* Always rendered here: in scroll mode you reach the end by scrolling, so this
+              can't be gated on isLastView (which only advances in pages mode). */}
           {endOfBookBlock}
         </div>
       )}
+      </div>
 
       {selection && (
         <div className="fixed bottom-20 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full bg-black/85 px-4 py-2 text-sm font-bold text-white shadow-lg backdrop-blur-sm">
@@ -1116,7 +1206,7 @@ export default function Reader({
       )}
 
       <div
-        className={`sticky bottom-0 z-10 flex items-center justify-between border-t px-6 py-4 ${
+        className={`z-10 flex shrink-0 items-center justify-between border-t px-6 py-4 ${
           dark ? "border-white/10 bg-black/50 backdrop-blur-sm" : "border-black/10 bg-white/80 backdrop-blur-sm"
         }`}
       >

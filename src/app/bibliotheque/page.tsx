@@ -171,8 +171,10 @@ export default async function BibliothequePage() {
             Bibliothèque
           </h1>
           <p className="mb-10 text-sm font-semibold text-[#6e6e73]">
-            {allBooks.length} livre{allBooks.length > 1 ? "s" : ""} disponible
-            {allBooks.length > 1 ? "s" : ""}
+            {/* The real catalog total — the rows below collapse a series to its tome 1,
+                so allBooks.length would under-count what the admin panel lists. */}
+            {ebooks.length} livre{ebooks.length > 1 ? "s" : ""} disponible
+            {ebooks.length > 1 ? "s" : ""}
           </p>
 
           {personalized && (
