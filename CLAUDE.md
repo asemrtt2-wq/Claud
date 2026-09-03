@@ -768,6 +768,24 @@ types) / `/p/[id]/read/[slug]` (reader, both profile types).
   same way (decode the base64 `img-front`/`img-back` payloads from the new HTML export, save over
   the existing `public/covers/{slug}-{front,back}.jpg`) — the chapter text for those books is
   already correct and doesn't need to be touched again.
+- A third batch added 26 more (bringing `REAL_BOOKS` to 101): historical portraits (Alexandre,
+  Hannibal, Cyrus, Saladin, Baybars, Baudouin IV, Mansa Moussa), Muslim scholars (Ibn al-Haytham,
+  Ibn al-Nafis, Al-Biruni), animals/nature (Le Grand Blanc, Le Dos Argenté, Sans Pitié, Il n'est
+  pas blanc, Le rose vient de ce qu'il mange), anatomy (L'Oreille, Quatre Tuyaux, C5 à T1, Le Nerf
+  Pincé), water (La Molécule Improbable, La Soif du Monde), and practical titles (Moins de 100 €,
+  Partir de Zéro, Plus Vite, Reprendre la Main, L'Acquittement). Two things worth knowing for the
+  next batch:
+  - **The exports carry their own metadata.** Each HTML has a JSON config block with `titre`,
+    `sousTitre`, `categorie`, `theme`, `resume` and `serie`/`tome`. Read those instead of guessing
+    a category or writing a description — that's where these 26 books' categories come from, and
+    why none of them is in a series (every export shipped `"serie": ""`).
+  - **Two export layouts exist.** The usual one wraps each chapter in
+    `<section class="chapter">` with `<h2>Chapitre N</h2><h3>Titre</h3>`; one older export
+    (Ibn al-Haytham) instead uses `<section class="page">` + `<div class="page-inner">` with
+    `<h1>PAGE N — TITRE</h1>` and names its covers `frontImage`/`backImage` rather than
+    `img-front`/`img-back`. An extractor has to handle both, and must drop the chapter's own
+    `<h3>` from the body so the title isn't repeated as an all-caps sub-heading under the
+    `Chapitre N — Titre` marker.
 
 ## Conventions
 
