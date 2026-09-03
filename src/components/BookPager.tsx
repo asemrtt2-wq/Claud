@@ -68,6 +68,8 @@ const BookPager = forwardRef<
   const [box, setBox] = useState({ width: 0, height: 0 });
   const [spread, setSpread] = useState(1);
   const [columnCount, setColumnCount] = useState(1);
+  /** box.height rounded down to a whole number of text lines — see the layout effect. */
+  const [flowHeight, setFlowHeight] = useState(0);
   const [columnIndex, setColumnIndex] = useState(0);
   const [drag, setDrag] = useState(0);
   const [animating, setAnimating] = useState(true);
@@ -97,6 +99,16 @@ const BookPager = forwardRef<
     const flow = flowRef.current;
     if (!flow || pageWidth <= 0) return;
 
+    /* Snap the column box to a whole number of lines. A column whose height isn't an exact
+       multiple of the line box leaves a partial line at the bottom, and the browser renders
+       its top half then clips it — the sliced-off last line that made pages look broken. */
+    const lineHeight = parseFloat(window.getComputedStyle(flow).lineHeight);
+    const snapped =
+      Number.isFinite(lineHeight) && lineHeight > 0
+        ? Math.max(lineHeight, Math.floor(box.height / lineHeight) * lineHeight)
+        : box.height;
+    setFlowHeight(snapped);
+
     const total = Math.max(1, Math.round((flow.scrollWidth + GAP) / step));
     setColumnCount(total);
 
@@ -111,8 +123,10 @@ const BookPager = forwardRef<
     const target = cols[currentPage] ?? 0;
     setAnimating(false);
     setColumnIndex(Math.min(target - (target % spread), Math.max(0, total - spread)));
+    // flowHeight is in the deps so the column count is recounted once the snapped height has
+    // actually been applied; it is derived from box.height, so the second pass is a no-op.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layoutKey, pageWidth, box.height, spread, pageCount]);
+  }, [layoutKey, pageWidth, box.height, flowHeight, spread, pageCount]);
 
   useEffect(() => {
     if (!animating) {
@@ -173,12 +187,19 @@ const BookPager = forwardRef<
 
   function handlePointerDown(e: React.PointerEvent) {
     if ((e.target as HTMLElement).closest("a,button")) return;
+    // A live text selection means the reader is highlighting, not turning a page.
+    if (!window.getSelection()?.isCollapsed) return;
     dragState.current = { x: e.clientX, active: true };
   }
 
   function handlePointerMove(e: React.PointerEvent) {
     if (!dragState.current.active) return;
-    const dx = e.clientX - dragState.current.x;
+    let dx = e.clientX - dragState.current.x;
+    // Past the first or last page there is nothing to reveal, so the drag goes rubbery
+    // instead of pulling blank paper across the screen.
+    const atStart = columnIndex <= 0 && dx > 0;
+    const atEnd = columnIndex >= maxIndex && dx < 0;
+    if (atStart || atEnd) dx *= 0.25;
     if (Math.abs(dx) > 4) {
       setAnimating(false);
       setDrag(dx);
@@ -209,7 +230,7 @@ const BookPager = forwardRef<
 
   const flowStyle = useMemo<React.CSSProperties>(
     () => ({
-      height: box.height ? `${box.height}px` : undefined,
+      height: flowHeight ? `${flowHeight}px` : box.height ? `${box.height}px` : undefined,
       width: box.width ? `${box.width}px` : undefined,
       columnWidth: pageWidth > 0 ? `${pageWidth}px` : undefined,
       columnGap: `${GAP}px`,
@@ -218,7 +239,7 @@ const BookPager = forwardRef<
       transform: `translateX(${-columnIndex * step + drag}px)`,
       transition: animating ? `transform ${TURN_MS}ms cubic-bezier(0.22,0.61,0.36,1)` : "none",
     }),
-    [box.height, box.width, pageWidth, paperText, columnIndex, step, drag, animating]
+    [box.height, box.width, flowHeight, pageWidth, paperText, columnIndex, step, drag, animating]
   );
 
   const pageNumber = columnIndex + 1;
@@ -227,7 +248,14 @@ const BookPager = forwardRef<
     <div className="relative flex h-full w-full items-stretch justify-center">
       <div
         className="relative h-full w-full overflow-hidden rounded-[20px] px-7 pb-9 pt-8 shadow-[0_30px_80px_rgba(0,0,0,0.35)] sm:px-12 sm:pb-10 sm:pt-10"
-        style={{ background: paperBg, maxWidth: 1180 }}
+        style={{
+          background: paperBg,
+          maxWidth: 1180,
+          // A page always fits, so there is nothing here to scroll: let the browser hand us
+          // every touch instead of stealing horizontal swipes for a scroll it can't perform.
+          touchAction: "none",
+          overscrollBehavior: "contain",
+        }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -247,6 +275,19 @@ const BookPager = forwardRef<
             ))}
           </div>
         </div>
+
+        {/* A soft shadow follows the edge the reader is pulling, so a drag reads as paper
+            lifting rather than a panel sliding. */}
+        {drag !== 0 && (
+          <div
+            className="pointer-events-none absolute inset-y-0 w-24"
+            style={{
+              [drag < 0 ? "right" : "left"]: 0,
+              opacity: Math.min(0.5, Math.abs(drag) / (pageWidth || 1)),
+              background: `linear-gradient(to ${drag < 0 ? "left" : "right"}, rgba(0,0,0,0.28), transparent)`,
+            }}
+          />
+        )}
 
         {/* Centre spine, only on the two-page spread */}
         {spread === 2 && (

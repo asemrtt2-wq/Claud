@@ -284,6 +284,7 @@ export default function Reader({
   // Chrome starts hidden so the book fills the screen; tapping the page reveals it.
   const [toolbarVisible, setToolbarVisible] = useState(false);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState<"settings" | "toc" | "search" | "audio" | null>(null);
   const [tocTab, setTocTab] = useState<"chapters" | "bookmarks" | "highlights">("chapters");
   const [bookmarks, setBookmarks] = useState<number[]>([]);
@@ -335,6 +336,26 @@ export default function Reader({
       bookmarks.includes(page) ? bookmarks.filter((p) => p !== page) : [...bookmarks, page].sort((a, b) => a - b)
     );
   }
+
+  /* The reader owns the whole screen, so nothing behind it may scroll. Without this the
+     document scrolls under the fixed shell on iOS and a swipe drags the page away instead
+     of turning it. `overscroll-behavior` also kills the rubber-band bounce at the edges. */
+  useEffect(() => {
+    const { body, documentElement: html } = document;
+    const previous = {
+      bodyOverflow: body.style.overflow,
+      htmlOverflow: html.style.overflow,
+      overscroll: html.style.overscrollBehavior,
+    };
+    body.style.overflow = "hidden";
+    html.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    return () => {
+      body.style.overflow = previous.bodyOverflow;
+      html.style.overflow = previous.htmlOverflow;
+      html.style.overscrollBehavior = previous.overscroll;
+    };
+  }, []);
 
   function handleToggleFavorite() {
     setFavorited((v) => !v);
@@ -596,6 +617,57 @@ export default function Reader({
   // Any of these changes the shape of the text, so the pager must re-flow its columns.
   const layoutKey = `${fontSizeIndex}-${lineHeightIndex}-${fontFamily}-${theme}`;
 
+  /** Everything the old icon row held, now behind the single ••• button. */
+  function openPanel(panel: "settings" | "toc" | "search" | "audio") {
+    setMenuOpen(false);
+    setPanelOpen((p) => (p === panel ? null : panel));
+  }
+
+  const readerMenuItems: {
+    icon: string;
+    label: string;
+    onClick: () => void;
+    active?: boolean;
+    disabled?: boolean;
+  }[] = [
+    {
+      icon: "🎧",
+      label: listening ? "Arrêter l'écoute" : "Écouter",
+      active: listening,
+      onClick: () => openPanel("audio"),
+    },
+    { icon: "🔍", label: "Rechercher", onClick: () => openPanel("search") },
+    {
+      icon: favorited ? "❤️" : "🤍",
+      label: favorited ? "Retirer des favoris" : "Ajouter aux favoris",
+      active: favorited,
+      disabled: isFavPending,
+      onClick: () => {
+        handleToggleFavorite();
+        setMenuOpen(false);
+      },
+    },
+    { icon: "Aa", label: "Apparence", onClick: () => openPanel("settings") },
+    { icon: "📑", label: "Sommaire", onClick: () => openPanel("toc") },
+    {
+      icon: mode === "pages" ? "📜" : "📖",
+      label: mode === "pages" ? "Mode défilement" : "Mode pages",
+      onClick: () => {
+        setMode((m) => (m === "pages" ? "scroll" : "pages"));
+        setMenuOpen(false);
+      },
+    },
+    {
+      icon: "⌃",
+      label: "Masquer les commandes",
+      onClick: () => {
+        setMenuOpen(false);
+        setPanelOpen(null);
+        setToolbarVisible(false);
+      },
+    },
+  ];
+
   function handleNext() {
     if (mode !== "pages") {
       scrollStep(1);
@@ -656,10 +728,13 @@ export default function Reader({
 
   return (
     /* Full-height app shell: toolbar / page / bottom bar are flex rows, so the page fills
-       whatever height is left instead of leaving dead space under a short page. 100dvh (not
-       100vh) so the bottom bar isn't hidden behind mobile browser chrome. */
+       whatever height is left instead of leaving dead space under a short page.
+       `fixed inset-0` rather than a height unit: on iOS Safari a `100dvh` box still lets the
+       document itself scroll as the browser chrome collapses, which slid the whole reader up
+       the screen and made the book unreadable. Pinning it to the visual viewport (plus the
+       body-scroll lock below) means only the pager ever moves. */
     <div
-      className={`relative flex h-[100dvh] flex-col overflow-hidden ${theme === "immersive" ? `cover-theme-${coverTheme} text-white` : ""}`}
+      className={`fixed inset-0 z-40 flex flex-col overflow-hidden ${theme === "immersive" ? `cover-theme-${coverTheme} text-white` : ""}`}
       style={theme === "clair" ? { background: "#FAFAFA", color: "#181828" } : theme === "sepia" ? { background: "#F4ECD8", color: "#3f2f1d" } : theme === "sombre" ? { background: "#161616", color: "#e9e9ec" } : undefined}
     >
       {theme === "immersive" && <div className="pointer-events-none absolute inset-0 bg-black/45" />}
@@ -669,113 +744,99 @@ export default function Reader({
       <div
         className={`z-30 overflow-hidden transition-[max-height] duration-300 ${
           mode === "pages" ? "absolute inset-x-0 top-0" : "shrink-0"
-        } ${toolbarVisible ? "max-h-36" : "max-h-0"}`}
+        } ${toolbarVisible ? "max-h-48" : "max-h-0"}`}
       >
+        {/* Apple-Books shape: back, the chapter title, and one ••• that holds every tool —
+            seven separate icon buttons never fit a phone without crowding the title out. */}
         <div
-          className={`flex items-center justify-between border-b px-6 py-4 backdrop-blur-sm ${
-            dark ? "border-white/10 bg-black/50" : "border-black/10 bg-white/70"
+          className={`flex items-center gap-2 px-4 pb-3 pt-[max(0.85rem,env(safe-area-inset-top))] backdrop-blur-sm sm:px-6 ${
+            dark ? "bg-black/50" : "bg-white/70"
           }`}
         >
           <Link
             href={`/p/${profileId}`}
             aria-label="Retour à la bibliothèque"
-            title={title}
-            className={`group flex min-w-0 items-center gap-2 text-sm font-semibold ${dark ? "text-white/70 hover:text-white" : "text-black/60 hover:text-black"}`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl transition ${
+              dark ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-black/60 hover:bg-black/5 hover:text-black"
+            }`}
           >
-            <span
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-base transition group-hover:-translate-x-0.5 ${
-                dark ? "border-white/20" : "border-black/15"
-              }`}
-            >
-              ←
-            </span>
-            {/* Phones only have room for the back button next to the 7 controls on the right. */}
-            <LogoMark className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white shadow-[0_6px_16px_rgba(124,92,255,0.35)] sm:flex" />
-            <span className="hidden truncate md:inline">{title}</span>
+            ‹
           </Link>
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <button
-              onClick={() => setPanelOpen((p) => (p === "audio" ? null : "audio"))}
-              aria-label="Lecture à voix haute"
-              className={`h-8 w-8 rounded-lg border text-sm font-bold ${
-                listening ? "border-[#7c5cff] bg-[#7c5cff]/20" : dark ? "border-white/20" : "border-black/15"
-              }`}
-            >
-              🎧
-            </button>
-            <button
-              onClick={() => setPanelOpen((p) => (p === "search" ? null : "search"))}
-              aria-label="Rechercher dans le livre"
-              className={`h-8 w-8 rounded-lg border text-sm font-bold ${dark ? "border-white/20" : "border-black/15"}`}
-            >
-              🔍
-            </button>
-            <button
-              onClick={() => setPanelOpen((p) => (p === "toc" ? null : "toc"))}
-              aria-label="Sommaire et signets"
-              className={`h-8 w-8 rounded-lg border text-sm font-bold ${dark ? "border-white/20" : "border-black/15"}`}
-            >
-              📑
-            </button>
-            <button
-              onClick={handleToggleFavorite}
-              disabled={isFavPending}
-              aria-label="Ajouter aux favoris"
-              className={`h-8 w-8 rounded-lg border text-sm font-bold disabled:opacity-50 ${dark ? "border-white/20" : "border-black/15"}`}
-            >
-              <span
-                className={favoritePopping ? "heart-pop inline-block" : "inline-block"}
-                onAnimationEnd={() => setFavoritePopping(false)}
-              >
-                {favorited ? "❤️" : "🤍"}
-              </span>
-            </button>
-            <button
-              onClick={() => setPanelOpen((p) => (p === "settings" ? null : "settings"))}
-              aria-label="Réglages de lecture"
-              className={`h-8 w-8 rounded-lg border font-serif text-sm font-bold ${dark ? "border-white/20" : "border-black/15"}`}
-            >
-              Aa
-            </button>
-            <button
-              onClick={() => setMode((m) => (m === "pages" ? "scroll" : "pages"))}
-              className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${dark ? "border-white/20" : "border-black/15"}`}
-            >
-              {mode === "pages" ? "📜 Défilement" : "📖 Pages"}
-            </button>
-            <button
-              onClick={() => {
-                setToolbarVisible(false);
-                setPanelOpen(null);
-              }}
-              aria-label="Masquer les commandes"
-              className={`h-8 w-8 rounded-lg border text-sm font-bold ${dark ? "border-white/20" : "border-black/15"}`}
-            >
-              ⌃
-            </button>
-          </div>
+          <LogoMark className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white shadow-[0_6px_16px_rgba(124,92,255,0.35)] sm:flex" />
+          <span className="min-w-0 flex-1 truncate text-center font-serif text-[1.05rem] font-semibold">
+            {currentChapter ? currentChapter.title : title}
+          </span>
+          <span className={`shrink-0 text-xs font-semibold tabular-nums ${mutedTextClass}`}>
+            {progress}%
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen((v) => !v);
+              setPanelOpen(null);
+            }}
+            aria-label="Menu de lecture"
+            aria-expanded={menuOpen}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg font-bold transition ${
+              menuOpen
+                ? "bg-[#7c5cff] text-white"
+                : dark
+                  ? "text-white/70 hover:bg-white/10 hover:text-white"
+                  : "text-black/60 hover:bg-black/5 hover:text-black"
+            }`}
+          >
+            •••
+          </button>
         </div>
-        {!isFrontCover && !isBackCover && (
-          <div className={`flex items-center justify-between px-6 pb-2 pt-2 text-xs font-semibold ${mutedTextClass}`}>
-            <span className="truncate">{currentChapter ? currentChapter.title : title}</span>
-            <span className="shrink-0">
-              {remainingMinutes !== null ? `${progress}% · ~${remainingMinutes} min restantes` : `${progress}%`}
-            </span>
-          </div>
-        )}
-        <div className={`h-1 w-full ${dark ? "bg-white/10" : "bg-black/10"}`}>
+        {/* A hairline, not its own row: the chrome is overlaid on the page in paged mode, so
+            every extra pixel of header eats into the first line of text. The remaining-time
+            figure moved down next to the page counter, which appears with the same chrome. */}
+        <div className={`h-[3px] w-full ${dark ? "bg-white/15" : "bg-black/10"}`}>
           <div
-            className="h-1 bg-gradient-to-r from-[#7c5cff] to-[#a78bfa] transition-all duration-500"
+            className="h-[3px] bg-gradient-to-r from-[#7c5cff] to-[#a78bfa] transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
+      {menuOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Fermer le menu"
+            onClick={() => setMenuOpen(false)}
+            className="fixed inset-0 z-30 cursor-default"
+          />
+          <div
+            className={`absolute right-3 top-[max(3.6rem,calc(env(safe-area-inset-top)+3.1rem))] z-40 w-60 overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-md sm:right-6 ${
+              dark ? "border-white/10 bg-[#1b1930]/95 text-white" : "border-black/10 bg-white/95 text-[#181828]"
+            }`}
+          >
+            {readerMenuItems.map((item, i) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={item.onClick}
+                disabled={item.disabled}
+                className={`flex w-full items-center gap-3 px-4 py-3 text-left text-[0.95rem] font-medium transition disabled:opacity-50 ${
+                  i > 0 ? (dark ? "border-t border-white/10" : "border-t border-black/[0.07]") : ""
+                } ${item.active ? "text-[#7c5cff]" : ""} ${dark ? "hover:bg-white/10" : "hover:bg-black/5"}`}
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center text-base">
+                  {item.icon}
+                </span>
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
       {/* Chrome hidden: just the running head, the way a real book (and Apple Books) does it.
           Tapping the middle of the page brings the controls back. */}
       {!toolbarVisible && (
         <div
-          className={`z-20 flex items-center justify-center px-12 pb-1 pt-3 ${
+          className={`z-20 flex items-center justify-center px-12 pb-1 pt-[max(0.75rem,env(safe-area-inset-top))] ${
             mode === "pages" ? "absolute inset-x-0 top-0" : "relative shrink-0"
           }`}
         >
@@ -786,7 +847,7 @@ export default function Reader({
             type="button"
             onClick={() => setToolbarVisible(true)}
             aria-label="Afficher les commandes"
-            className={`absolute right-3 top-2 flex h-7 w-9 items-center justify-center rounded-full text-xs font-bold opacity-45 transition hover:opacity-100 ${
+            className={`absolute right-3 top-[max(0.5rem,env(safe-area-inset-top))] flex h-7 w-9 items-center justify-center rounded-full text-xs font-bold opacity-45 transition hover:opacity-100 ${
               dark ? "bg-white/10 text-white" : "bg-black/10 text-black"
             }`}
           >
@@ -1173,6 +1234,7 @@ export default function Reader({
               onTapCenter={() => {
                 setToolbarVisible((v) => !v);
                 setPanelOpen(null);
+                setMenuOpen(false);
               }}
               onReachEnd={() => {
                 if (backCoverImageUrl) goToView(totalSlots - 1);
@@ -1269,12 +1331,15 @@ export default function Reader({
         >
           ← Précédent
         </button>
-        <span className="text-sm font-semibold opacity-70">
+        <span className="px-2 text-center text-sm font-semibold opacity-70">
           {isFrontCover
             ? "Couverture"
             : isBackCover
               ? "Fin"
               : `${contentPage + 1} / ${pages.length}`}
+          {!isFrontCover && !isBackCover && remainingMinutes !== null && (
+            <span className="ml-2 hidden text-xs sm:inline">{`· ~${remainingMinutes} min`}</span>
+          )}
         </span>
         <button
           onClick={handleNext}

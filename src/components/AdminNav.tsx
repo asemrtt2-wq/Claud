@@ -38,6 +38,12 @@ export default function AdminNav({ email }: { email?: string | null }) {
             🗂️ Catalogues
           </Link>
           <Link
+            href="/admin/requests"
+            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+          >
+            ✨ Demandes
+          </Link>
+          <Link
             href="/admin/settings"
             className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
           >

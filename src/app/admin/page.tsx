@@ -4,10 +4,10 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AdminNav from "@/components/AdminNav";
 import DeleteEbookButton from "@/components/DeleteEbookButton";
-import { importRealBooks } from "@/lib/actions";
+import ImportBooksButton from "@/components/ImportBooksButton";
 
-// The "Importer mes livres" action upserts dozens of real books at once — give it more
-// than the default serverless timeout so it doesn't silently fail on a slow connection.
+// ImportBooksButton walks the catalog a few books per request, so no single call needs
+// long — but keep the headroom, some chapter texts are large.
 export const maxDuration = 60;
 
 function EbookTable({ ebooks }: { ebooks: Awaited<ReturnType<typeof prisma.eBook.findMany>> }) {
@@ -77,24 +77,7 @@ export default async function AdminDashboardPage() {
     <div className="lumina-shell">
       <AdminNav email={session?.user?.email} />
       <div className="mx-auto max-w-5xl px-6 py-10">
-        <form
-          action={importRealBooks}
-          className="lumina-card mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5"
-        >
-          <div>
-            <p className="font-extrabold text-white">📚 Importer mes livres</p>
-            <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
-              Ajoute ou met à jour d&apos;un coup tous les livres réels préparés dans le code
-              (couvertures + contenu déjà extraits). Sans risque à relancer plusieurs fois.
-            </p>
-          </div>
-          <button
-            type="submit"
-            className="shrink-0 rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(124,92,255,0.35)] transition hover:-translate-y-0.5"
-          >
-            Importer maintenant
-          </button>
-        </form>
+        <ImportBooksButton />
 
         <div className="mb-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
           <div className="lumina-card rounded-2xl p-5">

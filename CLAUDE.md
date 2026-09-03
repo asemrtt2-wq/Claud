@@ -85,6 +85,9 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   tier, or a local `postgresql://postgres:postgres@localhost:5432/lumina_dev`)
 - `NEXTAUTH_SECRET` / `NEXTAUTH_URL` — required for admin and customer login sessions
 - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — used only by `prisma/seed.ts` to create the admin account
+- `ANTHROPIC_API_KEY` — powers "Demander un livre" (see Book requests below). Without it the
+  feature still records a reader's request and says plainly that nothing will be written
+  automatically, the same "not configured yet" pattern the Stripe keys use.
 - `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` — Stripe **test mode** keys from
   https://dashboard.stripe.com/test/apikeys. Until real keys are set, the checkout and
   subscribe APIs return a clear 503 error instead of crashing.
@@ -469,6 +472,21 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
     `/ebooks/[slug]` uses, series-deduped), and "Retour à la bibliothèque". Deliberately has
     **no** star-rating control — this app has no rating storage, and a rating UI that doesn't
     save anywhere would be exactly the kind of fake feature this codebase avoids.
+  - **Top bar + `•••` menu**: the header is `‹  chapter title  NN%  •••`, over a 3px progress
+    hairline. Every tool — Écouter, Rechercher, Ajouter aux favoris, Apparence, Sommaire, the
+    pages/scroll toggle and "Masquer les commandes" — lives in the `•••` dropdown
+    (`readerMenuItems` in `Reader.tsx`), modeled on Apple Books. Seven separate icon buttons plus
+    a mode toggle used to sit in that row, which crowded the title off a phone entirely. The bar
+    is kept deliberately short (no separate progress *row*, and the remaining-time figure moved
+    down beside the page counter) because the chrome is *overlaid* on the page in paged mode —
+    every extra pixel of header covers the first line of text, which it visibly did before.
+  - **The reader is `fixed inset-0`, and it locks `overflow: hidden` on `html`/`body` while
+    mounted.** A `100dvh` box still lets the document itself scroll on iOS Safari as the browser
+    chrome collapses, which slid the whole reader up the screen — the "the page only moves up, you
+    can't read" bug. Pinning it to the visual viewport means only the pager ever moves. `BookPager`
+    additionally sets `touch-action: none` on the paper (a page always fits, so there is nothing
+    there to scroll — letting the browser keep horizontal swipes for a scroll it can't perform is
+    what dragged the page away instead of turning it) and `overscroll-behavior: contain`.
   - Border/background colors on every control branch on `dark` (not raw `immersive` anymore) so
     they stay legible across all four themes. **In paged mode the chrome starts hidden** and the
     reader shows only a running head (current chapter) and a page counter, like a real book;
@@ -504,6 +522,14 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
     sheet on most screens, leaving the reader scrolling *inside* a page — the specific thing the
     redesign was asked to eliminate. Front/back cover transitions still use the older
     `page-turn-forward`/`page-turn-backward` CSS keyframes.
+    - **Column height is snapped to a whole number of lines.** A column box whose height isn't
+      an exact multiple of the line box leaves a partial line at the bottom that the browser
+      renders the top half of and then clips — the sliced-off last line that made pages look
+      broken. The layout effect reads the flow's computed `line-height` and floors the height to
+      it (`flowHeight`), which is in the effect's deps so the column count is recounted once the
+      snapped height has actually applied (it is derived from `box.height`, so the second pass is
+      a no-op). Dragging past the first or last page is damped to 25% instead of pulling blank
+      paper across the screen, and a shadow follows the edge being pulled.
     - **Canonical vs. rendered pages.** Everything else in the app (progress, highlights,
       bookmarks, chapters, search, TTS) still addresses pages by the canonical index from
       `paginateContent()`, which must stay device-independent — a phone and a desktop have to
@@ -575,6 +601,39 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   after the configured time and there's no reading activity yet today for that profile. This is
   an in-app banner, not a real push notification (no service-worker/backend cron infra here).
 
+### Book requests ("Demander un livre")
+
+A Premium reader describes a book they want, and Lumina writes it with Claude and publishes it
+into the catalog. It lives on `/p/[id]/compte` (`src/components/BookRequestPanel.tsx`), with an
+admin-side queue at `/admin/requests`.
+
+- **`BookRequest`** (`customerId`, optional `profileId`, `topic`, `details`, `status`, `draft`,
+  `error`, `ebookId`) — status walks `pending` → `generating` → `done`, or lands on `duplicate`
+  / `failed`. `draft` holds the working state as JSON (the outline plus the chapters finished so
+  far) and is cleared once the `EBook` row exists.
+- **Quota** (`MONTHLY_REQUEST_QUOTA` in `src/lib/bookRequests.ts`): 2 requests/month on the
+  monthly plan, 5 on yearly, counted per calendar month. Requests are account-scoped, not
+  profile-scoped, because Premium itself is account-wide. `failed` requests don't count — the
+  reader got nothing for them. Without an active subscription the panel shows a Premium CTA
+  instead of the form.
+- **Duplicate check** (`findExistingBook()`): a keyword-overlap match of the request against
+  every book's title/subtitle/category, run *before* anything is stored (so a duplicate costs
+  the reader nothing) and again on the generated title. Deliberately not an embedding search —
+  there's no vector store here, and the job is only to catch "write me a book about X" when X is
+  literally already on the shelf.
+- **Generation** is chunked the same way the catalog import is: `submitBookRequest()` writes the
+  outline, then `generateNextChapter()` writes and persists one chapter per call, driven in a
+  loop from the client with a progress bar. A whole book in one server action would run for
+  minutes and be killed by the serverless time limit. Because each chapter is saved as it lands,
+  closing the tab only pauses the job — "Reprendre" in the request list picks it back up.
+- The generated `content` uses the same `"Chapitre N — Titre"` markers as every other book, so
+  `src/lib/chapters.ts`, the reader's TOC and `paginateContent()` treat it like any other title.
+  Generated books get no cover images (none exist), so they fall back to the
+  `coverEmoji` + `coverTheme` gradient the catalog already uses when an image is missing.
+- **Not built**: a background worker/queue that finishes a book with no browser open (that needs
+  a job runner this app doesn't have — the resume button is the honest substitute), and
+  AI-generated cover art (no image generation is configured).
+
 ### Password reset
 - `PasswordResetToken` (customerId, unique `token`, `expiresAt`, `usedAt`) — a 1-hour, single-use
   token. `src/lib/passwordReset.ts` exports `requestPasswordReset` (always returns a generic
@@ -643,6 +702,19 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   `npm run db:seed` against production needed. `prisma/seed.ts` does the same upsert for local dev
   seeding. Env var names are case-sensitive on Vercel — they must be exactly `ADMIN_EMAIL` and
   `ADMIN_PASSWORD` (uppercase with underscore), not `admin_email`/`admin_password`.
+- **"Importer mes livres"** (`src/components/ImportBooksButton.tsx` +
+  `importRealBooksChunk(offset)` in `actions.ts`) upserts `REAL_BOOKS` a few titles at a time,
+  **sequentially**, driven in a loop from the client with a progress bar. It used to be one
+  server action firing all 100+ upserts through `Promise.all` and then redirecting, which
+  reliably died in production once the catalog grew — the concurrent upserts exhausted the
+  Prisma connection pool and/or blew the function's time limit — and because it was a plain
+  `<form action>` the failure was completely invisible, which is what "ça marche pas" looked
+  like from the admin panel. The catalog bookkeeping (Collection Guerrier upsert, Collection
+  Sparte deletion, `revalidatePath`) runs once, on the final chunk. Re-running is still safe.
+- `/admin/requests` — the read-only queue behind "Demander un livre" (see Book requests above):
+  every ask, who made it, its status, and the book it produced. Readers generate their own
+  books from their profile page, so this is where to notice a request that failed or is waiting
+  on a missing `ANTHROPIC_API_KEY`.
 
 ### Site settings
 - `SiteSettings` — a singleton row (`id: 1`, upserted) holding `heroTitle`/`heroSubtitle` overrides
@@ -731,8 +803,9 @@ just kids), `Collection`/`CollectionItem` (profile-scoped book shelves, unique o
 `[collectionId, ebookId]`), `Highlight` (profile-scoped, `page`/`text`/optional `note` — the
 reader's persistent surlignages, see Reader above; deliberately not unique-constrained on
 `[profileId, ebookId, page]` since a profile can have several distinct highlights on one page),
-and `Catalog` (admin-curated shelves, many-to-many with `EBook` — see "Curated catalogs" above;
-not to be confused with the profile-scoped `Collection` above).
+`Catalog` (admin-curated shelves, many-to-many with `EBook` — see "Curated catalogs" above;
+not to be confused with the profile-scoped `Collection` above), and `BookRequest`
+(account-scoped "write me a book about X" asks — see "Book requests" above).
 
 There used to be a separate `ChildProfile`/`ChildReadingProgress` pair and `Customer` doubled as
 the implicit single "adult profile" — that was replaced by the unified `Profile` model above so

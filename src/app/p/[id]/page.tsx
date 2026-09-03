@@ -383,7 +383,7 @@ export default async function ProfilePage({
           {library.length === 0 ? (
             <p className="text-sm text-[#6e6e73]">
               Ta bibliothèque est vide.{" "}
-              <Link href="/#catalogue" className="font-semibold text-[#5b3df0] hover:underline">
+              <Link href="/bibliotheque" className="font-semibold text-[#5b3df0] hover:underline">
                 Découvrir des eBooks
               </Link>
             </p>

@@ -141,20 +141,63 @@ export async function deleteCatalog(id: string) {
   revalidatePath("/");
 }
 
-export async function importRealBooks() {
+/**
+ * One slice of the "Importer mes livres" run.
+ *
+ * This used to be a single action that fired every book's upsert at once through
+ * `Promise.all` and then redirected. With 100+ books (~3.4 MB of chapter text) that
+ * reliably died in production: the concurrent upserts exhausted the Prisma connection
+ * pool (P2024) and/or blew the serverless function's time limit, and because the button
+ * was a plain `<form action>` the failure was completely invisible — the page just sat
+ * there. Now the client walks through the catalog a few books at a time, sequentially,
+ * so no single request can time out and every failure has somewhere to be shown.
+ */
+// Not exported: a "use server" module may only export async functions.
+const IMPORT_CHUNK_SIZE = 5;
+
+export type ImportChunkResult = {
+  done: boolean;
+  nextOffset: number;
+  imported: number;
+  total: number;
+  /** Titles handled in this slice, so the UI can show what it is working on. */
+  titles: string[];
+};
+
+export async function importRealBooksChunk(offset: number): Promise<ImportChunkResult> {
   await requireAdmin();
 
   const { REAL_BOOKS } = await import("@/lib/realBooks");
-  await Promise.all(
-    REAL_BOOKS.map((book) =>
-      prisma.eBook.upsert({
-        where: { slug: book.slug },
-        update: book,
-        create: book,
-      })
-    )
-  );
+  const start = Math.max(0, Math.floor(offset));
+  const slice = REAL_BOOKS.slice(start, start + IMPORT_CHUNK_SIZE);
 
+  // Sequential on purpose — see the note above.
+  for (const book of slice) {
+    await prisma.eBook.upsert({
+      where: { slug: book.slug },
+      update: book,
+      create: book,
+    });
+  }
+
+  const imported = start + slice.length;
+  const done = imported >= REAL_BOOKS.length;
+
+  if (done) {
+    await finishImport();
+  }
+
+  return {
+    done,
+    nextOffset: imported,
+    imported,
+    total: REAL_BOOKS.length,
+    titles: slice.map((b) => b.title),
+  };
+}
+
+/** Catalog bookkeeping + cache busting, run once at the end of an import. */
+async function finishImport() {
   const guerrier = await prisma.eBook.findUnique({ where: { slug: "le-code-du-guerrier" } });
   await prisma.catalog.upsert({
     where: { name: "Collection Guerrier" },
@@ -178,6 +221,6 @@ export async function importRealBooks() {
 
   revalidatePath("/admin");
   revalidatePath("/admin/catalogs");
+  revalidatePath("/bibliotheque");
   revalidatePath("/");
-  redirect("/admin");
 }

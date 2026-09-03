@@ -84,6 +84,7 @@ model Customer {
   subscription Subscription?
   profiles     Profile[]
   passwordResetTokens PasswordResetToken[]
+  bookRequests BookRequest[]
 }
 
 model PasswordResetToken {
@@ -119,6 +120,7 @@ model Profile {
   progress    ReadingProgress[]
   collections Collection[]
   highlights  Highlight[]
+  bookRequests BookRequest[]
 }
 
 model Collection {
@@ -190,4 +192,29 @@ model ReadingProgress {
   updatedAt         DateTime  @updatedAt
 
   @@unique([profileId, ebookId])
+}
+
+/// A reader's "write me a book about X" request.
+///
+/// Requests are account-scoped (the quota follows the Premium subscription, which is
+/// account-wide) but remember which profile asked, so the panel can show "your" requests.
+/// `status` walks pending -> generating -> done, or lands on duplicate/failed.
+model BookRequest {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  profileId    String?
+  profile      Profile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  topic        String
+  details      String   @default("")
+  status       String   @default("pending")
+  /// Working state while the book is being written, as JSON: the outline plus the
+  /// chapters finished so far. Cleared once the eBook row exists.
+  draft        String?
+  error        String?
+  ebookId      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([customerId, createdAt])
 }

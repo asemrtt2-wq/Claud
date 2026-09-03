@@ -8,6 +8,9 @@ import ReadingReminderSetting from "@/components/ReadingReminderSetting";
 import ReadingGoalSetting from "@/components/ReadingGoalSetting";
 import SignOutButton from "@/components/SignOutButton";
 import LogoMark from "@/components/Logo";
+import { profileGradient } from "@/lib/profileColors";
+import BookRequestPanel, { type RequestSummary } from "@/components/BookRequestPanel";
+import { getRequestQuota, isAiConfigured } from "@/lib/bookRequests";
 
 function formatMinutes(minutes: number) {
   if (minutes < 60) return `${minutes} min`;
@@ -52,14 +55,39 @@ export default async function CompteObjectifsPage({
     if (!unlocked) redirect("/profiles");
   }
 
-  const [allProfiles, subscription, progressEntries] = await Promise.all([
+  const [allProfiles, subscription, progressEntries, quota, bookRequests] = await Promise.all([
     prisma.profile.findMany({
       where: { customerId: customer.id },
       orderBy: { createdAt: "asc" },
     }),
     prisma.subscription.findUnique({ where: { customerId: customer.id } }),
     prisma.readingProgress.findMany({ where: { profileId: id } }),
+    getRequestQuota(customer.id),
+    // Account-wide, like the quota and the subscription that gates it.
+    prisma.bookRequest.findMany({
+      where: { customerId: customer.id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
   ]);
+
+  const requestEbooks = await prisma.eBook.findMany({
+    where: { id: { in: bookRequests.map((r) => r.ebookId).filter((v): v is string => Boolean(v)) } },
+    select: { id: true, slug: true, title: true },
+  });
+  const requestSummaries: RequestSummary[] = bookRequests.map((request) => {
+    const ebook = requestEbooks.find((e) => e.id === request.ebookId);
+    return {
+      id: request.id,
+      topic: request.topic,
+      status: request.status,
+      error: request.error,
+      createdAt: request.createdAt.toLocaleDateString("fr-FR"),
+      // Only an unfinished draft can be picked back up.
+      resumable: request.status === "generating" || (request.status === "failed" && Boolean(request.draft)),
+      ebook: ebook ? { slug: ebook.slug, title: ebook.title } : null,
+    };
+  });
 
   const switcherProfiles = allProfiles.map((p) => ({
     id: p.id,
@@ -125,9 +153,41 @@ export default async function CompteObjectifsPage({
           </Link>
         </div>
 
-        <h1 className="mb-6 text-2xl font-extrabold tracking-tight">
+        {/* Whose profile this is — the page used to open straight onto the stats, with the
+            profile's own name and avatar nowhere on it. */}
+        <div className="lumina-card mb-8 flex flex-wrap items-center gap-4 rounded-[22px] p-6">
+          <span
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
+            style={{ background: profileGradient(profile.color) }}
+          >
+            {profile.avatarEmoji}
+          </span>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-2xl font-extrabold tracking-tight">{profile.name}</h1>
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+              <span className="rounded-full border border-white/15 px-2.5 py-1">
+                {profile.type === "kids" ? "🧒 Profil enfant" : "👤 Profil adulte"}
+              </span>
+              {profile.pinHash && (
+                <span className="rounded-full border border-white/15 px-2.5 py-1">🔒 Code PIN</span>
+              )}
+              <span className="rounded-full border border-white/15 px-2.5 py-1">
+                {`Niveau ${level}`}
+              </span>
+            </p>
+          </div>
+          <Link
+            href="/profiles"
+            // Drops to its own line on a phone so the profile name isn't truncated to fit it.
+            className="order-3 w-full shrink-0 rounded-xl border border-white/15 px-4 py-2 text-center text-sm font-bold transition hover:border-[#a78bfa] sm:order-none sm:w-auto"
+          >
+            ✏️ Modifier
+          </Link>
+        </div>
+
+        <h2 className="mb-6 text-lg font-extrabold tracking-tight">
           Objectifs & temps de lecture
-        </h1>
+        </h2>
 
         <div className="mb-10 grid gap-4 sm:grid-cols-3">
           <div className="lumina-card rounded-2xl p-5">
@@ -176,6 +236,13 @@ export default async function CompteObjectifsPage({
             ))}
           </div>
         </section>
+
+        <BookRequestPanel
+          profileId={id}
+          quota={quota}
+          aiConfigured={isAiConfigured()}
+          requests={requestSummaries}
+        />
 
         <section className="lumina-card mb-10 rounded-[22px] p-6">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">

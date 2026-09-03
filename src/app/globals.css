@@ -311,7 +311,13 @@ body {
 }
 /* Canonical pages flow into one continuous column stream, so the last paragraph of each
    one still needs its spacing — Tailwind's last:mb-0 was written for isolated pages. */
-.reader-justified p:last-child {
+/* Tailwind's `last:mb-0` was written for isolated pages; once canonical pages flow
+   continuously into one column stream it swallows the gap at every page boundary — for a
+   trailing list just as much as a trailing paragraph. */
+.reader-justified p:last-child,
+.reader-justified ul:last-child,
+.reader-justified ol:last-child,
+.reader-justified blockquote:last-child {
   margin-bottom: 1.5rem;
 }
 /* Keep a chapter opening, a pull quote or a list item from being split down the

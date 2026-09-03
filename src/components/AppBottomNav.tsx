@@ -4,7 +4,8 @@ export default function AppBottomNav({ profileId }: { profileId: string }) {
   const items = [
     { href: "#accueil", icon: "🏠", label: "Accueil" },
     { href: "#bibliotheque", icon: "📚", label: "Bibliothèque" },
-    { href: "/#catalogue", icon: "✨", label: "Découvrir" },
+    // The full catalog, not a homepage anchor — "Découvrir" should open every book.
+    { href: "/bibliotheque", icon: "✨", label: "Découvrir" },
     { href: "#favoris", icon: "❤️", label: "Favoris" },
     { href: `/p/${profileId}/compte`, icon: "👤", label: "Profil" },
   ];
