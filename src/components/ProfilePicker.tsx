@@ -95,7 +95,7 @@ export default function ProfilePicker({ profiles }: { profiles: ProfileSummary[]
       <div className="flex justify-center px-6">
         <form
           onSubmit={handlePinSubmit}
-          className="lumina-card w-full max-w-xs rounded-[26px] p-6 text-center"
+          className="lumia-card w-full max-w-xs rounded-[26px] p-6 text-center"
         >
           <span
             className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-3xl"
@@ -190,7 +190,7 @@ export default function ProfilePicker({ profiles }: { profiles: ProfileSummary[]
       <div className="text-center">
         <button
           onClick={() => setManageMode((v) => !v)}
-          className="rounded-xl border border-white/15 px-5 py-2.5 text-sm font-bold text-[color:var(--color-lumina-text-muted)] transition hover:border-[#a78bfa] hover:text-white"
+          className="rounded-xl border border-white/15 px-5 py-2.5 text-sm font-bold text-[color:var(--color-lumia-text-muted)] transition hover:border-[#a78bfa] hover:text-white"
         >
           {manageMode ? "✓ Terminé" : "⚙️ Gérer les profils"}
         </button>

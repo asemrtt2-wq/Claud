@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import StarRating from "@/components/StarRating";
 
 export type CoverCardBook = {
   id: string;
@@ -10,6 +11,11 @@ export type CoverCardBook = {
   coverEmoji: string;
   coverTheme: string;
   coverImageUrl?: string | null;
+  /** Real average of submitted ratings; null until the book has one. */
+  rating?: number | null;
+  ratingCount?: number;
+  /** Tomes in the series this tile stands for; null/1 for a standalone book. */
+  seriesCount?: number | null;
 };
 
 export default function BookCoverCard({
@@ -54,6 +60,13 @@ export default function BookCoverCard({
           ) : (
             <span className="text-5xl">{book.coverEmoji}</span>
           )}
+          {/* A series takes one tile in a listing, badged with how many tomes it holds —
+              tome 2, 3, 4 no longer each claim their own slot. */}
+          {book.seriesCount != null && book.seriesCount > 1 && (
+            <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-black/75 px-2 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+              {`Série · ${book.seriesCount} tomes`}
+            </span>
+          )}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-black/80 to-transparent p-3 text-center text-xs font-bold text-white opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
             Voir le livre →
           </div>
@@ -65,10 +78,19 @@ export default function BookCoverCard({
         {book.title}
       </h3>
       <p
-        className={`mt-0.5 truncate text-xs font-medium ${light ? "text-[#6e6e73]" : "text-[color:var(--color-lumina-text-muted)]"}`}
+        className={`mt-0.5 truncate text-xs font-medium ${light ? "text-[#6e6e73]" : "text-[color:var(--color-lumia-text-muted)]"}`}
       >
         {book.category}
       </p>
+      {book.rating != null && (
+        <p
+          className={`mt-1 flex items-center gap-1 text-xs font-semibold ${light ? "text-[#6e6e73]" : "text-[color:var(--color-lumia-text-muted)]"}`}
+        >
+          <StarRating value={book.rating} size={11} className={light ? "text-[#1d1d1f]" : "text-white"} />
+          {book.rating.toFixed(1)}
+          {book.ratingCount ? ` (${book.ratingCount})` : ""}
+        </p>
+      )}
     </button>
   );
 }

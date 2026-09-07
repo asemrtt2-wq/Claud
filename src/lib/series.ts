@@ -33,3 +33,31 @@ export function dedupeSeries<T extends SeriesAware>(books: T[]): T[] {
   }
   return result;
 }
+
+/**
+ * How many tomes each series has in the given list, so a collapsed tile can say
+ * "Série · 5 tomes" instead of silently hiding the other four.
+ */
+export function seriesCounts(books: SeriesAware[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const book of books) {
+    if (!book.seriesName) continue;
+    counts.set(book.seriesName, (counts.get(book.seriesName) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/**
+ * `dedupeSeries` plus the tome count attached to each surviving tile — the shape browse
+ * rows and grids actually want, since every caller that collapses a series also needs to
+ * label it as one.
+ */
+export function collapseSeries<T extends SeriesAware>(
+  books: T[]
+): (T & { seriesCount: number | null })[] {
+  const counts = seriesCounts(books);
+  return dedupeSeries(books).map((book) => ({
+    ...book,
+    seriesCount: book.seriesName ? (counts.get(book.seriesName) ?? 1) : null,
+  }));
+}

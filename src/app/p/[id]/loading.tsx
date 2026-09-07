@@ -1,6 +1,6 @@
 export default function ProfileDashboardLoading() {
   return (
-    <div className="lumina-shell px-6 pb-24 pt-6 sm:px-10">
+    <div className="lumia-shell px-6 pb-24 pt-6 sm:px-10">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex items-center justify-between">
           <div className="skeleton h-8 w-32" />

@@ -14,7 +14,7 @@ export default function ExpandableText({
   const shown = expanded || !isLong ? text : `${text.slice(0, 220).trimEnd()}…`;
 
   return (
-    <p className={`leading-relaxed ${light ? "text-[#3a3a3c]" : "text-[color:var(--color-lumina-text-muted)]"}`}>
+    <p className={`leading-relaxed ${light ? "text-[#3a3a3c]" : "text-[color:var(--color-lumia-text-muted)]"}`}>
       {shown}
       {isLong && (
         <button

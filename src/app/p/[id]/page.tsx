@@ -5,6 +5,7 @@ import { getCurrentCustomer } from "@/lib/customerSession";
 import { paginateContent } from "@/lib/paginate";
 import { isProfileUnlocked } from "@/lib/profileUnlock";
 import { getRecommendations, getBestsellerIds } from "@/lib/recommendations";
+import { getRatingSummaries } from "@/lib/reviews";
 import AppBottomNav from "@/components/AppBottomNav";
 import BookRow from "@/components/BookRow";
 import ProfileSwitcher from "@/components/ProfileSwitcher";
@@ -17,15 +18,22 @@ import BookCoverShelf from "@/components/BookCoverShelf";
 import DashboardSearch from "@/components/DashboardSearch";
 import LogoMark from "@/components/Logo";
 import { profileGradient } from "@/lib/profileColors";
-import { dedupeSeries } from "@/lib/series";
+import { collapseSeries, dedupeSeries } from "@/lib/series";
 import { isNewBook } from "@/lib/badges";
 import { chunk } from "@/lib/chunk";
 
 function withBadges<T extends { id: string; createdAt: Date }>(
   books: T[],
-  bestsellerIds: Set<string>
-): (T & { isNew: boolean; isBestseller: boolean })[] {
-  return books.map((b) => ({ ...b, isNew: isNewBook(b.createdAt), isBestseller: bestsellerIds.has(b.id) }));
+  bestsellerIds: Set<string>,
+  ratings: Map<string, { average: number; count: number }>
+): (T & { isNew: boolean; isBestseller: boolean; rating: number | null; ratingCount: number })[] {
+  return books.map((b) => ({
+    ...b,
+    isNew: isNewBook(b.createdAt),
+    isBestseller: bestsellerIds.has(b.id),
+    rating: ratings.get(b.id)?.average ?? null,
+    ratingCount: ratings.get(b.id)?.count ?? 0,
+  }));
 }
 
 export default async function ProfilePage({
@@ -85,7 +93,7 @@ export default async function ProfilePage({
     );
 
     return (
-      <div className="lumina-shell pb-16">
+      <div className="lumia-shell pb-16">
         <header className="flex items-center justify-between px-6 py-6 sm:px-10">
           <div className="flex items-center gap-3">
             <span
@@ -109,7 +117,7 @@ export default async function ProfilePage({
           {continueReading && (
             <Link
               href={`/p/${id}/read/${continueReading.ebook.slug}`}
-              className={`lumina-card ${continueReading.ebook.coverImageUrl ? "" : `cover-theme-${continueReading.ebook.coverTheme}`} relative mb-10 flex h-52 flex-col justify-end overflow-hidden rounded-[26px] p-7 transition hover:-translate-y-1`}
+              className={`lumia-card ${continueReading.ebook.coverImageUrl ? "" : `cover-theme-${continueReading.ebook.coverTheme}`} relative mb-10 flex h-52 flex-col justify-end overflow-hidden rounded-[26px] p-7 transition hover:-translate-y-1`}
             >
               {continueReading.ebook.coverImageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -152,8 +160,8 @@ export default async function ProfilePage({
                   </div>
                   <p className="mb-1 text-sm font-bold">{book.title}</p>
                   {p && (
-                    <div className="h-1.5 w-full overflow-hidden rounded-full lumina-progress-track">
-                      <div className="h-full lumina-progress-fill" style={{ width: `${percent}%` }} />
+                    <div className="h-1.5 w-full overflow-hidden rounded-full lumia-progress-track">
+                      <div className="h-full lumia-progress-fill" style={{ width: `${percent}%` }} />
                     </div>
                   )}
                 </Link>
@@ -194,9 +202,10 @@ export default async function ProfilePage({
       getBestsellerIds(),
       prisma.eBook.findMany({ where: { audience: "adults" }, orderBy: { category: "asc" } }),
     ]);
+  const ratings = await getRatingSummaries(allAdultBooks.map((b) => b.id));
   const catalogsWithBooks = catalogs
     .filter((c) => c.ebooks.length > 0)
-    .map((c) => ({ ...c, ebooks: withBadges(dedupeSeries(c.ebooks), bestsellerIds) }));
+    .map((c) => ({ ...c, ebooks: withBadges(collapseSeries(c.ebooks), bestsellerIds, ratings) }));
 
   const searchBooks = allAdultBooks.map((b) => ({
     id: b.id,
@@ -254,26 +263,82 @@ export default async function ProfilePage({
     (p) => p.updatedAt.toISOString().slice(0, 10) === todayStr
   );
 
+  /* "Tous les livres" shows one tile per series — tome 2, 3, 4 are reachable from the
+     series' own "Épisodes" tab, so listing each of them here just buried the standalone
+     titles under repeated covers. */
+  const catalogueBooks = collapseSeries(allAdultBooks).map((b) => ({
+    ...b,
+    rating: ratings.get(b.id)?.average ?? null,
+    ratingCount: ratings.get(b.id)?.count ?? 0,
+  }));
+
   return (
     <div className="ibook-shell pb-24">
-      <header id="accueil" className="flex items-center justify-between px-6 py-6 sm:px-10">
-        <Link href="/" className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight text-[#1d1d1f]">
-          <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />
-          LUMINA
-        </Link>
-        <div className="flex items-center gap-4">
-          <DashboardSearch books={searchBooks} />
-          <ProfileSwitcher profiles={switcherProfiles} activeProfileId={id} light />
+      {/* Sticky so the search, the section links and the profile switcher stay reachable
+          down a long dashboard instead of scrolling away with the greeting. */}
+      <header
+        id="accueil"
+        className="sticky top-0 z-40 mb-2 border-b border-black/[0.06] bg-[#f7f6fb]/85 backdrop-blur-xl"
+      >
+        <div className="mx-auto flex max-w-5xl items-center gap-4 px-6 py-4 sm:px-10">
+          {/* Inside the app the logo is "home" for the app, not for the marketing site. */}
+          <Link
+            href={`/p/${id}`}
+            className="flex shrink-0 items-center gap-2.5 text-lg font-extrabold tracking-tight text-[#1d1d1f]"
+          >
+            <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white shadow-[0_6px_16px_rgba(124,92,255,0.35)]" />
+            LUMIA
+          </Link>
+          <nav className="hidden flex-1 items-center gap-6 lg:flex">
+            {[
+              { href: "#recommandations", label: "Pour toi" },
+              { href: "#bibliotheque", label: "Ma bibliothèque" },
+              { href: "#favoris", label: "Favoris" },
+              { href: "/bibliotheque", label: "Tout le catalogue" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm font-semibold text-[#6e6e73] transition hover:text-[#1d1d1f]"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="ml-auto flex items-center gap-3">
+            <DashboardSearch books={searchBooks} />
+            <ProfileSwitcher profiles={switcherProfiles} activeProfileId={id} light />
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 sm:px-10">
-        <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-[#1d1d1f]">
-          {`Bonsoir, ${profile.name} 👋`}
-        </h1>
-        <p className="mb-8 text-sm text-[#6e6e73]">
-          Prêt pour une nouvelle aventure ?
-        </p>
+      <main className="mx-auto max-w-5xl px-6 pt-6 sm:px-10">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-[#1d1d1f]">
+              {`Bonsoir, ${profile.name} 👋`}
+            </h1>
+            <p className="mt-1 text-sm text-[#6e6e73]">Prêt pour une nouvelle aventure ?</p>
+          </div>
+          {/* Real per-profile numbers, the same ones /p/[id]/compte shows in full. */}
+          <div className="flex gap-2">
+            {[
+              { value: library.length, label: "livres" },
+              { value: inProgressBooks.length, label: "en cours" },
+              { value: profile.readingStreak, label: "jours" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl border border-black/[0.06] bg-white/70 px-4 py-2 text-center backdrop-blur-sm"
+              >
+                <p className="text-lg font-extrabold leading-tight text-[#1d1d1f]">{stat.value}</p>
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[#6e6e73]">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <BedtimeReminder
           reminderTime={profile.reminderTime}
@@ -283,23 +348,28 @@ export default async function ProfilePage({
         />
 
         {billboardBook && billboardHref && (
+          /* The cover fills the band as a blurred backdrop and a second, un-cropped copy
+             stands beside the text. The old version stretched one `object-cover` copy edge
+             to edge with only a bottom scrim, so a bright cover swallowed the title whole —
+             which is exactly what it did to "Le Code du Guerrier" and "IBN AL-NAFIS". */
           <div
-            className={`${billboardBook.coverImageUrl ? "" : `cover-theme-${billboardBook.coverTheme}`} group relative mb-12 flex h-[300px] flex-col justify-end overflow-hidden rounded-[26px] p-7 shadow-[0_25px_70px_rgba(0,0,0,0.4)] transition hover:-translate-y-1 sm:h-[360px] sm:p-10`}
+            className={`${billboardBook.coverImageUrl ? "bg-[#12101f]" : `cover-theme-${billboardBook.coverTheme}`} group relative mb-12 overflow-hidden rounded-[26px] shadow-[0_25px_70px_rgba(0,0,0,0.35)] transition hover:-translate-y-1`}
           >
-            {billboardBook.coverImageUrl ? (
+            {billboardBook.coverImageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={billboardBook.coverImageUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full scale-110 object-cover object-top opacity-95 blur-2xl transition-transform duration-700 group-hover:scale-125"
               />
-            ) : (
-              <div className="absolute right-8 top-8 text-7xl opacity-80 sm:text-8xl">
-                {billboardBook.coverEmoji}
-              </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute right-6 top-6 z-20 sm:right-8 sm:top-8">
+            {/* Two scrims: a light one over the whole band so the art still reads, and a
+                heavier left-to-right one only where the copy sits. */}
+            <div className="absolute inset-0 bg-black/25" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-transparent" />
+
+            <div className="absolute right-5 top-5 z-20">
               <FavoriteButton
                 ebookId={billboardBook.id}
                 slug={billboardBook.slug}
@@ -307,27 +377,63 @@ export default async function ProfilePage({
                 profileId={id}
               />
             </div>
-            <div className="relative z-10 max-w-md">
-              <span className="lumina-gold-text mb-2 inline-block text-xs font-bold uppercase tracking-wider">
-                {continueReading ? "Continuer la lecture" : "✨ Recommandé pour toi"}
-              </span>
-              <h2 className="mb-3 text-2xl font-extrabold leading-tight sm:text-3xl">
-                {billboardBook.title}
-              </h2>
-              {!continueReading && (
-                <p className="mb-4 line-clamp-2 text-sm text-white/80">{billboardBook.subtitle}</p>
-              )}
-              {billboardPercent !== null && (
-                <div className="mb-4 h-2.5 w-56 overflow-hidden rounded-full lumina-progress-track">
-                  <div className="h-full lumina-progress-fill" style={{ width: `${billboardPercent}%` }} />
+
+            <div className="relative z-10 flex items-center gap-6 p-7 sm:gap-10 sm:p-10">
+              <div className="min-w-0 flex-1 text-white">
+                <span className="lumia-gold-text mb-2 inline-block text-xs font-bold uppercase tracking-wider">
+                  {continueReading ? "Continuer la lecture" : "✨ Recommandé pour toi"}
+                </span>
+                <h2 className="mb-2 text-2xl font-extrabold leading-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] sm:text-4xl">
+                  {billboardBook.title}
+                </h2>
+                <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-white/60">
+                  {[
+                    billboardBook.category,
+                    billboardPercent !== null ? `${billboardPercent}% terminé` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                {!continueReading && billboardBook.subtitle && (
+                  <p className="mb-4 line-clamp-2 max-w-lg text-sm text-white/80">
+                    {billboardBook.subtitle}
+                  </p>
+                )}
+                {billboardPercent !== null && (
+                  <div className="mb-5 h-2 w-56 max-w-full overflow-hidden rounded-full bg-white/25">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#7c5cff] to-[#a78bfa]"
+                      style={{ width: `${billboardPercent}%` }}
+                    />
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href={billboardHref}
+                    className="rounded-xl bg-white px-6 py-3 text-base font-bold text-[#1d1d1f] shadow-[0_10px_28px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5"
+                  >
+                    {continueReading ? "▶ Reprendre" : "Découvrir →"}
+                  </Link>
+                  <Link
+                    href={`/ebooks/${billboardBook.slug}`}
+                    className="rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
+                  >
+                    Plus d&apos;infos
+                  </Link>
                 </div>
+              </div>
+
+              {billboardBook.coverImageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={billboardBook.coverImageUrl}
+                  alt={`Couverture de ${billboardBook.title}`}
+                  className="hidden w-40 shrink-0 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.55)] transition duration-500 group-hover:-translate-y-1 sm:block lg:w-48"
+                />
               )}
-              <Link
-                href={billboardHref}
-                className="inline-block rounded-xl bg-white px-6 py-3 text-base font-bold text-navy shadow-[0_10px_28px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(0,0,0,0.4)]"
-              >
-                {continueReading ? "▶ Reprendre" : "Découvrir →"}
-              </Link>
+              {!billboardBook.coverImageUrl && (
+                <span className="hidden text-8xl sm:block">{billboardBook.coverEmoji}</span>
+              )}
             </div>
           </div>
         )}
@@ -419,11 +525,16 @@ export default async function ProfilePage({
           <CollectionsManager profileId={id} collections={collections} />
         </section>
 
-        {allAdultBooks.length > 0 && (
+        {catalogueBooks.length > 0 && (
           <section id="catalogue" className="mb-12 scroll-mt-24">
-            <h2 className="mb-5 text-lg font-extrabold">Tous les livres</h2>
+            <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-lg font-extrabold">Tous les livres</h2>
+              <Link href="/bibliotheque" className="text-sm font-bold text-[#5b3df0] hover:underline">
+                Voir la bibliothèque →
+              </Link>
+            </div>
             <div className="flex flex-col gap-8">
-              {chunk(allAdultBooks, 20).map((group, i) => (
+              {chunk(catalogueBooks, 20).map((group, i) => (
                 <BookCoverShelf key={i} books={group} light />
               ))}
             </div>

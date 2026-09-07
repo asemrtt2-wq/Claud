@@ -6,7 +6,7 @@ export default function CancelPage() {
   return (
     <>
       <Header />
-      <section className="lumina-shell px-6 py-28 text-center">
+      <section className="lumia-shell px-6 py-28 text-center">
         <div className="mx-auto max-w-xl">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-3xl">
             ✕
@@ -14,7 +14,7 @@ export default function CancelPage() {
           <h1 className="mb-4 text-3xl font-extrabold tracking-tight text-white">
             Paiement annulé
           </h1>
-          <p className="mb-8 text-[color:var(--color-lumina-text-muted)]">
+          <p className="mb-8 text-[color:var(--color-lumia-text-muted)]">
             Ta commande n&apos;a pas été finalisée. Aucun montant n&apos;a été débité.
           </p>
           <Link

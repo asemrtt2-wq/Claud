@@ -14,8 +14,9 @@ import {
   ReadingExperienceSection,
 } from "@/components/HomeMarketingSections";
 import { getSiteSettings } from "@/lib/siteSettings";
-import { dedupeSeries } from "@/lib/series";
-import { getBestsellerIds } from "@/lib/recommendations";
+import { collapseSeries } from "@/lib/series";
+import { getBestsellerIds, getPopularBooks } from "@/lib/recommendations";
+import { getRatingSummaries } from "@/lib/reviews";
 import { isNewBook } from "@/lib/badges";
 import { getCategoryStyle, getCuratedCategories } from "@/lib/categoryStyle";
 import { getCurrentCustomer } from "@/lib/customerSession";
@@ -24,16 +25,23 @@ import { countWords, paginateContent } from "@/lib/paginate";
 
 function withBadges<T extends { id: string; createdAt: Date }>(
   books: T[],
-  bestsellerIds: Set<string>
-): (T & { isNew: boolean; isBestseller: boolean })[] {
-  return books.map((b) => ({ ...b, isNew: isNewBook(b.createdAt), isBestseller: bestsellerIds.has(b.id) }));
+  bestsellerIds: Set<string>,
+  ratings: Map<string, { average: number; count: number }>
+): (T & { isNew: boolean; isBestseller: boolean; rating: number | null; ratingCount: number })[] {
+  return books.map((b) => ({
+    ...b,
+    isNew: isNewBook(b.createdAt),
+    isBestseller: bestsellerIds.has(b.id),
+    rating: ratings.get(b.id)?.average ?? null,
+    ratingCount: ratings.get(b.id)?.count ?? 0,
+  }));
 }
 
 export default async function HomePage() {
   const customer = await getCurrentCustomer();
   const activeProfile = customer ? await getActiveProfile(customer.id) : null;
 
-  const [ebooks, settings, catalogs, bestsellerIds] = await Promise.all([
+  const [ebooks, settings, catalogs, bestsellerIds, popular] = await Promise.all([
     prisma.eBook.findMany({
       where: { audience: "adults" },
       orderBy: { createdAt: "asc" },
@@ -44,16 +52,33 @@ export default async function HomePage() {
       orderBy: { createdAt: "asc" },
     }),
     getBestsellerIds(),
+    // Real popularity (purchases + reads + favorites), rotated per visit.
+    getPopularBooks(12),
   ]);
+  const ratings = await getRatingSummaries(ebooks.map((e) => e.id));
   const catalogsWithBooks = catalogs
     .filter((c) => c.ebooks.length > 0)
-    .map((c) => ({ ...c, ebooks: withBadges(dedupeSeries(c.ebooks), bestsellerIds) }));
+    .map((c) => ({ ...c, ebooks: withBadges(collapseSeries(c.ebooks), bestsellerIds, ratings) }));
   const latestBooks = withBadges(
-    dedupeSeries([...ebooks].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())).slice(0, 4),
-    bestsellerIds
+    collapseSeries([...ebooks].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())).slice(0, 4),
+    bestsellerIds,
+    ratings
   );
+  const popularBooks = withBadges(collapseSeries(popular).slice(0, 10), bestsellerIds, ratings);
   const featured = ebooks.filter((e) => e.featured);
-  const heroCovers = (featured.length > 0 ? featured : ebooks).slice(0, 5);
+  /* The phone mockups show the real app, so prefer books that actually have cover art —
+     a mockup full of emoji placeholders doesn't look like the product any more. */
+  const withCovers = ebooks.filter((e) => e.coverImageUrl);
+  const featuredWithCovers = featured.filter((e) => e.coverImageUrl);
+  const heroPool =
+    featuredWithCovers.length > 0
+      ? featuredWithCovers
+      : withCovers.length > 0
+        ? withCovers
+        : featured.length > 0
+          ? featured
+          : ebooks;
+  const heroCovers = heroPool.slice(0, 5);
   const allCategories = Array.from(new Set(ebooks.map((e) => e.category)));
   const categoryCount = allCategories.length;
   const featuredCategories = getCuratedCategories(allCategories);
@@ -65,12 +90,12 @@ export default async function HomePage() {
 
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0a0918] via-[#150f2e] to-navy-dark px-6 pb-20 pt-16 text-white">
         <div className="pointer-events-none absolute -right-52 -top-52 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(124,92,255,0.3),transparent_70%)]" />
-        <div className="lumina-glow -left-32 top-40 h-72 w-72 bg-[#5b3df0]/30" />
-        <div className="lumina-glow bottom-0 left-1/3 h-56 w-56 bg-[#a78bfa]/20" style={{ animationDelay: "3s" }} />
+        <div className="lumia-glow -left-32 top-40 h-72 w-72 bg-[#5b3df0]/30" />
+        <div className="lumia-glow bottom-0 left-1/3 h-56 w-56 bg-[#a78bfa]/20" style={{ animationDelay: "3s" }} />
         <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
           <div>
             <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4.5 py-2 text-[0.82rem] font-bold uppercase tracking-wide text-[#c9bdff]">
-              ✦ LUMINA
+              ✦ LUMIA
             </span>
             <h1 className="mb-6 text-[2.6rem] font-extrabold leading-[1.08] tracking-tight md:text-[3.5rem]">
               {settings?.heroTitle ? (
@@ -90,7 +115,7 @@ export default async function HomePage() {
             </p>
             <div className="flex flex-wrap gap-4.5">
               <Link
-                href="#catalogue"
+                href="/bibliotheque"
                 className="rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] px-7 py-3.5 text-sm font-bold shadow-[0_12px_30px_rgba(124,92,255,0.4)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(124,92,255,0.5)]"
               >
                 Découvrir la bibliothèque
@@ -164,9 +189,16 @@ export default async function HomePage() {
         </section>
       )}
 
-      {catalogsWithBooks.length > 0 && (
+      {(popularBooks.length > 0 || catalogsWithBooks.length > 0) && (
         <section className="bg-[#0a0918] px-6 pb-4 pt-20 text-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-12">
+            {popularBooks.length > 0 && (
+              <BookRow
+                label="🔥 Les plus lus en ce moment"
+                tagline="Classés sur les achats, les lectures et les favoris réels — l'ordre change à chaque visite."
+                books={popularBooks}
+              />
+            )}
             {catalogsWithBooks.map((catalog) => (
               <BookRow
                 key={catalog.id}
@@ -188,7 +220,7 @@ export default async function HomePage() {
             <h2 className="mb-4 text-[2rem] font-extrabold tracking-tight text-white md:text-[2.75rem]">
               Découvrez nos nouveaux iBooks
             </h2>
-            <p className="text-[1.05rem] text-[color:var(--color-lumina-text-muted)]">
+            <p className="text-[1.05rem] text-[color:var(--color-lumia-text-muted)]">
               Trouvez votre prochaine lecture parmi nos dernières parutions.
             </p>
           </div>
@@ -218,7 +250,8 @@ export default async function HomePage() {
 
       <HowItWorksSection />
 
-      <ReadingExperienceSection books={ebooks} />
+      {/* Real cover art first here too, so the device mockups look like the shipped app. */}
+      <ReadingExperienceSection books={withCovers.length > 0 ? withCovers : ebooks} />
 
       <CompatibilitySection />
 
@@ -239,12 +272,12 @@ export default async function HomePage() {
               ].map((t) => (
                 <div
                   key={t.name}
-                  className="lumina-card flex flex-col justify-between gap-4.5 rounded-2xl p-6"
+                  className="lumia-card flex flex-col justify-between gap-4.5 rounded-2xl p-6"
                 >
                   <p className="text-base font-bold tracking-tight text-white">&quot;{t.quote}&quot;</p>
                   <div className="flex items-center justify-between text-[0.82rem]">
                     <span className="tracking-wide text-[#ffb020]">★★★★★</span>
-                    <span className="font-semibold text-[color:var(--color-lumina-text-muted)]">{t.name}</span>
+                    <span className="font-semibold text-[color:var(--color-lumia-text-muted)]">{t.name}</span>
                   </div>
                 </div>
               ))}

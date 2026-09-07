@@ -12,9 +12,9 @@ export const maxDuration = 60;
 
 function EbookTable({ ebooks }: { ebooks: Awaited<ReturnType<typeof prisma.eBook.findMany>> }) {
   return (
-    <div className="lumina-card overflow-hidden rounded-2xl">
+    <div className="lumia-card overflow-hidden rounded-2xl">
       <table className="w-full text-left text-sm">
-        <thead className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+        <thead className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumia-text-muted)]">
           <tr>
             <th className="px-5 py-3">Titre</th>
             <th className="px-5 py-3">Catégorie</th>
@@ -29,7 +29,7 @@ function EbookTable({ ebooks }: { ebooks: Awaited<ReturnType<typeof prisma.eBook
               <td className="px-5 py-3 font-semibold text-white">
                 {ebook.coverEmoji} {ebook.title}
               </td>
-              <td className="px-5 py-3 text-[color:var(--color-lumina-text-muted)]">
+              <td className="px-5 py-3 text-[color:var(--color-lumia-text-muted)]">
                 {ebook.category}
               </td>
               <td className="px-5 py-3 text-white">{ebook.price} €</td>
@@ -51,7 +51,7 @@ function EbookTable({ ebooks }: { ebooks: Awaited<ReturnType<typeof prisma.eBook
             <tr>
               <td
                 colSpan={5}
-                className="px-5 py-8 text-center text-[color:var(--color-lumina-text-muted)]"
+                className="px-5 py-8 text-center text-[color:var(--color-lumia-text-muted)]"
               >
                 Aucun eBook pour le moment.
               </td>
@@ -74,32 +74,32 @@ export default async function AdminDashboardPage() {
   const kidsEbooks = ebooks.filter((e) => e.audience === "kids");
 
   return (
-    <div className="lumina-shell">
+    <div className="lumia-shell">
       <AdminNav email={session?.user?.email} />
       <div className="mx-auto max-w-5xl px-6 py-10">
         <ImportBooksButton />
 
         <div className="mb-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
-          <div className="lumina-card rounded-2xl p-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+          <div className="lumia-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumia-text-muted)]">
               Adultes
             </p>
             <p className="text-2xl font-extrabold text-white">{adultEbooks.length}</p>
           </div>
-          <div className="lumina-card rounded-2xl p-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+          <div className="lumia-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumia-text-muted)]">
               Enfants
             </p>
             <p className="text-2xl font-extrabold text-white">{kidsEbooks.length}</p>
           </div>
-          <div className="lumina-card rounded-2xl p-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+          <div className="lumia-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumia-text-muted)]">
               Commandes
             </p>
             <p className="text-2xl font-extrabold text-white">{orderCount}</p>
           </div>
-          <div className="lumina-card rounded-2xl p-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+          <div className="lumia-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumia-text-muted)]">
               Payées
             </p>
             <p className="text-2xl font-extrabold text-white">{paidOrders}</p>

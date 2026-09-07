@@ -13,9 +13,9 @@ export default function ResetPasswordForm({ token }: { token: string }) {
 
   if (!token) {
     return (
-      <div className="lumina-card w-full max-w-sm rounded-[22px] p-9 text-center">
+      <div className="lumia-card w-full max-w-sm rounded-[22px] p-9 text-center">
         <h1 className="mb-3 text-2xl font-extrabold tracking-tight text-white">Lien invalide</h1>
-        <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+        <p className="text-sm text-[color:var(--color-lumia-text-muted)]">
           Ce lien de réinitialisation est incomplet.{" "}
           <Link href="/forgot-password" className="font-semibold text-[#a78bfa] hover:underline">
             Demander un nouveau lien
@@ -27,11 +27,11 @@ export default function ResetPasswordForm({ token }: { token: string }) {
 
   if (done) {
     return (
-      <div className="lumina-card w-full max-w-sm rounded-[22px] p-9 text-center">
+      <div className="lumia-card w-full max-w-sm rounded-[22px] p-9 text-center">
         <h1 className="mb-3 text-2xl font-extrabold tracking-tight text-white">
           Mot de passe mis à jour
         </h1>
-        <p className="mb-6 text-sm text-[color:var(--color-lumina-text-muted)]">
+        <p className="mb-6 text-sm text-[color:var(--color-lumia-text-muted)]">
           Tu peux maintenant te connecter avec ton nouveau mot de passe.
         </p>
         <button
@@ -55,12 +55,12 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         }
         setDone(true);
       })}
-      className="lumina-card w-full max-w-sm rounded-[22px] p-9"
+      className="lumia-card w-full max-w-sm rounded-[22px] p-9"
     >
       <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-white">
         Nouveau mot de passe
       </h1>
-      <p className="mb-7 text-sm text-[color:var(--color-lumina-text-muted)]">
+      <p className="mb-7 text-sm text-[color:var(--color-lumia-text-muted)]">
         Choisis un mot de passe d&apos;au moins 8 caractères.
       </p>
 

@@ -12,7 +12,7 @@ export default async function ResetPasswordPage({
   return (
     <>
       <Header />
-      <div className="lumina-shell flex min-h-[70vh] items-center justify-center px-6 py-16">
+      <div className="lumia-shell flex min-h-[70vh] items-center justify-center px-6 py-16">
         <ResetPasswordForm token={token ?? ""} />
       </div>
       <Footer />

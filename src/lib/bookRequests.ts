@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 /**
- * "Demander un livre" — a Premium reader describes a book they want, and Lumina writes it
+ * "Demander un livre" — a Premium reader describes a book they want, and Lumia writes it
  * with Claude and publishes it into the catalog.
  *
  * Two guard rails the feature is built around:
@@ -210,7 +210,7 @@ function extractJson(text: string) {
 }
 
 const SYSTEM = [
-  "Tu écris des livres courts et non-fictionnels en français pour Lumina, une plateforme de",
+  "Tu écris des livres courts et non-fictionnels en français pour Lumia, une plateforme de",
   "lecture. Ton style est clair, concret et direct : des faits, des exemples réels et des",
   "conseils applicables, jamais de remplissage ni de formules creuses.",
   "N'invente jamais de citation, de statistique chiffrée ni d'étude que tu ne connais pas.",

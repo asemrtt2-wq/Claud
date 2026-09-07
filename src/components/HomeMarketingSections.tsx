@@ -43,7 +43,7 @@ export function FeatureHighlights() {
               {f.emoji}
             </div>
             <h3 className="mb-1.5 font-extrabold tracking-tight text-white">{f.title}</h3>
-            <p className="text-sm text-[color:var(--color-lumina-text-muted)]">{f.text}</p>
+            <p className="text-sm text-[color:var(--color-lumia-text-muted)]">{f.text}</p>
           </div>
         ))}
       </div>
@@ -59,11 +59,11 @@ export function KidsModeSection() {
   return (
     <section className="bg-[#0a0918] px-6 py-20 text-white">
       <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
-        <div className="lumina-card rounded-[22px] p-8">
+        <div className="lumia-card rounded-[22px] p-8">
           <span className="mb-3 inline-flex items-center gap-2 text-lg font-extrabold tracking-tight">
             Un profil pour chacun <span title="Verrouillable par PIN">🔒</span>
           </span>
-          <p className="mb-6 text-[color:var(--color-lumina-text-muted)]">
+          <p className="mb-6 text-[color:var(--color-lumia-text-muted)]">
             Créez votre profil et découvrez des contenus adaptés à votre âge, vos centres
             d&apos;intérêt et votre façon de lire.
           </p>
@@ -95,7 +95,7 @@ export function KidsModeSection() {
           <h2 className="mb-4 text-[1.8rem] font-extrabold leading-tight tracking-tight md:text-[2.2rem]">
             Une lecture sur mesure, pour toute la famille.
           </h2>
-          <p className="mb-6 text-[color:var(--color-lumina-text-muted)]">
+          <p className="mb-6 text-[color:var(--color-lumia-text-muted)]">
             Chaque profil garde ses propres favoris, son propre historique et sa propre limite de
             temps de lecture — sans jamais se mélanger avec les autres profils du compte.
           </p>
@@ -143,12 +143,12 @@ export function HowItWorksSection() {
         </div>
         <div className="grid gap-8 sm:grid-cols-3">
           {HOW_IT_WORKS.map((step) => (
-            <div key={step.number} className="lumina-card rounded-[22px] p-7">
+            <div key={step.number} className="lumia-card rounded-[22px] p-7">
               <span className="mb-4 block bg-gradient-to-br from-[#a78bfa] to-white bg-clip-text text-3xl font-extrabold text-transparent">
                 {step.number}
               </span>
               <h3 className="mb-2 text-lg font-extrabold tracking-tight">{step.title}</h3>
-              <p className="text-sm text-[color:var(--color-lumina-text-muted)]">{step.text}</p>
+              <p className="text-sm text-[color:var(--color-lumia-text-muted)]">{step.text}</p>
             </div>
           ))}
         </div>
@@ -160,7 +160,13 @@ export function HowItWorksSection() {
 export function ReadingExperienceSection({
   books,
 }: {
-  books: { title: string; coverEmoji: string; coverTheme: string; content: string }[];
+  books: {
+    title: string;
+    coverEmoji: string;
+    coverTheme: string;
+    coverImageUrl: string | null;
+    content: string;
+  }[];
 }) {
   const readerBook = books[0];
   const excerpt =
@@ -190,7 +196,7 @@ export function ReadingExperienceSection({
                 <span className="text-xl">{f.icon}</span>
                 <div>
                   <p className="font-extrabold tracking-tight">{f.title}</p>
-                  <p className="text-sm text-[color:var(--color-lumina-text-muted)]">{f.text}</p>
+                  <p className="text-sm text-[color:var(--color-lumia-text-muted)]">{f.text}</p>
                 </div>
               </li>
             ))}
@@ -235,8 +241,8 @@ export function CompatibilitySection() {
       <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-2">
         <div>
           <h3 className="mb-2 text-xl font-extrabold tracking-tight">Compatible partout</h3>
-          <p className="mb-6 text-sm text-[color:var(--color-lumina-text-muted)]">
-            Lumina fonctionne directement dans ton navigateur — aucune app à installer, aucun
+          <p className="mb-6 text-sm text-[color:var(--color-lumia-text-muted)]">
+            Lumia fonctionne directement dans ton navigateur — aucune app à installer, aucun
             fichier à télécharger.
           </p>
           <div className="grid grid-cols-2 gap-4">
@@ -248,8 +254,8 @@ export function CompatibilitySection() {
             ))}
           </div>
         </div>
-        <div className="lumina-card flex flex-col justify-center gap-3 rounded-[22px] p-7">
-          <p className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)]">
+        <div className="lumia-card flex flex-col justify-center gap-3 rounded-[22px] p-7">
+          <p className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)]">
             Fonctionne dans tous les navigateurs modernes
           </p>
           <div className="flex flex-wrap gap-3 text-sm font-bold">

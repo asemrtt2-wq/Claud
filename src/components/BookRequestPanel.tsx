@@ -30,7 +30,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 /**
- * "Demander un livre" — the Premium reader describes a book, Lumina writes it with Claude
+ * "Demander un livre" — the Premium reader describes a book, Lumia writes it with Claude
  * and publishes it into the catalog.
  *
  * The generation loop lives here rather than in a single server action because a whole book
@@ -107,12 +107,12 @@ export default function BookRequestPanel({
   const percent = step && step.total > 0 ? Math.round((step.done / step.total) * 100) : 0;
 
   return (
-    <section className="lumina-card mb-10 rounded-[22px] p-6">
+    <section className="lumia-card mb-10 rounded-[22px] p-6">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-extrabold">✨ Demander un livre</h2>
-          <p className="mt-1 text-sm text-[color:var(--color-lumina-text-muted)]">
-            Dis-nous le livre qui te manque : Lumina l&apos;écrit avec Claude et l&apos;ajoute au
+          <p className="mt-1 text-sm text-[color:var(--color-lumia-text-muted)]">
+            Dis-nous le livre qui te manque : Lumia l&apos;écrit avec Claude et l&apos;ajoute au
             catalogue. Si un livre proche existe déjà, on te l&apos;indique au lieu d&apos;en
             écrire un deuxième.
           </p>
@@ -126,7 +126,7 @@ export default function BookRequestPanel({
 
       {!quota.plan ? (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+          <p className="text-sm text-[color:var(--color-lumia-text-muted)]">
             Cette fonctionnalité est réservée aux abonnés Premium.
           </p>
           <Link
@@ -141,7 +141,7 @@ export default function BookRequestPanel({
           {!aiConfigured && (
             <p className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-200">
               La rédaction automatique n&apos;est pas encore activée sur ce serveur. Ta demande
-              sera enregistrée et traitée par l&apos;équipe Lumina.
+              sera enregistrée et traitée par l&apos;équipe Lumia.
             </p>
           )}
 
@@ -172,7 +172,7 @@ export default function BookRequestPanel({
                 {running ? "Écriture en cours…" : "Écrire ce livre"}
               </button>
               {quota.remaining <= 0 && (
-                <span className="text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+                <span className="text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
                   Quota du mois atteint — il repart le 1er du mois prochain.
                 </span>
               )}
@@ -181,13 +181,13 @@ export default function BookRequestPanel({
 
           {step && step.status !== "duplicate" && (
             <div className="mt-5">
-              <div className="lumina-progress-track h-2 w-full overflow-hidden rounded-full">
+              <div className="lumia-progress-track h-2 w-full overflow-hidden rounded-full">
                 <div
-                  className="lumina-progress-fill h-full rounded-full transition-[width] duration-500"
+                  className="lumia-progress-fill h-full rounded-full transition-[width] duration-500"
                   style={{ width: `${percent}%` }}
                 />
               </div>
-              <p className="mt-2 text-sm text-[color:var(--color-lumina-text-muted)]">
+              <p className="mt-2 text-sm text-[color:var(--color-lumia-text-muted)]">
                 {step.finished ? `✅ « ${step.label} » est publié.` : step.label}
               </p>
               {step.finished && step.slug && (
@@ -203,7 +203,7 @@ export default function BookRequestPanel({
 
           {step?.status === "duplicate" && step.duplicateSlug && (
             <p className="mt-4 rounded-xl border border-[#7c5cff]/30 bg-[#7c5cff]/10 px-4 py-3 text-sm">
-              {`Lumina a déjà « ${step.duplicateTitle} » sur ce sujet — ta demande n'a pas été décomptée. `}
+              {`Lumia a déjà « ${step.duplicateTitle} » sur ce sujet — ta demande n'a pas été décomptée. `}
               <Link href={`/ebooks/${step.duplicateSlug}`} className="font-bold text-[#a78bfa] hover:underline">
                 Le lire →
               </Link>
@@ -220,7 +220,7 @@ export default function BookRequestPanel({
 
       {requests.length > 0 && (
         <div className="mt-6 border-t border-white/10 pt-5">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-lumina-text-muted)]">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-lumia-text-muted)]">
             Mes demandes
           </p>
           <ul className="space-y-2">
@@ -231,7 +231,7 @@ export default function BookRequestPanel({
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{request.topic}</p>
-                  <p className="text-xs text-[color:var(--color-lumina-text-muted)]">
+                  <p className="text-xs text-[color:var(--color-lumia-text-muted)]">
                     {STATUS_LABEL[request.status] ?? request.status} · {request.createdAt}
                     {request.error ? ` · ${request.error}` : ""}
                   </p>
@@ -253,7 +253,7 @@ export default function BookRequestPanel({
                   )}
                   <button
                     onClick={() => handleDelete(request.id)}
-                    className="text-[color:var(--color-lumina-text-muted)] transition hover:text-red-300"
+                    className="text-[color:var(--color-lumia-text-muted)] transition hover:text-red-300"
                   >
                     Supprimer
                   </button>

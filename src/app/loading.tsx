@@ -1,6 +1,6 @@
 export default function HomeLoading() {
   return (
-    <div className="lumina-shell px-6 pb-24 pt-16">
+    <div className="lumia-shell px-6 pb-24 pt-16">
       <div className="mx-auto max-w-6xl">
         <div className="mb-14 grid items-center gap-14 md:grid-cols-2">
           <div>

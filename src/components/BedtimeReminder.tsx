@@ -32,7 +32,7 @@ export default function BedtimeReminder({
 
   return (
     <div
-      className={`${light ? "ibook-card" : "lumina-card"} mb-6 flex items-center gap-3 rounded-2xl border-[#a78bfa]/40 p-4`}
+      className={`${light ? "ibook-card" : "lumia-card"} mb-6 flex items-center gap-3 rounded-2xl border-[#a78bfa]/40 p-4`}
     >
       <span className="text-2xl">🌙</span>
       <p className={`text-sm font-semibold ${light ? "text-[#1d1d1f]" : ""}`}>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import BuyButton from "./BuyButton";
 import CoverLightbox, { type LightboxBook } from "./CoverLightbox";
 import ExcerptModal from "./ExcerptModal";
+import StarRating from "./StarRating";
 
 export default function EbookHero({
   ebookId,
@@ -28,6 +29,8 @@ export default function EbookHero({
   readHref,
   progressLabel,
   excerpt,
+  rating,
+  ratingCount,
 }: {
   ebookId: string;
   title: string;
@@ -50,6 +53,9 @@ export default function EbookHero({
   readHref: string | null;
   progressLabel: { percent: number; text: string } | null;
   excerpt: { chapterTitle: string | null; text: string } | null;
+  /** Real average of submitted ratings; null until someone has rated the book. */
+  rating: number | null;
+  ratingCount: number;
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [excerptOpen, setExcerptOpen] = useState(false);
@@ -103,7 +109,7 @@ export default function EbookHero({
               {seriesOrder ? ` · Tome ${seriesOrder}` : ""}
             </p>
           )}
-          <p className="mb-6 text-sm text-[#6e6e73]">
+          <p className="mb-3 text-sm text-[#6e6e73]">
             {[
               category,
               isPdf ? "PDF" : `${pagesCount} page${pagesCount > 1 ? "s" : ""}`,
@@ -113,6 +119,22 @@ export default function EbookHero({
               .filter(Boolean)
               .join(" • ")}
           </p>
+
+          {/* The real average, right next to the book. A book nobody has rated says so
+              rather than rendering an empty five-star row, which reads as a zero. */}
+          <a href="#avis" className="mb-6 inline-flex items-center gap-2 text-sm">
+            {rating !== null ? (
+              <>
+                <StarRating value={rating} size={16} className="text-[#1d1d1f]" />
+                <span className="font-bold text-[#1d1d1f]">{rating.toFixed(1)}</span>
+                <span className="text-[#6e6e73] hover:underline">{`(${ratingCount} avis)`}</span>
+              </>
+            ) : (
+              <span className="font-semibold text-[#6e6e73] hover:underline">
+                Pas encore de note — donne la tienne
+              </span>
+            )}
+          </a>
 
           {hasAccess ? (
             <div className="max-w-sm">

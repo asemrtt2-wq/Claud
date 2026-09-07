@@ -9,9 +9,9 @@ export default function Footer() {
           <div>
             <Link href="/" className="flex items-center gap-2.5 text-xl font-extrabold text-white">
               <LogoMark className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c5cff] to-navy text-white shadow-[0_8px_20px_rgba(124,92,255,0.35)]" />
-              LUMINA
+              LUMIA
             </Link>
-            <p className="lumina-gold-text mt-2 text-sm font-semibold">
+            <p className="lumia-gold-text mt-2 text-sm font-semibold">
               Lis. Apprends. Transforme-toi.
             </p>
           </div>
@@ -65,7 +65,7 @@ export default function Footer() {
           </div>
         </div>
         <p className="pt-7 text-center text-sm text-[#7c88ab]">
-          © 2026 Lumina. Tous droits réservés.
+          © 2026 Lumia. Tous droits réservés.
         </p>
       </div>
     </footer>

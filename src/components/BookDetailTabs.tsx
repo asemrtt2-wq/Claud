@@ -44,13 +44,13 @@ export default function BookDetailTabs({
     episodes.length > 0 ? "episodes" : "chapters"
   );
 
-  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumina-text-muted)]";
+  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumia-text-muted)]";
   const activeTab = light ? "text-[#1d1d1f]" : "text-white";
-  const card = light ? "ibook-card" : "lumina-card";
+  const card = light ? "ibook-card" : "lumia-card";
   const accent = light ? "text-[#5b3df0]" : "text-[#a78bfa]";
   const chapterBadge = light ? "bg-black/[0.05] text-[#1d1d1f]" : "bg-white/10 text-white";
-  const progressTrack = light ? "ibook-progress-track" : "lumina-progress-track";
-  const progressFill = light ? "ibook-progress-fill" : "lumina-progress-fill";
+  const progressTrack = light ? "ibook-progress-track" : "lumia-progress-track";
+  const progressFill = light ? "ibook-progress-fill" : "lumia-progress-fill";
 
   return (
     <div>

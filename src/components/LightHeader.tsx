@@ -10,7 +10,7 @@ export default async function LightHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2.5 text-xl font-extrabold tracking-tight text-[#1d1d1f]">
           <LogoMark className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white shadow-[0_8px_20px_rgba(124,92,255,0.25)]" />
-          LUMINA
+          LUMIA
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
           <Link href="/" className="text-sm font-semibold text-[#6e6e73] transition hover:text-[#1d1d1f]">

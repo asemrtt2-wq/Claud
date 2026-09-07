@@ -10,11 +10,11 @@ export default function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <div className="lumina-card w-full max-w-sm rounded-[22px] p-9 text-center">
+      <div className="lumia-card w-full max-w-sm rounded-[22px] p-9 text-center">
         <h1 className="mb-3 text-2xl font-extrabold tracking-tight text-white">
           Vérifie tes emails
         </h1>
-        <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+        <p className="text-sm text-[color:var(--color-lumia-text-muted)]">
           Si un compte existe avec cette adresse, un lien de réinitialisation vient d&apos;être
           envoyé.
         </p>
@@ -34,12 +34,12 @@ export default function ForgotPasswordForm() {
         await requestPasswordReset(formData);
         setSent(true);
       })}
-      className="lumina-card w-full max-w-sm rounded-[22px] p-9"
+      className="lumia-card w-full max-w-sm rounded-[22px] p-9"
     >
       <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-white">
         Mot de passe oublié
       </h1>
-      <p className="mb-7 text-sm text-[color:var(--color-lumina-text-muted)]">
+      <p className="mb-7 text-sm text-[color:var(--color-lumia-text-muted)]">
         Indique ton email, on t&apos;envoie un lien pour en choisir un nouveau.
       </p>
 
@@ -59,7 +59,7 @@ export default function ForgotPasswordForm() {
         {isPending ? "Envoi..." : "Envoyer le lien"}
       </button>
 
-      <p className="mt-5 text-center text-sm text-[color:var(--color-lumina-text-muted)]">
+      <p className="mt-5 text-center text-sm text-[color:var(--color-lumia-text-muted)]">
         <Link href="/login" className="font-semibold text-[#a78bfa] hover:underline">
           Retour à la connexion
         </Link>

@@ -4,23 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Lumina (formerly "EBookstore") — a full-stack Next.js eBook platform. Public catalog of
+Lumia (formerly "Lumina", and before that "EBookstore") — a full-stack Next.js eBook platform.
+The rename to **Lumia** was a straight find/replace across brand strings *and* the
+`lumina-*` CSS tokens/utility classes (now `lumia-*`), so nothing in the codebase still
+carries the old name — if you see `lumina-shell` or `--color-lumina-*` in an old note or PR,
+it is `lumia-shell` / `--color-lumia-*` today. Public catalog of
 eBooks, individual eBook pages with one-time Stripe Checkout purchases, a recurring Stripe
 Premium subscription (monthly/yearly, unlocks the whole library), customer accounts with a
 **Netflix-style multi-profile system** (any number of independent profiles per account, each
 with its own name/avatar/color/type, favorites, collections, reading history, goals, and an
 optional PIN lock), a dark "app shell" profile dashboard and in-browser reader modeled on the
-Lumina product design (dark navy/purple glassmorphism), a kids-mode profile type (curated
+Lumia product design (dark navy/purple glassmorphism), a kids-mode profile type (curated
 catalog, daily reading-time limits, a kids-only reader with read-aloud and mascot), and a
 separate password-protected admin panel for managing the catalog.
 
-The customer-facing brand is "Lumina" (logo: `✦`, purple `#7c5cff` → `#5b3df0` gradient). Every
+The customer-facing brand is "Lumia" (logo: `✦`, purple `#7c5cff` → `#5b3df0` gradient). Every
 customer-facing page — marketing pages, `/premium`, `/ebooks/[slug]`, `/login`, `/signup`,
-`/profiles`, `/p/[id]` — uses the same dark glassmorphic "app" look (`lumina-shell`/`lumina-card`
+`/profiles`, `/p/[id]` — uses the same dark glassmorphic "app" look (`lumia-shell`/`lumia-card`
 utility classes in `globals.css`), so the whole site (not just the logged-in area) now reads as
 one dark product. The one deliberate exception is the reader (`/p/[id]/read/[slug]`): it uses
 each eBook's own `cover-theme-*` gradient as an immersive background instead of the generic dark
-shell. The admin panel (`/admin/**`) also uses the dark `lumina-shell`/`lumina-card` look now
+shell. The admin panel (`/admin/**`) also uses the dark `lumia-shell`/`lumia-card` look now
 (nav, stat tiles, tables, forms, login) with the purple accent for buttons/links — it used to keep
 a separate light navy/royal-blue palette as "just an internal tool," but that read as visibly
 unfinished next to the rest of the app, so it was brought in line. `next.config.mjs`,
@@ -32,7 +36,7 @@ pass over the admin JSX/className strings.
 This is a web app, so a few things from the original feature request are approximated rather
 than literally implemented, and future work should keep respecting these boundaries:
 - **Reading-time limits are in-app, not OS-level.** A website cannot lock a phone's screen.
-  `Profile.dailyLimitMinutes` gates the *Lumina reader itself* (see Reader below) — it does
+  `Profile.dailyLimitMinutes` gates the *Lumia reader itself* (see Reader below) — it does
   not touch device screen time.
 - **Read-aloud voice "characters" (Femme/Homme/Robot/Alien/Loup/Ours) are the browser's
   built-in `SpeechSynthesis` voice with pitch/rate presets per character**, not distinct
@@ -82,7 +86,7 @@ production environment where you'd rather migrate by hand.
 Copy `.env.example` to `.env` before running anything. Required keys:
 
 - `DATABASE_URL` — PostgreSQL connection string (e.g. from Vercel Postgres or Neon's free
-  tier, or a local `postgresql://postgres:postgres@localhost:5432/lumina_dev`)
+  tier, or a local `postgresql://postgres:postgres@localhost:5432/lumia_dev`)
 - `NEXTAUTH_SECRET` / `NEXTAUTH_URL` — required for admin and customer login sessions
 - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — used only by `prisma/seed.ts` to create the admin account
 - `ANTHROPIC_API_KEY` — powers "Demander un livre" (see Book requests below). Without it the
@@ -98,7 +102,7 @@ Copy `.env.example` to `.env` before running anything. Required keys:
 ### Public storefront
 - `src/app/page.tsx` — home page (hero + "Nos dernières parutions" + category tiles +
   testimonials), a server component that reads eBooks directly from Prisma. The hero pitches
-  Lumina as short daily-learning reads ("Apprenez quelque chose de nouveau chaque jour"), and the
+  Lumia as short daily-learning reads ("Apprenez quelque chose de nouveau chaque jour"), and the
   "Nos dernières parutions" grid always shows the real 4 newest adult eBooks by `createdAt`
   (`dedupeSeries()`-collapsed so a multi-tome series only takes one slot) — this replaced an
   earlier `pickDailyBooks()` rotation gimmick that showed a deterministic-but-arbitrary daily
@@ -148,7 +152,13 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   file size, or star ratings, since none of that data is real for this catalog and fabricating it
   would be dishonest). Access still goes through a buy button + `/premium` link when the customer
   doesn't have it.
-- `src/app/premium/page.tsx` — pricing page (free / one-time purchase / Premium monthly-yearly).
+- `src/app/premium/page.tsx` — pricing page (free / Premium monthly / Premium yearly). The two
+  Premium tiers genuinely differ now that book requests exist: the per-month request quota is
+  read straight from `MONTHLY_REQUEST_QUOTA`, and the catalog size in the intro is counted from
+  the database, so the copy cannot drift from the product. The page also detects the visitor's
+  active plan and shows "✓ Ton offre actuelle" instead of a second subscribe button. The
+  highlighted tier is badged "Sans engagement" (true of a monthly plan) rather than "Le plus
+  choisi" — nothing here counts which plan people actually pick.
 - The homepage hero, feature-highlight row, "Compte enfant", "Une expérience de lecture unique",
   "Compatible partout", and final CTA band sections follow a marketing mockup the project owner
   supplied. Since the app has no real product photography/illustration assets (see "Cover art"
@@ -156,7 +166,7 @@ Copy `.env.example` to `.env` before running anything. Required keys:
   and character art are approximated with `src/components/DeviceFrame.tsx` (`PhoneFrame`/
   `TabletFrame`/`LaptopFrame`, plain CSS bezels) wrapping `src/components/MiniAppScreens.tsx`
   (`MiniDashboardScreen`/`MiniReaderScreen`/`MiniLibraryScreen`, static illustrative recreations of
-  the real in-app UI using the same `lumina-*`/`cover-theme-*` classes as the actual dashboard and
+  the real in-app UI using the same `lumia-*`/`cover-theme-*` classes as the actual dashboard and
   reader) — populated with real catalog titles/covers and a real book excerpt, not invented
   content, so the "preview" is an honest one — `MiniReaderScreen` in particular renders a
   full-bleed light-mode page (no header/footer chrome, just a thin top progress line and a page
@@ -177,11 +187,11 @@ A later pass made the whole app feel more like a finished premium product withou
 that doesn't exist. What changed, and — just as importantly — what was deliberately left out and
 why, since a couple of the source requests would have meant faking numbers:
 
-- **`.lumina-shell` background** (`globals.css`) is now a richer violet → navy → black vertical
+- **`.lumia-shell` background** (`globals.css`) is now a richer violet → navy → black vertical
   gradient layered with three soft radial glow blobs instead of the flatter two-blob version —
   applies everywhere the class is used (homepage, `/login`, `/signup`, `/profiles`, `/p/[id]`,
-  `/p/[id]/compte`) with a single shared edit. `.lumina-card` picked up a heavier shadow and an
-  explicit 20px radius. A new `.lumina-glow` utility (a blurred, slowly-pulsing circle) is used
+  `/p/[id]/compte`) with a single shared edit. `.lumia-card` picked up a heavier shadow and an
+  explicit 20px radius. A new `.lumia-glow` utility (a blurred, slowly-pulsing circle) is used
   for a couple of extra ambient glows on the homepage hero.
 - **`EBookCard`/`BookRow` hover polish**: scale-up (1.03–1.1) + a purple glow shadow + (on
   `EBookCard`) a slow image zoom on hover, replacing the flatter lift-only hover. Hovering an
@@ -225,7 +235,7 @@ why, since a couple of the source requests would have meant faking numbers:
   server components are rendering.
 - **Deliberately not built in this pass** (production-heavy, dishonest, or blocked on an
   already-documented prerequisite): literal parallax/fog/particle effects on the hero (the ambient
-  `.lumina-glow` blobs are the lightweight version of "the hero feels alive"); a full multi-theme
+  `.lumia-glow` blobs are the lightweight version of "the hero feels alive"); a full multi-theme
   color picker (Noir/Violet/Bleu Nuit/Or/Rouge/Vert Émeraude) — `Conventions` above already notes
   the purple accent is hardcoded as literal hex values across dozens of components rather than a
   single CSS variable, so a real site-wide theme switcher needs that centralization done first,
@@ -243,16 +253,16 @@ Voyage, Fitness — not just warrior content) and with this codebase's standing 
 fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarifying question:
 **visual language only, real catalog/categories/authors/stats untouched.** What shipped:
 
-- **Expanded palette** (`globals.css` `@theme`): `--color-lumina-wine`/`--color-lumina-wine-light`
-  (deep bordeaux-red) and `--color-lumina-gold`/`--color-lumina-gold-light`, layered on top of
-  the existing violet/navy tokens rather than replacing them. `.lumina-shell`'s background gained
-  a wine-red radial glow and a deeper black tail. Two new utility classes: `.lumina-card-premium`
+- **Expanded palette** (`globals.css` `@theme`): `--color-lumia-wine`/`--color-lumia-wine-light`
+  (deep bordeaux-red) and `--color-lumia-gold`/`--color-lumia-gold-light`, layered on top of
+  the existing violet/navy tokens rather than replacing them. `.lumia-shell`'s background gained
+  a wine-red radial glow and a deeper black tail. Two new utility classes: `.lumia-card-premium`
   (a glass card with a subtle gold border that brightens + glows gold on hover, used for
-  higher-emphasis cards) and `.lumina-gold-text` (gold gradient text-clip, used for taglines/
+  higher-emphasis cards) and `.lumia-gold-text` (gold gradient text-clip, used for taglines/
   section labels/stat headers that should read as a premium accent, not the default purple).
 - **"Continuer ma lecture"** — a new horizontal row on the adult `/p/[id]` dashboard, right after
   the billboard, showing every in-progress (`ReadingProgress`, not `completed`) book as a
-  `.lumina-card-premium` tile with cover, title, a real `{percent}% terminé` (computed from
+  `.lumia-card-premium` tile with cover, title, a real `{percent}% terminé` (computed from
   `page` / total pages, same math the billboard/ebook page already use) in gold, a progress bar,
   and a "Continuer →" link straight into the reader at the saved page.
 - **Real curated collections with taglines**: `Catalog.description` (see "Curated catalogs"
@@ -261,7 +271,7 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   spec, since those don't correspond to anything in the real library yet. A second one,
   "Collection Sparte", shipped the same way but was removed later — see "Curated catalogs" below.
 - **"Ton parcours" real-stats section** (`/p/[id]/compte`, above the existing Niveau/XP card):
-  four `.lumina-card-premium` tiles — Livres lus (`completedBooksTotal`), Pages lues (a new
+  four `.lumia-card-premium` tiles — Livres lus (`completedBooksTotal`), Pages lues (a new
   `pagesReadTotal`, summing `page + 1` across every tracked `ReadingProgress` row — genuinely
   derived, not stored separately), Temps de lecture (`Profile.totalMinutesRead`), Série actuelle
   (the existing streak calc). This mirrors the shape of the spec's example stat block
@@ -269,7 +279,7 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   example values.
 - **Gold accents elsewhere**: category tiles (`src/app/page.tsx`) get a gold border/glow on
   hover instead of just lifting; the billboard's "Recommandé pour toi" tag and "Continuer la
-  lecture" label render in `.lumina-gold-text`; the footer tagline is the requested
+  lecture" label render in `.lumia-gold-text`; the footer tagline is the requested
   "Lis. Apprends. Transforme-toi." slogan in gold; the header's signed-out primary CTA became
   "⚡ Commencer mon parcours" (only that one button — the hero and `FinalCtaBand`'s own
   "Commencer gratuitement" CTAs were left as-is, this pass didn't do a copy sweep).
@@ -358,6 +368,17 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   checks it and, on success, adds the profile id to an httpOnly `unlockedProfiles` cookie
   (2h expiry) via `markProfileUnlocked()`. This is a "keep a curious kid out of the parent
   profile" gate, not real security against someone editing cookies directly — don't oversell it.
+- `src/lib/recommendations.ts` — `getSimilarBooks(ebook)` scores the whole adult catalog on
+  shared category (+10), shared author (+6) and title/subtitle/description word overlap (×2),
+  excluding the book's own series (those live in the "Épisodes" tab). It replaced a plain
+  `where: { category }` take-8, which in a 40-book category always returned the same arbitrary
+  first eight and in a small category returned almost nothing.
+  `getPopularBooks(limit, poolSize)` ranks by three signals the app actually records — paid
+  orders (×5), profiles that started the book (×3) and favorites (×1) — then **shuffles the top
+  `poolSize`** before slicing the row. That is how "les populaires changent tout le temps" is
+  satisfied without inventing anything: the order varies per request, but a book can only appear
+  if it is genuinely among the most popular. `getRecommendations()`'s "Les plus populaires" row
+  and the homepage/`/bibliotheque` popular rows all go through it.
 - `src/lib/recommendations.ts` — `getRecommendations()`: a simple rule-based engine (no ML) —
   "because you like X" from the profile's most-common favorited/read `category`, "auteurs
   favoris" from the most-common `author`, "nouveautés" (newest by `createdAt`), and "les plus
@@ -454,7 +475,7 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   - **Sommaire / Signets panel** (📑): two tabs. "Chapitres" lists the real parsed chapters with
     per-chapter time estimates, jumping straight to that chapter's page. "Signets" is a genuine
     bookmark list (any page, not just chapter starts) — stored in `localStorage` under
-    `lumina-bookmarks:{ebookId}:{profileId}`, **not** synced server-side/cross-device (a real
+    `lumia-bookmarks:{ebookId}:{profileId}`, **not** synced server-side/cross-device (a real
     per-profile DB model would be the next step if that matters; this ships something functional
     today without a schema migration).
   - **Recherche** (🔍): client-side full-text search across the already-loaded `pages` array —
@@ -594,7 +615,7 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
   pitch/rate presets on the browser's built-in voice, not distinct synthesized models), and a
   daily-limit lock screen once `Profile.dailyLimitMinutes` is hit for the day (checked on load
   via `getReadingStatus()` so an already-over-limit kid sees it immediately, not after a minute).
-  `Profile.dailyLimitMinutes` gates the *Lumina reader itself* — a website cannot lock a phone's
+  `Profile.dailyLimitMinutes` gates the *Lumia reader itself* — a website cannot lock a phone's
   screen, so this is in-app only, not OS-level.
 - `src/components/BedtimeReminder.tsx` — client component, used on both adult and kids `/p/[id]`
   dashboards, keyed off `Profile.reminderTime`; shows a banner if `now` is within ~90 minutes
@@ -603,7 +624,7 @@ fabricated ratings/stats/authors, the scope was explicitly narrowed via a clarif
 
 ### Book requests ("Demander un livre")
 
-A Premium reader describes a book they want, and Lumina writes it with Claude and publishes it
+A Premium reader describes a book they want, and Lumia writes it with Claude and publishes it
 into the catalog. It lives on `/p/[id]/compte` (`src/components/BookRequestPanel.tsx`), with an
 admin-side queue at `/admin/requests`.
 
@@ -633,6 +654,32 @@ admin-side queue at `/admin/requests`.
 - **Not built**: a background worker/queue that finishes a book with no browser open (that needs
   a job runner this app doesn't have — the resume button is the honest substitute), and
   AI-generated cover art (no image generation is configured).
+
+### Reviews (notes & commentaires publics)
+
+Every book page carries a public review section (`src/components/ReviewSection.tsx`, backed by
+`src/lib/reviews.ts` + `src/lib/reviewActions.ts`). This **replaced the "Partager" button** — a
+share link sent the reader somewhere else, where the ask was to keep what readers think on the
+page itself.
+
+- **`Review`** (`ebookId`, `profileId`, `rating` 1-5, `comment`, `parentId`, timestamps). Scoped
+  to the *profile*, like favorites and progress, because "who is reading" is the identity shown
+  next to a comment. A reply is a `Review` with `parentId` set and `rating: null`; threads stay
+  one level deep (answering a reply re-parents to the root), which keeps rendering and deletion
+  simple. Deletion cascades from a root to its replies.
+- **One rating per profile per book**, enforced in `saveReview()` rather than by a unique
+  constraint, since the same profile may post many replies on the same book.
+- **Averages are real**: `getRatingSummary()` (one book, with the 1-5 distribution bars) and
+  `getRatingSummaries()` (a grouped query for a whole listing — a catalog row renders dozens of
+  tiles, so never one query per book). A book nobody has rated shows "Pas encore de note", never
+  an empty five-star row, which would read as a *zero* score rather than an absent one. That is
+  the same rule as the long-standing "no fabricated ⭐" decision — the difference is that these
+  stars are now backed by a real model, so they are allowed to exist.
+- `src/components/StarRating.tsx` clips a filled star row over an empty one, so 4.3 renders as
+  4.3 instead of rounding to a whole star. It has no "no rating" fallback on purpose; every
+  caller decides its own wording for that case.
+- The score appears next to the book in three places: the `/ebooks/[slug]` hero (under the
+  metadata line, linking to `#avis`), `BookRow` tiles and `BookCoverCard` tiles.
 
 ### Password reset
 - `PasswordResetToken` (customerId, unique `token`, `expiresAt`, `usedAt`) — a 1-hour, single-use
@@ -725,7 +772,7 @@ admin-side queue at `/admin/requests`.
   gradient styling on the title) — a custom title loses that gradient split since it's rendered
   as one plain string. This intentionally does not extend to colors/theme: the purple accent is
   hardcoded as literal hex values across dozens of components rather than only the `--color-
-  lumina-purple` CSS variable, so a real site-wide color picker would need that centralized first.
+  lumia-purple` CSS variable, so a real site-wide color picker would need that centralized first.
 
 ### Curated catalogs
 - `Catalog` — an admin-defined named shelf (e.g. "Coup de cœur", "Best-sellers"), many-to-many
@@ -745,7 +792,7 @@ admin-side queue at `/admin/requests`.
   adult-facing surfaces.
 - `Catalog.description` — an optional short tagline (e.g. "Construis un mental que rien ne peut
   briser.") set from the same `/admin/catalogs` create/rename form, rendered as a small gold
-  (`.lumina-gold-text`) italic line under the row's label via `BookRow`'s optional `tagline`
+  (`.lumia-gold-text`) italic line under the row's label via `BookRow`'s optional `tagline`
   prop. One real catalog ships this way — **"Collection Guerrier"** ("Construis un mental que
   rien ne peut briser.", containing "Le Code du Guerrier") — a genuine, curated grouping of a
   real catalog book, not a themed re-skin of the whole site. It's upserted (idempotently, safe to
@@ -777,6 +824,12 @@ admin-side queue at `/admin/requests`.
   Clicking an episode navigates to that tome's own `/ebooks/[slug]` page (same buy/read CTA logic
   as any other book) rather than jumping straight into the reader, since access/progress is
   still per-book, not shared across a series.
+- `src/lib/series.ts` — `collapseSeries()` is `dedupeSeries()` plus the tome count attached to
+  each surviving tile, which is what browse surfaces actually want: every caller that collapses a
+  series also needs to label it as one. `BookRow`, `BookCoverCard` and the library grid render
+  that as a `Série · N tomes` badge on the cover, so tome 2/3/4 never take their own slot in a
+  listing while still being visibly reachable. Applied to the homepage rows and grid, the
+  `/p/[id]` catalog rows and "Tous les livres", and `/bibliotheque`.
 - `src/lib/series.ts` — `dedupeSeries()` collapses a list of books down to one representative per
   `seriesName` (the lowest `seriesOrder`, i.e. "tome 1") so browse rows read like a single show
   tile instead of listing every tome separately — applied to the `/p/[id]` "Parcourir par
@@ -804,8 +857,9 @@ just kids), `Collection`/`CollectionItem` (profile-scoped book shelves, unique o
 reader's persistent surlignages, see Reader above; deliberately not unique-constrained on
 `[profileId, ebookId, page]` since a profile can have several distinct highlights on one page),
 `Catalog` (admin-curated shelves, many-to-many with `EBook` — see "Curated catalogs" above;
-not to be confused with the profile-scoped `Collection` above), and `BookRequest`
-(account-scoped "write me a book about X" asks — see "Book requests" above).
+not to be confused with the profile-scoped `Collection` above), `BookRequest`
+(account-scoped "write me a book about X" asks — see "Book requests" above), and `Review`
+(profile-scoped public ratings/comments with one level of replies — see Reviews above).
 
 There used to be a separate `ChildProfile`/`ChildReadingProgress` pair and `Customer` doubled as
 the implicit single "adult profile" — that was replaced by the unified `Profile` model above so
@@ -878,16 +932,16 @@ types) / `/p/[id]/read/[slug]` (reader, both profile types).
   `profileGradient(color)` returns a CSS gradient string for inline `style` use (avatar
   backgrounds in `ProfileForm`, `ProfilePicker`, `ProfileSwitcher`, `/p/[id]` headers) — not
   Tailwind classes, since the color is dynamic/user-chosen.
-- Lumina purple accent (`#7c5cff` → `#5b3df0`/`#a78bfa`) is the primary interactive color across
+- Lumia purple accent (`#7c5cff` → `#5b3df0`/`#a78bfa`) is the primary interactive color across
   customer-facing CTAs (buy/subscribe/favorite buttons, links, focus rings) — it replaced the
   old `text-royal`/`from-royal` blue accent on those elements. The `royal`/navy tokens remain
   the base brand shell (header/footer background, body text, admin panel) and are still used
   for structural chrome, not just left over from before the rebrand.
-- Lumina dark-app tokens live in `globals.css` under `@theme`: `--color-lumina-bg`,
-  `--color-lumina-panel`, `--color-lumina-border`, `--color-lumina-purple`,
-  `--color-lumina-purple-light`, `--color-lumina-text-muted`, plus utility classes
-  `.lumina-shell` (dark radial-gradient page background), `.lumina-card` (glassmorphic panel),
-  and `.lumina-progress-track`/`.lumina-progress-fill`. Use these for any new logged-in "app"
+- Lumia dark-app tokens live in `globals.css` under `@theme`: `--color-lumia-bg`,
+  `--color-lumia-panel`, `--color-lumia-border`, `--color-lumia-purple`,
+  `--color-lumia-purple-light`, `--color-lumia-text-muted`, plus utility classes
+  `.lumia-shell` (dark radial-gradient page background), `.lumia-card` (glassmorphic panel),
+  and `.lumia-progress-track`/`.lumia-progress-fill`. Use these for any new logged-in "app"
   screen instead of the light navy/white marketing-page styles.
 - `next.config.mjs` sets `experimental.useTypeScriptCli: true` — required because the
   installed TypeScript version doesn't expose the compiler API Next's default type-checker

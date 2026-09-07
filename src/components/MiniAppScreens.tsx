@@ -5,7 +5,25 @@ type MiniBook = {
   coverEmoji: string;
   coverTheme: string;
   category?: string;
+  /** Real cover art when the book has it — the mockups show the actual app, not stand-ins. */
+  coverImageUrl?: string | null;
 };
+
+/** One cover tile, using the book's real image when it has one and the gradient otherwise. */
+function MiniCover({ book, className }: { book: MiniBook; className: string }) {
+  return (
+    <div
+      className={`${book.coverImageUrl ? "bg-black/30" : `cover-theme-${book.coverTheme}`} flex items-center justify-center overflow-hidden ${className}`}
+    >
+      {book.coverImageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={book.coverImageUrl} alt="" className="h-full w-full object-cover" />
+      ) : (
+        book.coverEmoji
+      )}
+    </div>
+  );
+}
 
 export function MiniDashboardScreen({
   greeting = "Bonsoir 👋",
@@ -17,47 +35,62 @@ export function MiniDashboardScreen({
   library: MiniBook[];
 }) {
   return (
-    <div className="lumina-shell flex h-full flex-col px-3.5 pb-3 pt-4 text-white">
+    <div className="lumia-shell flex h-full flex-col px-3.5 pb-3 pt-4 text-white">
       <div className="mb-3 flex items-center justify-between">
         <span className="flex items-center gap-1 text-[0.65rem] font-extrabold tracking-wide">
           <LogoMark className="flex h-3.5 w-3.5 items-center justify-center rounded-[4px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />{" "}
-          LUMINA
+          LUMIA
         </span>
         <div className="h-4 w-4 rounded-full bg-gradient-to-br from-[#7c5cff] to-[#5b3df0]" />
       </div>
       <p className="mb-3 text-[0.72rem] font-bold">{greeting}</p>
 
+      {/* Same construction as the real dashboard billboard: blurred cover as a backdrop,
+          a scrim, and the un-cropped cover standing beside the copy. */}
       <div
-        className={`cover-theme-${continuing.coverTheme} relative mb-3 flex h-24 flex-col justify-end overflow-hidden rounded-xl p-2.5`}
+        className={`${continuing.coverImageUrl ? "bg-[#12101f]" : `cover-theme-${continuing.coverTheme}`} relative mb-3 flex h-24 items-center gap-2 overflow-hidden rounded-xl p-2.5`}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        <div className="absolute right-2 top-2 text-xl opacity-90">{continuing.coverEmoji}</div>
-        <div className="relative z-10">
-          <p className="text-[0.62rem] font-extrabold leading-tight">{continuing.title}</p>
-          <div className="lumina-progress-track mt-1.5 h-1 w-full overflow-hidden rounded-full">
+        {continuing.coverImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={continuing.coverImageUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-110 object-cover object-top blur-md"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/20" />
+        <div className="relative z-10 min-w-0 flex-1">
+          <p className="text-[0.5rem] font-bold uppercase tracking-wide text-[#f0c46a]">
+            Continuer la lecture
+          </p>
+          <p className="mt-0.5 truncate text-[0.62rem] font-extrabold leading-tight">
+            {continuing.title}
+          </p>
+          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/25">
             <div
-              className="lumina-progress-fill h-full rounded-full"
+              className="h-full rounded-full bg-gradient-to-r from-[#7c5cff] to-[#a78bfa]"
               style={{ width: `${continuing.progress}%` }}
             />
           </div>
+          <p className="mt-1 text-[0.5rem] text-white/70">{`${continuing.progress}% terminé`}</p>
         </div>
+        <MiniCover book={continuing} className="relative z-10 h-full w-12 shrink-0 rounded-md text-base" />
       </div>
 
-      <p className="mb-1.5 text-[0.6rem] font-bold text-[color:var(--color-lumina-text-muted)]">
+      <p className="mb-1.5 text-[0.6rem] font-bold text-[color:var(--color-lumia-text-muted)]">
         Ma bibliothèque
       </p>
       <div className="flex gap-1">
         {library.slice(0, 5).map((book, i) => (
-          <div
+          <MiniCover
             key={`${book.title}-${i}`}
-            className={`cover-theme-${book.coverTheme} flex h-12 flex-1 items-center justify-center rounded-lg text-sm`}
-          >
-            {book.coverEmoji}
-          </div>
+            book={book}
+            className="h-12 flex-1 rounded-lg text-sm"
+          />
         ))}
       </div>
 
-      <div className="mt-auto flex justify-between pt-3 text-[0.55rem] text-[color:var(--color-lumina-text-muted)]">
+      <div className="mt-auto flex justify-between pt-3 text-[0.55rem] text-[color:var(--color-lumia-text-muted)]">
         <span>🏠</span>
         <span>📚</span>
         <span>✨</span>
@@ -70,21 +103,18 @@ export function MiniDashboardScreen({
 
 export function MiniLibraryScreen({ books }: { books: MiniBook[] }) {
   return (
-    <div className="lumina-shell flex h-full flex-col gap-3 px-4 pb-4 pt-4 text-white">
+    <div className="lumia-shell flex h-full flex-col gap-3 px-4 pb-4 pt-4 text-white">
       <div className="flex items-center justify-between text-[0.75rem] font-extrabold">
         <span className="flex items-center gap-1">
           <LogoMark className="flex h-3.5 w-3.5 items-center justify-center rounded-[4px] bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />{" "}
-          LUMINA
+          LUMIA
         </span>
-        <span className="text-[color:var(--color-lumina-text-muted)]">Bibliothèque</span>
+        <span className="text-[color:var(--color-lumia-text-muted)]">Bibliothèque</span>
       </div>
       <div className="grid flex-1 grid-cols-4 gap-2">
         {books.slice(0, 8).map((book, i) => (
-          <div
-            key={`${book.title}-${i}`}
-            className={`cover-theme-${book.coverTheme} flex flex-col items-center justify-center gap-1 rounded-lg p-2 text-center`}
-          >
-            <span className="text-lg">{book.coverEmoji}</span>
+          <div key={`${book.title}-${i}`} className="flex flex-col gap-1">
+            <MiniCover book={book} className="aspect-[0.5628] w-full rounded-lg text-lg" />
             <span className="line-clamp-2 text-[0.5rem] font-bold leading-tight">
               {book.title}
             </span>

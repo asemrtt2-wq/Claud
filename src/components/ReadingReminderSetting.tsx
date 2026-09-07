@@ -29,7 +29,7 @@ export default function ReadingReminderSetting({
     // save button used to wrap into three ragged lines with the native picker landing on top.
     <div>
       <p className="text-sm font-bold">🌙 Rappel de lecture quotidien</p>
-      <p className="mt-1 text-xs text-[color:var(--color-lumina-text-muted)]">
+      <p className="mt-1 text-xs text-[color:var(--color-lumia-text-muted)]">
         Une bannière s&apos;affiche dans l&apos;app à cette heure-là si tu n&apos;as pas encore lu
         aujourd&apos;hui — ce n&apos;est pas une notification du téléphone.
       </p>

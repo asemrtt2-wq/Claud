@@ -23,7 +23,7 @@ export default async function EditEbookPage({
   const boundUpdate = updateEbook.bind(null, id);
 
   return (
-    <div className="lumina-shell">
+    <div className="lumia-shell">
       <AdminNav email={session?.user?.email} />
       <div className="mx-auto max-w-2xl px-6 py-10">
         <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-white">

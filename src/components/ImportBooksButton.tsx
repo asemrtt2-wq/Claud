@@ -54,11 +54,11 @@ export default function ImportBooksButton() {
   const percent = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
-    <div className="lumina-card mb-8 rounded-2xl p-5">
+    <div className="lumia-card mb-8 rounded-2xl p-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="font-extrabold text-white">📚 Importer mes livres</p>
-          <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+          <p className="text-sm text-[color:var(--color-lumia-text-muted)]">
             Ajoute ou met à jour d&apos;un coup tous les livres réels préparés dans le code
             (couvertures + contenu déjà extraits). Sans risque à relancer plusieurs fois.
           </p>
@@ -75,13 +75,13 @@ export default function ImportBooksButton() {
 
       {(running || finished || error) && total > 0 && (
         <div className="mt-4">
-          <div className="lumina-progress-track h-2 w-full overflow-hidden rounded-full">
+          <div className="lumia-progress-track h-2 w-full overflow-hidden rounded-full">
             <div
-              className="lumina-progress-fill h-full rounded-full transition-[width] duration-300"
+              className="lumia-progress-fill h-full rounded-full transition-[width] duration-300"
               style={{ width: `${percent}%` }}
             />
           </div>
-          <p className="mt-2 text-sm text-[color:var(--color-lumina-text-muted)]">
+          <p className="mt-2 text-sm text-[color:var(--color-lumia-text-muted)]">
             {done} / {total} livres
             {current ? ` · ${current}` : ""}
           </p>

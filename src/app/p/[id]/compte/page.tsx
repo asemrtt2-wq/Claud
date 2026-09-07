@@ -132,11 +132,11 @@ export default async function CompteObjectifsPage({
   ];
 
   return (
-    <div className="lumina-shell pb-24">
+    <div className="lumia-shell pb-24">
       <header className="flex items-center justify-between px-6 py-6 sm:px-10">
         <Link href={`/p/${id}`} className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
           <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />
-          LUMINA
+          LUMIA
         </Link>
         <div className="flex items-center gap-4">
           <ProfileSwitcher profiles={switcherProfiles} activeProfileId={id} />
@@ -147,7 +147,7 @@ export default async function CompteObjectifsPage({
         <div className="mb-6 flex items-center gap-3">
           <Link
             href={`/p/${id}`}
-            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >
             ← Retour
           </Link>
@@ -155,7 +155,7 @@ export default async function CompteObjectifsPage({
 
         {/* Whose profile this is — the page used to open straight onto the stats, with the
             profile's own name and avatar nowhere on it. */}
-        <div className="lumina-card mb-8 flex flex-wrap items-center gap-4 rounded-[22px] p-6">
+        <div className="lumia-card mb-8 flex flex-wrap items-center gap-4 rounded-[22px] p-6">
           <span
             className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
             style={{ background: profileGradient(profile.color) }}
@@ -164,7 +164,7 @@ export default async function CompteObjectifsPage({
           </span>
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-2xl font-extrabold tracking-tight">{profile.name}</h1>
-            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
               <span className="rounded-full border border-white/15 px-2.5 py-1">
                 {profile.type === "kids" ? "🧒 Profil enfant" : "👤 Profil adulte"}
               </span>
@@ -190,26 +190,26 @@ export default async function CompteObjectifsPage({
         </h2>
 
         <div className="mb-10 grid gap-4 sm:grid-cols-3">
-          <div className="lumina-card rounded-2xl p-5">
+          <div className="lumia-card rounded-2xl p-5">
             <ReadingGoalSetting
               profileId={id}
               initialGoal={profile.monthlyBookGoal}
               booksCompletedThisMonth={booksCompletedThisMonth}
             />
           </div>
-          <div className="lumina-card rounded-2xl p-5">
-            <p className="mb-1 text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+          <div className="lumia-card rounded-2xl p-5">
+            <p className="mb-1 text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
               ⏱️ Temps de lecture
             </p>
             <p className="mb-1 text-2xl font-extrabold">{formatMinutes(profile.totalMinutesRead)}</p>
-            <p className="text-xs text-[color:var(--color-lumina-text-muted)]">
+            <p className="text-xs text-[color:var(--color-lumia-text-muted)]">
               {`au total, dont ${formatMinutes(
                 profile.limitResetDate === todayStr ? profile.minutesReadToday : 0
               )} aujourd'hui`}
             </p>
           </div>
-          <div className="lumina-card rounded-2xl p-5">
-            <p className="mb-1 text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+          <div className="lumia-card rounded-2xl p-5">
+            <p className="mb-1 text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
               🔥 Jours consécutifs
             </p>
             <p className="text-2xl font-extrabold">{currentStreak}</p>
@@ -217,7 +217,7 @@ export default async function CompteObjectifsPage({
         </div>
 
         <section className="mb-10">
-          <h2 className="lumina-gold-text mb-4 text-sm font-extrabold uppercase tracking-wider">
+          <h2 className="lumia-gold-text mb-4 text-sm font-extrabold uppercase tracking-wider">
             Ton parcours
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -227,9 +227,9 @@ export default async function CompteObjectifsPage({
               { label: "Temps de lecture", value: formatMinutes(profile.totalMinutesRead) },
               { label: "Série actuelle", value: `${currentStreak} j` },
             ].map((stat) => (
-              <div key={stat.label} className="lumina-card-premium rounded-2xl p-5 text-center">
+              <div key={stat.label} className="lumia-card-premium rounded-2xl p-5 text-center">
                 <p className="text-2xl font-extrabold">{stat.value}</p>
-                <p className="mt-1 text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+                <p className="mt-1 text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
                   {stat.label}
                 </p>
               </div>
@@ -244,11 +244,11 @@ export default async function CompteObjectifsPage({
           requests={requestSummaries}
         />
 
-        <section className="lumina-card mb-10 rounded-[22px] p-6">
+        <section className="lumia-card mb-10 rounded-[22px] p-6">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-extrabold">{`Niveau ${level}`}</h2>
-              <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+              <p className="text-sm text-[color:var(--color-lumia-text-muted)]">
                 {`${xpIntoLevel} / ${xpForNext} XP vers le niveau ${level + 1}`}
               </p>
             </div>
@@ -256,13 +256,13 @@ export default async function CompteObjectifsPage({
               {level}
             </span>
           </div>
-          <div className="mb-6 h-2.5 w-full overflow-hidden rounded-full lumina-progress-track">
+          <div className="mb-6 h-2.5 w-full overflow-hidden rounded-full lumia-progress-track">
             <div
-              className="h-full lumina-progress-fill transition-all duration-700"
+              className="h-full lumia-progress-fill transition-all duration-700"
               style={{ width: `${levelPercent}%` }}
             />
           </div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-lumina-text-muted)]">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-lumia-text-muted)]">
             Badges
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -282,11 +282,11 @@ export default async function CompteObjectifsPage({
           </div>
         </section>
 
-        <section className="lumina-card rounded-[22px] p-6">
+        <section className="lumia-card rounded-[22px] p-6">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-extrabold">{customer.name}</h2>
-              <p className="text-sm text-[color:var(--color-lumina-text-muted)]">{customer.email}</p>
+              <p className="text-sm text-[color:var(--color-lumia-text-muted)]">{customer.email}</p>
             </div>
             <div className="flex items-center gap-2">
               <Link
@@ -305,7 +305,7 @@ export default async function CompteObjectifsPage({
             </p>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+              <p className="text-sm text-[color:var(--color-lumia-text-muted)]">
                 Tu n&apos;as pas encore d&apos;abonnement Premium.
               </p>
               <Link

@@ -9,7 +9,7 @@ const STATUS_STYLE: Record<string, string> = {
   pending: "border-amber-400/30 bg-amber-400/10 text-amber-200",
   generating: "border-[#7c5cff]/40 bg-[#7c5cff]/10 text-[#c9bdff]",
   done: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
-  duplicate: "border-white/15 bg-white/5 text-[color:var(--color-lumina-text-muted)]",
+  duplicate: "border-white/15 bg-white/5 text-[color:var(--color-lumia-text-muted)]",
   failed: "border-red-400/30 bg-red-400/10 text-red-200",
 };
 
@@ -42,13 +42,13 @@ export default async function AdminRequestsPage() {
   const aiOn = isAiConfigured();
 
   return (
-    <div className="lumina-shell min-h-screen">
+    <div className="lumia-shell min-h-screen">
       <AdminNav email={session?.user?.email} />
       <div className="mx-auto max-w-5xl px-6 py-10">
         <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-white">
           ✨ Demandes de livres
         </h1>
-        <p className="mb-6 text-sm text-[color:var(--color-lumina-text-muted)]">
+        <p className="mb-6 text-sm text-[color:var(--color-lumia-text-muted)]">
           Les abonnés Premium peuvent faire écrire un livre par Claude depuis leur profil
           {Object.entries(MONTHLY_REQUEST_QUOTA)
             .map(([plan, limit]) => ` (${plan === "yearly" ? "annuel" : "mensuel"} : ${limit}/mois)`)
@@ -68,9 +68,9 @@ export default async function AdminRequestsPage() {
             : "⚠️ ANTHROPIC_API_KEY n'est pas configurée : les demandes sont enregistrées mais aucun livre n'est écrit automatiquement."}
         </p>
 
-        <div className="lumina-card overflow-hidden rounded-2xl">
+        <div className="lumia-card overflow-hidden rounded-2xl">
           <table className="w-full text-left text-sm">
-            <thead className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumina-text-muted)]">
+            <thead className="text-xs font-bold uppercase tracking-wide text-[color:var(--color-lumia-text-muted)]">
               <tr>
                 <th className="px-5 py-3">Demande</th>
                 <th className="px-5 py-3">Compte</th>
@@ -86,7 +86,7 @@ export default async function AdminRequestsPage() {
                     <td className="px-5 py-3">
                       <p className="font-semibold text-white">{request.topic}</p>
                       {request.details && (
-                        <p className="mt-1 text-xs text-[color:var(--color-lumina-text-muted)]">
+                        <p className="mt-1 text-xs text-[color:var(--color-lumia-text-muted)]">
                           {request.details}
                         </p>
                       )}
@@ -94,7 +94,7 @@ export default async function AdminRequestsPage() {
                         <p className="mt-1 text-xs text-red-300">{request.error}</p>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-[color:var(--color-lumina-text-muted)]">
+                    <td className="px-5 py-3 text-[color:var(--color-lumia-text-muted)]">
                       {request.customer.email}
                       {request.profile && (
                         <span className="block text-xs">{request.profile.name}</span>
@@ -121,7 +121,7 @@ export default async function AdminRequestsPage() {
                           {ebook.title}
                         </Link>
                       ) : (
-                        <span className="text-[color:var(--color-lumina-text-muted)]">—</span>
+                        <span className="text-[color:var(--color-lumia-text-muted)]">—</span>
                       )}
                     </td>
                   </tr>
@@ -131,7 +131,7 @@ export default async function AdminRequestsPage() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="px-5 py-8 text-center text-[color:var(--color-lumina-text-muted)]"
+                    className="px-5 py-8 text-center text-[color:var(--color-lumia-text-muted)]"
                   >
                     Aucune demande pour le moment.
                   </td>

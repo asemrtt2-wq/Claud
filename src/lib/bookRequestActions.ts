@@ -45,7 +45,7 @@ async function requireOwnedRequest(requestId: string) {
 /**
  * Step 1 — validate the ask, check the catalog and the quota, and write the outline.
  *
- * The duplicate check runs before anything is stored, so asking for a book Lumina already
+ * The duplicate check runs before anything is stored, so asking for a book Lumia already
  * has costs the reader nothing.
  */
 export async function submitBookRequest(
@@ -102,7 +102,7 @@ export async function submitBookRequest(
     });
     revalidatePath(`/p/${profileId}/compte`);
     throw new Error(
-      "La rédaction automatique n'est pas activée sur ce serveur. Ta demande a été enregistrée pour l'équipe Lumina."
+      "La rédaction automatique n'est pas activée sur ce serveur. Ta demande a été enregistrée pour l'équipe Lumia."
     );
   }
 

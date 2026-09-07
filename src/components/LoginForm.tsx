@@ -36,12 +36,12 @@ export default function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="lumina-card w-full max-w-sm rounded-[22px] p-9"
+      className="lumia-card w-full max-w-sm rounded-[22px] p-9"
     >
       <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-white">
         Connexion
       </h1>
-      <p className="mb-7 text-sm text-[color:var(--color-lumina-text-muted)]">
+      <p className="mb-7 text-sm text-[color:var(--color-lumia-text-muted)]">
         Retrouve ta bibliothèque, tes favoris et ton abonnement.
       </p>
 
@@ -81,7 +81,7 @@ export default function LoginForm() {
         {loading ? "Connexion..." : "Se connecter"}
       </button>
 
-      <p className="mt-5 text-center text-sm text-[color:var(--color-lumina-text-muted)]">
+      <p className="mt-5 text-center text-sm text-[color:var(--color-lumia-text-muted)]">
         Pas encore de compte ?{" "}
         <Link href="/signup" className="font-semibold text-[#a78bfa] hover:underline">
           Créer un compte

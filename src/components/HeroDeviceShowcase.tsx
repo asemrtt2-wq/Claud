@@ -5,6 +5,7 @@ type ShowcaseBook = {
   title: string;
   coverEmoji: string;
   coverTheme: string;
+  coverImageUrl: string | null;
   content: string;
 };
 

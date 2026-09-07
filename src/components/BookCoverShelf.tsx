@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import BookCoverCard, { type CoverCardBook } from "./BookCoverCard";
 import CoverLightbox, { type LightboxBook } from "./CoverLightbox";
 
@@ -15,21 +15,46 @@ export default function BookCoverShelf({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
 
-  function scrollBy(amount: number) {
-    scrollRef.current?.scrollBy({ left: amount, behavior: "smooth" });
+  /* Same behaviour as BookRow: solid, always-legible arrows that disable themselves at the
+     ends rather than fading in over the covers and doing nothing when there is no more row. */
+  const syncEdges = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    /* The row is inset with a negative margin + matching padding, and `snap-start` parks
+       the first tile past that padding — so a row sitting at its start reports a scrollLeft
+       equal to the padding, not 0. Comparing against 0 left the "‹" enabled at the start. */
+    const startOffset = parseFloat(getComputedStyle(el).paddingLeft) || 0;
+    setAtStart(el.scrollLeft <= startOffset + 2);
+    setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    syncEdges();
+    const el = scrollRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(syncEdges);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [syncEdges, books.length]);
+
+  function scrollByPage(direction: 1 | -1) {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: "smooth" });
   }
 
-  const arrowBase =
-    "absolute inset-y-0 z-10 hidden w-14 items-center text-3xl opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 sm:flex";
-  const arrowColor = light ? "text-[#1d1d1f]" : "text-white";
-  const edgeFrom = light ? "from-[#f5f5f7]" : "from-[#0a0918]";
-  const edgeTo = light ? "to-[#f5f5f7]" : "to-[#0a0918]";
+  const arrowBase = `absolute top-[38%] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-xl font-bold shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md transition duration-200 disabled:pointer-events-none disabled:opacity-0 ${
+    light ? "bg-white/95 text-[#1d1d1f] hover:bg-white" : "bg-black/70 text-white hover:bg-black/90"
+  }`;
 
   return (
     <div className="group/row relative">
       <div
         ref={scrollRef}
+        onScroll={syncEdges}
         className="scrollbar-hide -mx-6 flex snap-x gap-5 overflow-x-auto px-6 pb-2 sm:-mx-10 sm:px-10"
       >
         {books.map((book, i) => (
@@ -48,17 +73,19 @@ export default function BookCoverShelf({
         <>
           <button
             type="button"
-            onClick={() => scrollBy(-(scrollRef.current?.clientWidth ?? 0) * 0.8)}
+            onClick={() => scrollByPage(-1)}
+            disabled={atStart}
             aria-label="Voir précédent"
-            className={`${arrowBase} left-0 justify-start rounded-r-2xl bg-gradient-to-r ${edgeFrom} to-transparent pl-2 ${arrowColor}`}
+            className={`${arrowBase} -left-1 sm:left-2`}
           >
             ‹
           </button>
           <button
             type="button"
-            onClick={() => scrollBy((scrollRef.current?.clientWidth ?? 0) * 0.8)}
+            onClick={() => scrollByPage(1)}
+            disabled={atEnd}
             aria-label="Voir plus"
-            className={`${arrowBase} right-0 justify-end rounded-l-2xl bg-gradient-to-l ${edgeTo} from-transparent pr-2 ${arrowColor}`}
+            className={`${arrowBase} -right-1 sm:right-2`}
           >
             ›
           </button>

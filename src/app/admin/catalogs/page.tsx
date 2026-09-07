@@ -15,11 +15,11 @@ export default async function AdminCatalogsPage() {
   ]);
 
   return (
-    <div className="lumina-shell">
+    <div className="lumia-shell">
       <AdminNav email={session?.user?.email} />
       <div className="mx-auto max-w-2xl px-6 py-10">
         <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-white">Catalogues</h1>
-        <p className="mb-6 text-sm text-[color:var(--color-lumina-text-muted)]">
+        <p className="mb-6 text-sm text-[color:var(--color-lumia-text-muted)]">
           Crée des rangées personnalisées (ex : "Coup de cœur", "Best-sellers") — elles
           apparaissent sur la page d&apos;accueil et le tableau de bord dès qu&apos;un livre y est
           rattaché. Rattache un livre à un catalogue depuis sa fiche dans{" "}
@@ -28,7 +28,7 @@ export default async function AdminCatalogsPage() {
 
         <form
           action={createCatalog}
-          className="lumina-card mb-8 flex flex-col gap-3 rounded-2xl p-5"
+          className="lumia-card mb-8 flex flex-col gap-3 rounded-2xl p-5"
         >
           <div className="flex flex-wrap items-center gap-3">
             <input
@@ -57,7 +57,7 @@ export default async function AdminCatalogsPage() {
           {catalogs.map((catalog) => (
             <div
               key={catalog.id}
-              className="lumina-card flex flex-col gap-3 rounded-2xl p-4"
+              className="lumia-card flex flex-col gap-3 rounded-2xl p-4"
             >
               <form
                 action={renameCatalog.bind(null, catalog.id)}
@@ -71,7 +71,7 @@ export default async function AdminCatalogsPage() {
                     defaultValue={catalog.name}
                     className="min-w-0 flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-[#a78bfa]"
                   />
-                  <span className="shrink-0 text-xs text-[color:var(--color-lumina-text-muted)]">
+                  <span className="shrink-0 text-xs text-[color:var(--color-lumia-text-muted)]">
                     {catalog._count.ebooks} livre{catalog._count.ebooks > 1 ? "s" : ""}
                   </span>
                   <button
@@ -93,7 +93,7 @@ export default async function AdminCatalogsPage() {
             </div>
           ))}
           {catalogs.length === 0 && (
-            <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+            <p className="text-sm text-[color:var(--color-lumia-text-muted)]">
               Aucun catalogue pour le moment.
             </p>
           )}

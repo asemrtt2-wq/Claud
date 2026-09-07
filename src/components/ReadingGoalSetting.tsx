@@ -31,23 +31,23 @@ export default function ReadingGoalSetting({
     <div>
       {numericGoal ? (
         <div className="mb-3">
-          <div className="mb-1.5 flex items-center justify-between text-xs text-[color:var(--color-lumina-text-muted)]">
+          <div className="mb-1.5 flex items-center justify-between text-xs text-[color:var(--color-lumia-text-muted)]">
             <span>
               {booksCompletedThisMonth} / {numericGoal} livres ce mois-ci
             </span>
             <span>{percent}%</span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full lumina-progress-track">
-            <div className="h-full lumina-progress-fill" style={{ width: `${percent}%` }} />
+          <div className="h-1.5 w-full overflow-hidden rounded-full lumia-progress-track">
+            <div className="h-full lumia-progress-fill" style={{ width: `${percent}%` }} />
           </div>
         </div>
       ) : (
-        <p className="mb-3 text-xs text-[color:var(--color-lumina-text-muted)]">
+        <p className="mb-3 text-xs text-[color:var(--color-lumia-text-muted)]">
           Fixe-toi un objectif de lecture mensuel.
         </p>
       )}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-[color:var(--color-lumina-text-muted)]">
+        <span className="text-sm text-[color:var(--color-lumia-text-muted)]">
           🎯 Objectif de lecture (livres / mois)
         </span>
         <input

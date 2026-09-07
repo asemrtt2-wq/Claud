@@ -14,18 +14,18 @@ export default async function AdminSettingsPage() {
   ]);
 
   return (
-    <div className="lumina-shell">
+    <div className="lumia-shell">
       <AdminNav email={session?.user?.email} />
       <div className="mx-auto max-w-2xl px-6 py-10">
         <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-white">
           Réglages du site
         </h1>
-        <p className="mb-6 text-sm text-[color:var(--color-lumina-text-muted)]">
+        <p className="mb-6 text-sm text-[color:var(--color-lumia-text-muted)]">
           Modifie le texte affiché en haut de la page d&apos;accueil. Laisse un champ vide pour
           revenir au texte par défaut.
         </p>
 
-        <form action={updateSiteSettings} className="lumina-card grid gap-5 rounded-2xl p-7">
+        <form action={updateSiteSettings} className="lumia-card grid gap-5 rounded-2xl p-7">
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-white">
               Titre d&apos;accueil

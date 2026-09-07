@@ -36,8 +36,8 @@ export default function PinGate({
   }
 
   return (
-    <div className="lumina-shell flex min-h-screen items-center justify-center px-6">
-      <form onSubmit={handleSubmit} className="lumina-card w-full max-w-xs rounded-[26px] p-6 text-center">
+    <div className="lumia-shell flex min-h-screen items-center justify-center px-6">
+      <form onSubmit={handleSubmit} className="lumia-card w-full max-w-xs rounded-[26px] p-6 text-center">
         <span
           className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-3xl"
           style={{ background: profileGradient(color) }}

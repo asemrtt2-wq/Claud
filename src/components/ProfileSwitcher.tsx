@@ -51,8 +51,8 @@ export default function ProfileSwitcher({
     });
   }
 
-  const card = light ? "ibook-card" : "lumina-card";
-  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumina-text-muted)]";
+  const card = light ? "ibook-card" : "lumia-card";
+  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumia-text-muted)]";
   const text = light ? "text-[#1d1d1f]" : "text-white";
   const hoverBg = light ? "hover:bg-black/[0.04]" : "hover:bg-white/5";
   const activeBg = light ? "bg-black/[0.04]" : "bg-white/5";

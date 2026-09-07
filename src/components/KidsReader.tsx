@@ -112,7 +112,7 @@ export default function KidsReader({
     return (
       <div className={`cover-theme-${coverTheme} relative flex min-h-screen items-center justify-center p-6 text-white`}>
         <div className="absolute inset-0 bg-black/55" />
-        <div className="lumina-card relative z-10 max-w-sm rounded-[26px] p-8 text-center">
+        <div className="lumia-card relative z-10 max-w-sm rounded-[26px] p-8 text-center">
           <p className="mb-4 text-5xl">⏱️</p>
           <h1 className="mb-2 text-xl font-extrabold">Temps de lecture atteint !</h1>
           <p className="mb-6 text-sm text-white/80">

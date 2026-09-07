@@ -15,6 +15,12 @@ export type LibraryBook = CoverCardBook & {
   hasAccess: boolean;
   href: string;
   isBestseller: boolean;
+  /** Real average of submitted ratings; null until the book has one. */
+  rating: number | null;
+  ratingCount: number;
+  seriesName: string | null;
+  /** Tomes in the series this tile stands for; null for a standalone book. */
+  seriesCount: number | null;
 };
 
 export type LibrarySection = {
@@ -159,7 +165,7 @@ export default function LibraryCatalogClient({
   }
 
   const heading = light ? "text-[#1d1d1f]" : "text-white";
-  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumina-text-muted)]";
+  const muted = light ? "text-[#6e6e73]" : "text-[color:var(--color-lumia-text-muted)]";
   const link = light ? "text-[#5b3df0]" : "text-[#a78bfa]";
   const searchWrap = light
     ? "border-black/10 bg-black/[0.03] text-[#1d1d1f] placeholder:text-black/35 focus:border-[#7c5cff]"
@@ -210,7 +216,7 @@ export default function LibraryCatalogClient({
               <div className="mb-5">
                 <h2 className={`text-lg font-extrabold ${heading}`}>{section.label}</h2>
                 {section.tagline && (
-                  <p className="lumina-gold-text mt-0.5 text-xs italic">{section.tagline}</p>
+                  <p className="lumia-gold-text mt-0.5 text-xs italic">{section.tagline}</p>
                 )}
               </div>
               <BookShelf books={section.books} light={light} onOpen={openLightbox} />

@@ -10,15 +10,16 @@ import ContinueReadingRow from "@/components/ContinueReadingRow";
 import CollectionsManager from "@/components/CollectionsManager";
 import { getCurrentCustomer } from "@/lib/customerSession";
 import { getActiveProfile } from "@/lib/activeProfile";
-import { dedupeSeries } from "@/lib/series";
-import { getBestsellerIds, getSurpriseBook, getRecommendations } from "@/lib/recommendations";
+import { collapseSeries, dedupeSeries, seriesCounts } from "@/lib/series";
+import { getBestsellerIds, getSurpriseBook, getRecommendations, getPopularBooks } from "@/lib/recommendations";
+import { getRatingSummaries } from "@/lib/reviews";
 import { countWords, paginateContent } from "@/lib/paginate";
 
 export default async function BibliothequePage() {
   const customer = await getCurrentCustomer();
   const activeProfile = customer ? await getActiveProfile(customer.id) : null;
 
-  const [ebooks, bestsellerIds, surpriseSlug, catalogs] = await Promise.all([
+  const [ebooks, bestsellerIds, surpriseSlug, catalogs, popular] = await Promise.all([
     prisma.eBook.findMany({ where: { audience: "adults" }, orderBy: { createdAt: "asc" } }),
     getBestsellerIds(),
     getSurpriseBook(activeProfile?.id ?? null),
@@ -26,7 +27,14 @@ export default async function BibliothequePage() {
       include: { ebooks: { where: { audience: "adults" } } },
       orderBy: { createdAt: "asc" },
     }),
+    // Real popularity across purchases, reads and favorites — rotated per visit.
+    getPopularBooks(18),
   ]);
+
+  const ratings = await getRatingSummaries(ebooks.map((e) => e.id));
+  // Tome counts come from the *whole* catalog, so a collapsed tile says "5 tomes" even in
+  // a row that only happens to contain one of them.
+  const tomeCounts = seriesCounts(ebooks);
 
   let accessibleIds = new Set<string>();
   if (customer) {
@@ -44,7 +52,12 @@ export default async function BibliothequePage() {
 
   function toLibraryBook(b: (typeof ebooks)[number]): LibraryBook {
     const hasAccess = accessibleIds.has(b.id);
+    const rating = ratings.get(b.id);
     return {
+      rating: rating?.average ?? null,
+      ratingCount: rating?.count ?? 0,
+      seriesName: b.seriesName,
+      seriesCount: b.seriesName ? (tomeCounts.get(b.seriesName) ?? 1) : null,
       id: b.id,
       slug: b.slug,
       title: b.title,
@@ -65,8 +78,9 @@ export default async function BibliothequePage() {
     };
   }
 
+  // Tome 2, 3, 4… never get their own tile here: a series shows once, badged as a series.
   const allBooks = dedupeSeries(ebooks).map(toLibraryBook);
-  const popularBooks = allBooks.filter((b) => b.isBestseller);
+  const popularBooks = dedupeSeries(popular).map(toLibraryBook);
 
   const sections: LibrarySection[] = [
     ...(popularBooks.length > 0
@@ -242,7 +256,7 @@ export default async function BibliothequePage() {
                 Vous ne savez pas quoi lire ?
               </h2>
               <p className="mb-6 text-sm text-[#e4defc]">
-                Laissez Lumina vous recommander une lecture adaptée à vos intérêts.
+                Laissez Lumia vous recommander une lecture adaptée à vos intérêts.
               </p>
               <Link
                 href={`/ebooks/${surpriseSlug}`}

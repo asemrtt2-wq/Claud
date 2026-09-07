@@ -7,15 +7,16 @@ import { getActiveProfile } from "@/lib/activeProfile";
 import { paginateContent } from "@/lib/paginate";
 import { getChapters } from "@/lib/chapters";
 import { getBestExcerpt } from "@/lib/excerpt";
-import { getRecommendations } from "@/lib/recommendations";
+import { getRecommendations, getSimilarBooks } from "@/lib/recommendations";
 import LightHeader from "@/components/LightHeader";
 import EbookHero from "@/components/EbookHero";
 import FavoriteButton from "@/components/FavoriteButton";
 import AddToCollectionButton from "@/components/AddToCollectionButton";
 import ExpandableText from "@/components/ExpandableText";
-import ShareButton from "@/components/ShareButton";
 import BackButton from "@/components/BackButton";
 import BookDetailTabs from "@/components/BookDetailTabs";
+import ReviewSection from "@/components/ReviewSection";
+import { getMyReview, getRatingSummary, getReviewThread } from "@/lib/reviews";
 import BookRow from "@/components/BookRow";
 import { dedupeSeries } from "@/lib/series";
 
@@ -65,26 +66,23 @@ export default async function EBookPage({
         })
       : null;
 
-  const [rawSimilarBooks, recommendations, seriesBooks] = await Promise.all([
-    prisma.eBook.findMany({
-      where: {
-        audience: "adults",
-        category: ebook.category,
-        id: { not: ebook.id },
-        ...(ebook.seriesName ? { seriesName: { not: ebook.seriesName } } : {}),
-      },
-      take: 8,
-    }),
-    activeProfile ? getRecommendations(activeProfile.id, [ebook.id]) : null,
-    ebook.seriesName
-      ? prisma.eBook.findMany({
-          where: { seriesName: ebook.seriesName, audience: "adults" },
-          orderBy: { seriesOrder: "asc" },
-        })
-      : Promise.resolve([]),
-  ]);
+  const [rawSimilarBooks, recommendations, seriesBooks, ratingSummary, reviewThread, myReview] =
+    await Promise.all([
+      // Scored similarity (category + author + wording), not just "same category, first 8".
+      getSimilarBooks(ebook, 8),
+      activeProfile ? getRecommendations(activeProfile.id, [ebook.id]) : null,
+      ebook.seriesName
+        ? prisma.eBook.findMany({
+            where: { seriesName: ebook.seriesName, audience: "adults" },
+            orderBy: { seriesOrder: "asc" },
+          })
+        : Promise.resolve([]),
+      getRatingSummary(ebook.id),
+      getReviewThread(ebook.id, activeProfile?.id ?? null),
+      activeProfile ? getMyReview(ebook.id, activeProfile.id) : Promise.resolve(null),
+    ]);
 
-  const similarBooks = dedupeSeries(rawSimilarBooks).slice(0, 4);
+  const similarBooks = dedupeSeries(rawSimilarBooks).slice(0, 6);
 
   const seriesProgress = activeProfile
     ? await prisma.readingProgress.findMany({
@@ -134,8 +132,6 @@ export default async function EBookPage({
   const remainingPages = pages.length - (progress ? progress.page + 1 : 0);
   const secPerPage = progress?.avgSecondsPerPage ?? 90;
   const remainingMinutes = Math.max(1, Math.round((remainingPages * secPerPage) / 60));
-
-  const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/ebooks/${ebook.slug}`;
 
   const recommendedRows = recommendations
     ? [
@@ -198,6 +194,8 @@ export default async function EBookPage({
           readHref={readHref}
           progressLabel={progressLabel}
           excerpt={excerpt}
+          rating={ratingSummary.average}
+          ratingCount={ratingSummary.count}
         />
 
         <div className="mx-auto max-w-3xl px-6 pb-20 pt-10">
@@ -218,7 +216,16 @@ export default async function EBookPage({
               collections={collectionOptions}
               profileId={activeProfile?.id ?? null}
             />
-            <ShareButton title={ebook.title} url={shareUrl} />
+            {/* "Partager" used to sit here. It sent the page elsewhere; the reviews section
+                below keeps what readers think on the page itself, which is what was asked for. */}
+            <a
+              href="#avis"
+              className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#1d1d1f] transition hover:border-[#7c5cff]"
+            >
+              {ratingSummary.average !== null
+                ? `⭐ ${ratingSummary.average.toFixed(1)} · ${ratingSummary.count} avis`
+                : "⭐ Donner mon avis"}
+            </a>
           </div>
 
           <div className="mb-12">
@@ -241,6 +248,17 @@ export default async function EBookPage({
               </div>
             </section>
           )}
+
+          <div className="mb-12">
+            <ReviewSection
+              ebookId={ebook.id}
+              slug={ebook.slug}
+              profileId={activeProfile?.id ?? null}
+              summary={ratingSummary}
+              reviews={reviewThread}
+              myReview={myReview}
+            />
+          </div>
 
           <section className="ibook-card rounded-[22px] p-6">
             <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[#6e6e73]">

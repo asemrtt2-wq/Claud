@@ -311,7 +311,7 @@ export default function Reader({
   const dark = theme === "sombre" || theme === "immersive";
   const mutedTextClass = dark ? "text-white/60" : "text-black/50";
 
-  const bookmarkKey = `lumina-bookmarks:${ebookId}:${profileId}`;
+  const bookmarkKey = `lumia-bookmarks:${ebookId}:${profileId}`;
   useEffect(() => {
     try {
       const raw = localStorage.getItem(bookmarkKey);

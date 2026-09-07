@@ -15,44 +15,44 @@ export default function AdminNav({ email }: { email?: string | null }) {
           </Link>
           <Link
             href="/"
-            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >
             Voir le site
           </Link>
           <Link
             href="/admin#adultes"
-            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >
             📚 Catalogue Adultes
           </Link>
           <Link
             href="/admin#enfants"
-            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >
             🧒 Catalogue Enfants
           </Link>
           <Link
             href="/admin/catalogs"
-            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >
             🗂️ Catalogues
           </Link>
           <Link
             href="/admin/requests"
-            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >
             ✨ Demandes
           </Link>
           <Link
             href="/admin/settings"
-            className="text-sm font-semibold text-[color:var(--color-lumina-text-muted)] transition hover:text-white"
+            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >
             ⚙️ Réglages
           </Link>
         </div>
         <div className="flex items-center gap-4">
           {email && (
-            <span className="text-sm text-[color:var(--color-lumina-text-muted)]">{email}</span>
+            <span className="text-sm text-[color:var(--color-lumia-text-muted)]">{email}</span>
           )}
           <button
             onClick={() => signOut({ callbackUrl: "/admin/login" })}

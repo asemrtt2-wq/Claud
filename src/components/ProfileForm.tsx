@@ -94,7 +94,7 @@ export default function ProfileForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="lumina-card w-full max-w-md rounded-[26px] p-6">
+    <form onSubmit={handleSubmit} className="lumia-card w-full max-w-md rounded-[26px] p-6">
       <h3 className="mb-4 text-lg font-extrabold">
         {isEdit ? "Modifier le profil" : "Nouveau profil"}
       </h3>
@@ -111,11 +111,11 @@ export default function ProfileForm({
           onChange={(e) => setName(e.target.value)}
           placeholder="Nom du profil"
           required
-          className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-[color:var(--color-lumina-text-muted)] focus:border-[#7c5cff]"
+          className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-[color:var(--color-lumia-text-muted)] focus:border-[#7c5cff]"
         />
       </div>
 
-      <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+      <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
         Avatar
       </label>
       <div className="mb-4 flex flex-wrap gap-2">
@@ -133,7 +133,7 @@ export default function ProfileForm({
         ))}
       </div>
 
-      <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+      <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
         Couleur
       </label>
       <div className="mb-4 flex gap-2">
@@ -153,7 +153,7 @@ export default function ProfileForm({
         ))}
       </div>
 
-      <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+      <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
         Type de profil
       </label>
       <div className="mb-4 flex gap-4">
@@ -177,7 +177,7 @@ export default function ProfileForm({
 
       {type === "kids" && (
         <>
-          <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+          <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
             Limite de lecture quotidienne (minutes, vide = illimité)
           </label>
           <input
@@ -190,7 +190,7 @@ export default function ProfileForm({
         </>
       )}
 
-      <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumina-text-muted)]">
+      <label className="mb-1 block text-xs font-semibold text-[color:var(--color-lumia-text-muted)]">
         Code PIN {initial?.hasPin ? "(déjà activé)" : "(optionnel)"}
       </label>
       <div className="mb-4 flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function ProfileForm({
           className="w-32 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none focus:border-[#7c5cff] disabled:opacity-40"
         />
         {initial?.hasPin && (
-          <label className="flex items-center gap-1.5 text-xs text-[color:var(--color-lumina-text-muted)]">
+          <label className="flex items-center gap-1.5 text-xs text-[color:var(--color-lumia-text-muted)]">
             <input
               type="checkbox"
               checked={removePin}

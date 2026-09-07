@@ -3,7 +3,7 @@
 const inputClass =
   "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#a78bfa]";
 const labelClass = "mb-1.5 block text-sm font-semibold text-white";
-const helpClass = "mb-2 text-xs text-[color:var(--color-lumina-text-muted)]";
+const helpClass = "mb-2 text-xs text-[color:var(--color-lumia-text-muted)]";
 
 type Defaults = {
   title?: string;
@@ -39,7 +39,7 @@ export default function EbookForm({
   catalogs: { id: string; name: string }[];
 }) {
   return (
-    <form action={action} className="lumina-card grid gap-5 rounded-2xl p-7">
+    <form action={action} className="lumia-card grid gap-5 rounded-2xl p-7">
       <div>
         <label className={labelClass}>Titre</label>
         <input name="title" required defaultValue={defaults?.title} className={inputClass} />
@@ -129,7 +129,7 @@ export default function EbookForm({
           <span className="font-semibold text-white">Catalogues</span> dans le menu admin.
         </p>
         {catalogs.length === 0 ? (
-          <p className="text-sm text-[color:var(--color-lumina-text-muted)]">
+          <p className="text-sm text-[color:var(--color-lumia-text-muted)]">
             Aucun catalogue pour le moment.
           </p>
         ) : (

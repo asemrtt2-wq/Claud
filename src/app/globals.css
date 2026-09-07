@@ -14,16 +14,16 @@
 
   --radius-xl: 22px;
 
-  --color-lumina-bg: #0a0918;
-  --color-lumina-panel: #14122a;
-  --color-lumina-border: rgba(255, 255, 255, 0.08);
-  --color-lumina-purple: #7c5cff;
-  --color-lumina-purple-light: #a78bfa;
-  --color-lumina-text-muted: #9a95c9;
-  --color-lumina-wine: #7a1f2e;
-  --color-lumina-wine-light: #a8324a;
-  --color-lumina-gold: #d4af37;
-  --color-lumina-gold-light: #f0d878;
+  --color-lumia-bg: #0a0918;
+  --color-lumia-panel: #14122a;
+  --color-lumia-border: rgba(255, 255, 255, 0.08);
+  --color-lumia-purple: #7c5cff;
+  --color-lumia-purple-light: #a78bfa;
+  --color-lumia-text-muted: #9a95c9;
+  --color-lumia-wine: #7a1f2e;
+  --color-lumia-wine-light: #a8324a;
+  --color-lumia-gold: #d4af37;
+  --color-lumia-gold-light: #f0d878;
 }
 
 html {
@@ -60,27 +60,27 @@ body {
   background: linear-gradient(160deg, #2f9e8f, #1a2a5e);
 }
 
-.lumina-shell {
+.lumia-shell {
   min-height: 100vh;
   background:
     radial-gradient(circle at 15% 0%, rgba(124, 92, 255, 0.28), transparent 55%),
     radial-gradient(circle at 85% 15%, rgba(91, 61, 240, 0.16), transparent 45%),
     radial-gradient(circle at 75% 90%, rgba(122, 31, 46, 0.14), transparent 55%),
     radial-gradient(circle at 30% 85%, rgba(124, 92, 255, 0.1), transparent 50%),
-    linear-gradient(180deg, #150f2e 0%, var(--color-lumina-bg) 40%, #050208 80%, #000000 100%);
+    linear-gradient(180deg, #150f2e 0%, var(--color-lumia-bg) 40%, #050208 80%, #000000 100%);
   color: #ffffff;
 }
 
-.lumina-card {
+.lumia-card {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--color-lumina-border);
+  border: 1px solid var(--color-lumia-border);
   border-radius: 20px;
   backdrop-filter: blur(16px);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-.lumina-card-premium {
+.lumia-card-premium {
   background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(122, 31, 46, 0.06));
   border: 1px solid rgba(212, 175, 55, 0.18);
   border-radius: 20px;
@@ -89,13 +89,13 @@ body {
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.lumina-card-premium:hover {
+.lumia-card-premium:hover {
   border-color: rgba(212, 175, 55, 0.4);
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), 0 0 40px rgba(212, 175, 55, 0.12);
 }
 
-.lumina-gold-text {
-  background: linear-gradient(120deg, var(--color-lumina-gold-light), var(--color-lumina-gold));
+.lumia-gold-text {
+  background: linear-gradient(120deg, var(--color-lumia-gold-light), var(--color-lumia-gold));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -112,7 +112,7 @@ body {
   }
 }
 
-.lumina-glow {
+.lumia-glow {
   pointer-events: none;
   position: absolute;
   border-radius: 9999px;
@@ -120,20 +120,27 @@ body {
   animation: glow-pulse 9s ease-in-out infinite;
 }
 
-.lumina-progress-track {
+.lumia-progress-track {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.lumina-progress-fill {
-  background: linear-gradient(90deg, var(--color-lumina-purple), var(--color-lumina-purple-light));
+.lumia-progress-fill {
+  background: linear-gradient(90deg, var(--color-lumia-purple), var(--color-lumia-purple-light));
 }
 
 /* "ibook" light theme — used only on the bibliothèque, ebook detail, and dashboard
-   pages (an Apple Books-style reading surface), kept separate from .lumina-shell/
-   .lumina-card since those stay dark everywhere else on the site. */
+   pages (an Apple Books-style reading surface), kept separate from .lumia-shell/
+   .lumia-card since those stay dark everywhere else on the site. */
+/* The light "app" surface (dashboard, book page, library). A flat #f5f5f7 read as an empty
+   sheet of paper behind the covers; the tinted radial washes give the page some depth
+   without turning it into a second dark theme. */
 .ibook-shell {
   min-height: 100vh;
-  background: #f5f5f7;
+  background:
+    radial-gradient(1100px 620px at 12% -10%, rgba(124, 92, 255, 0.13), transparent 62%),
+    radial-gradient(900px 520px at 96% 4%, rgba(91, 61, 240, 0.09), transparent 60%),
+    linear-gradient(180deg, #f7f6fb 0%, #f2f1f6 42%, #eeedf3 100%);
+  background-attachment: fixed;
   color: #1d1d1f;
 }
 
@@ -150,7 +157,7 @@ body {
 }
 
 .ibook-progress-fill {
-  background: linear-gradient(90deg, var(--color-lumina-purple), var(--color-lumina-purple-light));
+  background: linear-gradient(90deg, var(--color-lumia-purple), var(--color-lumia-purple-light));
 }
 
 .scrollbar-hide {

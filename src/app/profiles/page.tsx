@@ -25,10 +25,10 @@ export default async function ProfilesPage() {
   }));
 
   return (
-    <div className="lumina-shell flex min-h-screen flex-col items-center justify-center px-6 py-16">
+    <div className="lumia-shell flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <Link href="/" className="mb-10 flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
         <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white" />
-        LUMINA
+        LUMIA
       </Link>
       <h1 className="mb-10 text-2xl font-extrabold tracking-tight text-white">
         Qui lit aujourd&apos;hui ?

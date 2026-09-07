@@ -44,6 +44,7 @@ model EBook {
   collectionItems CollectionItem[]
   catalogs    Catalog[]
   highlights  Highlight[]
+  reviews     Review[]
 }
 
 model Catalog {
@@ -121,6 +122,7 @@ model Profile {
   collections Collection[]
   highlights  Highlight[]
   bookRequests BookRequest[]
+  reviews     Review[]
 }
 
 model Collection {
@@ -217,4 +219,29 @@ model BookRequest {
   updatedAt    DateTime @updatedAt
 
   @@index([customerId, createdAt])
+}
+
+/// A reader's public review of a book: a 1-5 star rating, an optional comment, and
+/// threaded replies (one level deep — `parentId` points at the review being answered).
+///
+/// Scoped to the *profile*, like favorites and reading progress, because "who is reading"
+/// is the identity readers see next to a comment. The unique constraint is on the top-level
+/// rating only, enforced in code: a profile rates a book once but may reply many times.
+model Review {
+  id        String   @id @default(cuid())
+  ebookId   String
+  ebook     EBook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  /// 1-5 for a top-level review; null for a reply, which carries no score of its own.
+  rating    Int?
+  comment   String   @default("")
+  parentId  String?
+  parent    Review?  @relation("ReviewReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Review[] @relation("ReviewReplies")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ebookId, createdAt])
+  @@index([parentId])
 }

@@ -50,13 +50,13 @@ export default function SignupForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="lumina-card w-full max-w-sm rounded-[22px] p-9"
+      className="lumia-card w-full max-w-sm rounded-[22px] p-9"
     >
       <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-white">
         Créer un compte
       </h1>
-      <p className="mb-7 text-sm text-[color:var(--color-lumina-text-muted)]">
-        Rejoins Lumina pour lire, sauvegarder tes favoris et t&apos;abonner à Premium.
+      <p className="mb-7 text-sm text-[color:var(--color-lumia-text-muted)]">
+        Rejoins Lumia pour lire, sauvegarder tes favoris et t&apos;abonner à Premium.
       </p>
 
       <label className="mb-1.5 block text-sm font-semibold text-white">Nom</label>
@@ -98,7 +98,7 @@ export default function SignupForm() {
         {loading ? "Création..." : "Créer mon compte"}
       </button>
 
-      <p className="mt-5 text-center text-sm text-[color:var(--color-lumina-text-muted)]">
+      <p className="mt-5 text-center text-sm text-[color:var(--color-lumia-text-muted)]">
         Déjà un compte ?{" "}
         <Link href="/login" className="font-semibold text-[#a78bfa] hover:underline">
           Se connecter
