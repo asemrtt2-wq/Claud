@@ -253,7 +253,7 @@ export default function BookRequestPanel({
                   )}
                   <button
                     onClick={() => handleDelete(request.id)}
-                    className="text-[color:var(--color-lumia-text-muted)] transition hover:text-red-300"
+                    className="-mx-2 rounded-lg px-2 py-2 text-[color:var(--color-lumia-text-muted)] transition hover:text-red-300"
                   >
                     Supprimer
                   </button>

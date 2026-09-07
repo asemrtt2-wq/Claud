@@ -19,7 +19,7 @@ export default function ExpandableText({
       {isLong && (
         <button
           onClick={() => setExpanded((v) => !v)}
-          className={`ml-2 font-semibold hover:underline ${light ? "text-[#5b3df0]" : "text-[#a78bfa]"}`}
+          className={`ml-1 inline-block px-1 py-2 font-semibold hover:underline ${light ? "text-[#5b3df0]" : "text-[#a78bfa]"}`}
         >
           {expanded ? "Voir moins" : "Voir plus"}
         </button>

@@ -857,11 +857,25 @@ export default function Reader({
       )}
 
       {panelOpen && (
+        <>
+          {/* Tapping outside closes the panel. On a phone the panel is a bottom sheet that
+              covers a good part of the page, so there has to be a way out that isn't the
+              same small button that opened it. */}
+          <button
+            type="button"
+            aria-label="Fermer le panneau"
+            onClick={() => setPanelOpen(null)}
+            className="fixed inset-0 z-20 cursor-default bg-black/20 sm:bg-transparent"
+          />
         <div
-          className={`fixed right-6 top-20 z-30 max-h-[75vh] w-[min(92vw,340px)] overflow-y-auto rounded-2xl border p-5 text-sm shadow-2xl backdrop-blur-md ${
+          className={`fixed inset-x-0 bottom-0 z-30 max-h-[72vh] overflow-y-auto rounded-t-3xl border p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-sm shadow-2xl backdrop-blur-md sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-20 sm:max-h-[75vh] sm:w-[min(92vw,340px)] sm:rounded-2xl sm:pb-5 ${
             dark ? "border-white/10 bg-[#14122a]/95 text-white" : "border-black/10 bg-white/95 text-[#181828]"
           }`}
         >
+          {/* Sheet grabber, phones only. */}
+          <div
+            className={`mx-auto mb-4 h-1 w-10 rounded-full sm:hidden ${dark ? "bg-white/25" : "bg-black/20"}`}
+          />
           {panelOpen === "audio" && (
             <div className="space-y-5">
               <div>
@@ -1200,6 +1214,7 @@ export default function Reader({
             </div>
           )}
         </div>
+        </>
       )}
 
       <div className="relative z-10 min-h-0 flex-1">

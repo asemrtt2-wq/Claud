@@ -122,7 +122,7 @@ export default function EbookHero({
 
           {/* The real average, right next to the book. A book nobody has rated says so
               rather than rendering an empty five-star row, which reads as a zero. */}
-          <a href="#avis" className="mb-6 inline-flex items-center gap-2 text-sm">
+          <a href="#avis" className="-mx-2 mb-5 inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm">
             {rating !== null ? (
               <>
                 <StarRating value={rating} size={16} className="text-[#1d1d1f]" />

@@ -64,7 +64,7 @@ export default function DashboardSearch({ books }: { books: SearchBook[] }) {
           type="button"
           onClick={openSearch}
           aria-label="Rechercher"
-          className="text-lg text-[#6e6e73] transition hover:text-[#1d1d1f]"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-lg text-[#6e6e73] transition hover:bg-black/5 hover:text-[#1d1d1f]"
         >
           🔍
         </button>

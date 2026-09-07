@@ -15,19 +15,19 @@ export default function Footer() {
               Lis. Apprends. Transforme-toi.
             </p>
           </div>
-          <div className="flex flex-wrap gap-14">
+          <div className="flex flex-wrap gap-10 sm:gap-14">
             <div>
               <h5 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-white">
                 Réseaux
               </h5>
-              <ul className="flex flex-col gap-2.5 text-sm">
+              <ul className="flex flex-col gap-0.5 text-sm">
                 <li>
-                  <a href="#" className="text-[#a9b6d6] transition hover:text-white">
+                  <a href="#" className="-mx-2 inline-block rounded-lg px-2 py-2 text-[#a9b6d6] transition hover:bg-white/5 hover:text-white">
                     Instagram
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-[#a9b6d6] transition hover:text-white">
+                  <a href="#" className="-mx-2 inline-block rounded-lg px-2 py-2 text-[#a9b6d6] transition hover:bg-white/5 hover:text-white">
                     TikTok
                   </a>
                 </li>
@@ -37,16 +37,21 @@ export default function Footer() {
               <h5 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-white">
                 Support
               </h5>
-              <ul className="flex flex-col gap-2.5 text-sm">
+              <ul className="flex flex-col gap-0.5 text-sm">
                 <li>
-                  <a href="#" className="text-[#a9b6d6] transition hover:text-white">
-                    Contact
-                  </a>
+                  <Link href="/faq" className="-mx-2 inline-block rounded-lg px-2 py-2 text-[#a9b6d6] transition hover:bg-white/5 hover:text-white">
+                    FAQ
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-[#a9b6d6] transition hover:text-white">
-                    FAQ
-                  </a>
+                  <Link href="/bibliotheque" className="-mx-2 inline-block rounded-lg px-2 py-2 text-[#a9b6d6] transition hover:bg-white/5 hover:text-white">
+                    Bibliothèque
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/premium" className="-mx-2 inline-block rounded-lg px-2 py-2 text-[#a9b6d6] transition hover:bg-white/5 hover:text-white">
+                    Premium
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -54,9 +59,9 @@ export default function Footer() {
               <h5 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-white">
                 Légal
               </h5>
-              <ul className="flex flex-col gap-2.5 text-sm">
+              <ul className="flex flex-col gap-0.5 text-sm">
                 <li>
-                  <a href="#" className="text-[#a9b6d6] transition hover:text-white">
+                  <a href="#" className="-mx-2 inline-block rounded-lg px-2 py-2 text-[#a9b6d6] transition hover:bg-white/5 hover:text-white">
                     Mentions légales
                   </a>
                 </li>

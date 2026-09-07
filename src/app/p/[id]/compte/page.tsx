@@ -147,7 +147,7 @@ export default async function CompteObjectifsPage({
         <div className="mb-6 flex items-center gap-3">
           <Link
             href={`/p/${id}`}
-            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
+            className="-mx-2 rounded-lg px-2 py-2 text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >
             ← Retour
           </Link>

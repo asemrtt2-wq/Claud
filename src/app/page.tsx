@@ -78,7 +78,9 @@ export default async function HomePage() {
         : featured.length > 0
           ? featured
           : ebooks;
-  const heroCovers = heroPool.slice(0, 5);
+  // More than the five slots the mockup shows, so de-duplicating covers inside
+  // HeroDeviceShowcase still leaves a full row.
+  const heroCovers = collapseSeries(heroPool).slice(0, 12);
   const allCategories = Array.from(new Set(ebooks.map((e) => e.category)));
   const categoryCount = allCategories.length;
   const featuredCategories = getCuratedCategories(allCategories);

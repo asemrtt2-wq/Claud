@@ -18,10 +18,17 @@ export default function HeroDeviceShowcase({ books }: { books: ShowcaseBook[] })
     .slice(0, 420)
     .trim();
 
-  // Always show a full-looking row of 5 in the mockup, cycling through whatever
-  // real covers are available rather than a sparse row when few books are featured.
-  const libraryPool = rest.length > 0 ? rest : [main];
-  const library = Array.from({ length: 5 }, (_, i) => libraryPool[i % libraryPool.length]);
+  /* Distinct covers only. Several series tomes in this catalog share one cover image (a
+     known issue in the supplied exports), and cycling a short pool to fill five slots made
+     it worse — the mockup showed the same artwork three times, which is the first thing a
+     visitor sees. De-duplicating on the image means the row is short before it is repetitive. */
+  const seen = new Set<string>();
+  const library = [main, ...rest].filter((book) => {
+    const key = book.coverImageUrl ?? `${book.coverTheme}:${book.coverEmoji}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
   return (
     <div className="relative flex items-center justify-center py-6">

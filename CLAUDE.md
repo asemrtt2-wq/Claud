@@ -763,6 +763,45 @@ page itself.
   books from their profile page, so this is where to notice a request that failed or is waiting
   on a missing `ANTHROPIC_API_KEY`.
 
+### FAQ (page publique + éditeur admin)
+
+- **`FaqItem`** (`question`, `answer`, optional `category`, `position`, `published`). Answers
+  live in the database, not in the page, so a new question can be answered without a deploy —
+  the same reasoning as `SiteSettings`' hero overrides.
+- `/admin/faq` (`FaqAdminList.tsx` + `src/lib/faqActions.ts`) is the editor: add, edit inline,
+  publish/unpublish, delete, and reorder with ↑/↓. `moveFaqItem()` rewrites every position from
+  the current order rather than swapping two numbers, because positions can legitimately
+  collide (everything defaults to 0 before the first reorder).
+- `/faq` renders the published entries grouped by category (`FaqAccordion.tsx`). The accordion
+  keeps closed answers **in the DOM** (it animates `grid-template-rows`, it doesn't
+  conditionally render) so crawlers and Ctrl+F still find the text — a collapsed answer that
+  isn't rendered is invisible to both, which would defeat the point of publishing an FAQ.
+- `importRealBooks()` seeds nine starter answers **only when the table is empty**
+  (`seedStarterFaq()` in `actions.ts`). Unlike the catalog, these rows are meant to be edited
+  from the admin, so re-seeding on every import would silently overwrite the owner's wording.
+  Every seeded answer describes behaviour this app really has (including the honest "pas de
+  lecture hors ligne" and "les voix dépendent de ton appareil").
+
+### SEO
+
+- `src/lib/seo.ts` — `SITE_URL` (from `NEXT_PUBLIC_BASE_URL`, the variable the Stripe redirects
+  already use, so there's one production domain rather than two that can drift), `absoluteUrl()`
+  and `metaDescription()`.
+- `layout.tsx` sets `metadataBase`, a `title.template`, the default description/keywords,
+  Open Graph + Twitter cards, and a `WebSite` JSON-LD block. It also exports a `viewport` with
+  `viewport-fit=cover` (so the reader's `env(safe-area-inset-*)` padding actually reaches the
+  notch) and a `themeColor` per scheme.
+- `/ebooks/[slug]` has a `generateMetadata()` (own title, description, canonical, cover as the
+  OG image) and emits **`Book` JSON-LD**. `aggregateRating` is only included when real reviews
+  exist — marking up a rating the page doesn't show is exactly the kind of fabricated signal
+  this codebase avoids, and search engines penalise it.
+- `/faq` emits `FAQPage` JSON-LD built from the same rows it renders, so it can never advertise
+  a question the page doesn't answer.
+- `src/app/sitemap.ts` and `src/app/robots.ts` — the sitemap lists the marketing pages plus one
+  entry per adult book (timestamped from the book's `updatedAt`); `/faq` only appears once it
+  has published entries. Both deliberately exclude `/p/**`, `/profiles`, `/admin/**` and the
+  auth pages: those are per-account or gated, so indexing them is useless at best.
+
 ### Site settings
 - `SiteSettings` — a singleton row (`id: 1`, upserted) holding `heroTitle`/`heroSubtitle` overrides
   for the homepage hero. `src/lib/siteSettings.ts` exports `getSiteSettings()` and the
@@ -856,6 +895,7 @@ just kids), `Collection`/`CollectionItem` (profile-scoped book shelves, unique o
 `[collectionId, ebookId]`), `Highlight` (profile-scoped, `page`/`text`/optional `note` — the
 reader's persistent surlignages, see Reader above; deliberately not unique-constrained on
 `[profileId, ebookId, page]` since a profile can have several distinct highlights on one page),
+`FaqItem` (the admin-written public FAQ — see FAQ above),
 `Catalog` (admin-curated shelves, many-to-many with `EBook` — see "Curated catalogs" above;
 not to be confused with the profile-scoped `Collection` above), `BookRequest`
 (account-scoped "write me a book about X" asks — see "Book requests" above), and `Review`
@@ -913,6 +953,22 @@ types) / `/p/[id]/read/[slug]` (reader, both profile types).
     `img-front`/`img-back`. An extractor has to handle both, and must drop the chapter's own
     `<h3>` from the body so the title isn't repeated as an all-caps sub-heading under the
     `Chapitre N — Titre` marker.
+
+## Mobile
+
+The whole site is used on a phone first, so a few rules hold across it:
+
+- **Nothing scrolls horizontally.** The only `overflow-x` on the page is inside a `BookRow` /
+  `BookCoverShelf` rail, which is deliberate. Verified at 390px on every main route.
+- **Tap targets get real padding**, not just a font size. Text-only actions ("Supprimer",
+  "Répondre", footer links, "Voir plus") carry `px-2 py-2` with a compensating negative margin
+  so they stay visually inline while being tappable.
+- **The reader's panels are a bottom sheet on a phone** (`fixed inset-x-0 bottom-0`, a grabber,
+  safe-area bottom padding) and the floating card only from `sm:` up, with a tap-outside
+  backdrop — a 340px card pinned to the top-right corner of a phone covered the text it was
+  meant to adjust.
+- The `/p/[id]` billboard keeps its favourite button **in the action row**, not floating in the
+  corner: at phone width the corner button landed directly on the "Continuer la lecture" label.
 
 ## Conventions
 

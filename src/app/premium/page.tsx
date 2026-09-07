@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentCustomer } from "@/lib/customerSession";
@@ -5,6 +6,20 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SubscribeButton from "@/components/SubscribeButton";
 import { MONTHLY_REQUEST_QUOTA } from "@/lib/bookRequests";
+import { absoluteUrl } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "Premium — lecture illimitée et livres écrits sur demande",
+  description:
+    "Ouvrez tout le catalogue Lumia avec Premium : lecture illimitée sur tous vos profils, et des livres écrits sur demande chaque mois. Mensuel ou annuel, sans engagement.",
+  alternates: { canonical: absoluteUrl("/premium") },
+  openGraph: {
+    title: "Premium — lecture illimitée et livres écrits sur demande",
+    description: "Lecture illimitée sur tous vos profils et des livres écrits sur demande.",
+    url: absoluteUrl("/premium"),
+    type: "website",
+  },
+};
 
 /**
  * The three plans, each with the advantages it actually has.

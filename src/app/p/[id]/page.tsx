@@ -284,7 +284,7 @@ export default async function ProfilePage({
           {/* Inside the app the logo is "home" for the app, not for the marketing site. */}
           <Link
             href={`/p/${id}`}
-            className="flex shrink-0 items-center gap-2.5 text-lg font-extrabold tracking-tight text-[#1d1d1f]"
+            className="-my-1 flex shrink-0 items-center gap-2.5 py-1 text-lg font-extrabold tracking-tight text-[#1d1d1f]"
           >
             <LogoMark className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c5cff] to-[#5b3df0] text-white shadow-[0_6px_16px_rgba(124,92,255,0.35)]" />
             LUMIA
@@ -369,15 +369,6 @@ export default async function ProfilePage({
             <div className="absolute inset-0 bg-black/25" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-transparent" />
 
-            <div className="absolute right-5 top-5 z-20">
-              <FavoriteButton
-                ebookId={billboardBook.id}
-                slug={billboardBook.slug}
-                initialFavorited={billboardIsFavorited}
-                profileId={id}
-              />
-            </div>
-
             <div className="relative z-10 flex items-center gap-6 p-7 sm:gap-10 sm:p-10">
               <div className="min-w-0 flex-1 text-white">
                 <span className="lumia-gold-text mb-2 inline-block text-xs font-bold uppercase tracking-wider">
@@ -407,7 +398,10 @@ export default async function ProfilePage({
                     />
                   </div>
                 )}
-                <div className="flex flex-wrap gap-3">
+                {/* The favourite button used to float at the top-right corner, where on a
+                    phone it landed straight on top of the "Continuer la lecture" label. It
+                    lives in the action row now, so it can never collide with the copy. */}
+                <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href={billboardHref}
                     className="rounded-xl bg-white px-6 py-3 text-base font-bold text-[#1d1d1f] shadow-[0_10px_28px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5"
@@ -420,6 +414,12 @@ export default async function ProfilePage({
                   >
                     Plus d&apos;infos
                   </Link>
+                  <FavoriteButton
+                    ebookId={billboardBook.id}
+                    slug={billboardBook.slug}
+                    initialFavorited={billboardIsFavorited}
+                    profileId={id}
+                  />
                 </div>
               </div>
 
@@ -428,11 +428,11 @@ export default async function ProfilePage({
                 <img
                   src={billboardBook.coverImageUrl}
                   alt={`Couverture de ${billboardBook.title}`}
-                  className="hidden w-40 shrink-0 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.55)] transition duration-500 group-hover:-translate-y-1 sm:block lg:w-48"
+                  className="w-24 shrink-0 self-start rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.55)] transition duration-500 group-hover:-translate-y-1 sm:w-40 sm:self-auto lg:w-48"
                 />
               )}
               {!billboardBook.coverImageUrl && (
-                <span className="hidden text-8xl sm:block">{billboardBook.coverEmoji}</span>
+                <span className="text-5xl sm:text-8xl">{billboardBook.coverEmoji}</span>
               )}
             </div>
           </div>
@@ -529,7 +529,7 @@ export default async function ProfilePage({
           <section id="catalogue" className="mb-12 scroll-mt-24">
             <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-lg font-extrabold">Tous les livres</h2>
-              <Link href="/bibliotheque" className="text-sm font-bold text-[#5b3df0] hover:underline">
+              <Link href="/bibliotheque" className="-mx-2 rounded-lg px-2 py-2 text-sm font-bold text-[#5b3df0] hover:underline">
                 Voir la bibliothèque →
               </Link>
             </div>

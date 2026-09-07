@@ -219,8 +219,84 @@ async function finishImport() {
   // its Sparte tomes just fall back to appearing as regular catalog books.
   await prisma.catalog.deleteMany({ where: { name: "Collection Sparte" } });
 
+  await seedStarterFaq();
+
   revalidatePath("/admin");
   revalidatePath("/admin/catalogs");
   revalidatePath("/bibliotheque");
+  revalidatePath("/faq");
   revalidatePath("/");
+}
+
+/**
+ * Puts a first set of answers on /faq so the page isn't empty on a fresh deploy.
+ *
+ * Runs **only when the FAQ table is empty** — unlike the catalog, these rows are meant to be
+ * edited from /admin/faq, and re-seeding them on every import would silently overwrite the
+ * admin's own wording. Every answer here describes behaviour this app really has.
+ */
+async function seedStarterFaq() {
+  const existing = await prisma.faqItem.count();
+  if (existing > 0) return;
+
+  const items: { question: string; answer: string; category: string }[] = [
+    {
+      category: "Lecture",
+      question: "Faut-il installer une application ?",
+      answer:
+        "Non. Lumia se lit directement depuis ton navigateur, sur téléphone, tablette ou ordinateur. Ta progression, tes favoris et tes surlignages suivent ton profil d'un appareil à l'autre.",
+    },
+    {
+      category: "Lecture",
+      question: "Puis-je lire hors ligne ?",
+      answer:
+        "Pas pour le moment. Lumia est un site web : la lecture nécessite une connexion. Nous préférons le dire clairement plutôt que d'afficher un bouton de téléchargement qui ne fonctionnerait pas.",
+    },
+    {
+      category: "Lecture",
+      question: "Puis-je écouter les livres ?",
+      answer:
+        "Oui, via le menu ••• du lecteur : « Écouter » lit la page à voix haute avec la synthèse vocale de ton navigateur, avec le mot en cours surligné. La qualité dépend des voix installées sur ton appareil — ce ne sont pas des narrations enregistrées.",
+    },
+    {
+      category: "Abonnement",
+      question: "Quelle différence entre acheter un livre et passer Premium ?",
+      answer:
+        "Un achat te donne accès à ce livre-là, pour toujours. Premium ouvre tout le catalogue tant que l'abonnement est actif, sur tous les profils du compte, et te permet de faire écrire des livres sur demande chaque mois.",
+    },
+    {
+      category: "Abonnement",
+      question: "Comment fonctionnent les livres écrits sur demande ?",
+      answer:
+        "Depuis ton profil, tu décris le livre qui te manque. Lumia l'écrit chapitre par chapitre et le publie dans le catalogue. L'offre mensuelle en donne 2 par mois, l'offre annuelle 5. Si un livre proche existe déjà, on te l'indique et la demande n'est pas décomptée.",
+    },
+    {
+      category: "Abonnement",
+      question: "Puis-je résilier quand je veux ?",
+      answer:
+        "Oui, les deux formules sont résiliables à tout moment. Tu gardes l'accès jusqu'à la fin de la période déjà payée, et les livres achetés à l'unité te restent acquis.",
+    },
+    {
+      category: "Profils",
+      question: "Combien de profils puis-je créer ?",
+      answer:
+        "Autant que tu veux, adultes comme enfants. Chaque profil a ses propres favoris, sa progression, ses collections et ses objectifs — rien n'est partagé entre eux. Les achats et l'abonnement, eux, valent pour tout le compte.",
+    },
+    {
+      category: "Profils",
+      question: "Comment fonctionne le mode enfant ?",
+      answer:
+        "Un profil de type enfant ne voit qu'un catalogue dédié, avec un lecteur adapté (lecture à voix haute, mascotte) et une limite de temps de lecture quotidienne. Cette limite s'applique au lecteur Lumia : un site web ne peut pas verrouiller l'écran du téléphone.",
+    },
+    {
+      category: "Profils",
+      question: "À quoi sert le code PIN d'un profil ?",
+      answer:
+        "Il empêche d'ouvrir un profil par erreur ou par curiosité depuis l'appareil de la famille. Ce n'est pas une protection de sécurité forte : il garde un enfant hors du profil parent, rien de plus.",
+    },
+  ];
+
+  await prisma.faqItem.createMany({
+    data: items.map((item, index) => ({ ...item, position: index + 1, published: true })),
+  });
 }

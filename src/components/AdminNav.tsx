@@ -44,6 +44,12 @@ export default function AdminNav({ email }: { email?: string | null }) {
             ✨ Demandes
           </Link>
           <Link
+            href="/admin/faq"
+            className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
+          >
+            ❓ FAQ
+          </Link>
+          <Link
             href="/admin/settings"
             className="text-sm font-semibold text-[color:var(--color-lumia-text-muted)] transition hover:text-white"
           >

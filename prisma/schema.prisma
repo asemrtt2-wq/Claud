@@ -245,3 +245,22 @@ model Review {
   @@index([ebookId, createdAt])
   @@index([parentId])
 }
+
+/// One question/answer of the public FAQ, written from /admin/faq.
+///
+/// Ordering is an explicit integer rather than createdAt so the admin can reorder answers
+/// without rewriting them; `published` lets a draft answer sit in the admin list without
+/// showing on the public page.
+model FaqItem {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  /// Optional grouping shown as a section heading on /faq (e.g. "Abonnement").
+  category  String   @default("")
+  position  Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, position])
+}

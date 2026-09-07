@@ -63,7 +63,7 @@ export function MiniDashboardScreen({
           <p className="text-[0.5rem] font-bold uppercase tracking-wide text-[#f0c46a]">
             Continuer la lecture
           </p>
-          <p className="mt-0.5 truncate text-[0.62rem] font-extrabold leading-tight">
+          <p className="mt-0.5 line-clamp-2 text-[0.62rem] font-extrabold leading-tight">
             {continuing.title}
           </p>
           <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/25">

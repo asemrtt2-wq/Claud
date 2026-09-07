@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import LightHeader from "@/components/LightHeader";
@@ -14,6 +15,20 @@ import { collapseSeries, dedupeSeries, seriesCounts } from "@/lib/series";
 import { getBestsellerIds, getSurpriseBook, getRecommendations, getPopularBooks } from "@/lib/recommendations";
 import { getRatingSummaries } from "@/lib/reviews";
 import { countWords, paginateContent } from "@/lib/paginate";
+import { absoluteUrl } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "Bibliothèque — tous les iBooks Lumia",
+  description:
+    "Parcourez tout le catalogue Lumia : neurosciences, bien-être, histoire, nature, développement personnel. Un extrait gratuit sur chaque livre.",
+  alternates: { canonical: absoluteUrl("/bibliotheque") },
+  openGraph: {
+    title: "Bibliothèque — tous les iBooks Lumia",
+    description: "Parcourez tout le catalogue Lumia, un extrait gratuit sur chaque livre.",
+    url: absoluteUrl("/bibliotheque"),
+    type: "website",
+  },
+};
 
 export default async function BibliothequePage() {
   const customer = await getCurrentCustomer();

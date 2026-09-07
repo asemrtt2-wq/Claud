@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -19,12 +20,55 @@ import ReviewSection from "@/components/ReviewSection";
 import { getMyReview, getRatingSummary, getReviewThread } from "@/lib/reviews";
 import BookRow from "@/components/BookRow";
 import { dedupeSeries } from "@/lib/series";
+import { absoluteUrl, metaDescription } from "@/lib/seo";
 
 function formatDuration(minutes: number) {
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
+}
+
+/**
+ * Per-book metadata. A book page is the site's main search-engine surface, so it gets its
+ * own title, description, canonical URL and cover image rather than inheriting the site
+ * defaults — 100+ identical titles would compete with each other in results.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const ebook = await prisma.eBook.findUnique({
+    where: { slug },
+    select: {
+      title: true,
+      subtitle: true,
+      description: true,
+      category: true,
+      author: true,
+      audience: true,
+      coverImageUrl: true,
+    },
+  });
+
+  if (!ebook || ebook.audience === "kids") {
+    return { title: "Livre introuvable", robots: { index: false, follow: false } };
+  }
+
+  const title = ebook.subtitle ? `${ebook.title} — ${ebook.subtitle}` : ebook.title;
+  const description = metaDescription(ebook.description || ebook.subtitle || ebook.title);
+  const url = absoluteUrl(`/ebooks/${slug}`);
+  const images = ebook.coverImageUrl ? [{ url: ebook.coverImageUrl, alt: `Couverture de ${ebook.title}` }] : undefined;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { type: "book", title, description, url, images },
+    twitter: { card: "summary_large_image", title, description, images: images?.map((i) => i.url) },
+  };
 }
 
 export default async function EBookPage({
@@ -157,8 +201,47 @@ export default async function EBookPage({
         }
       : null;
 
+  /* Book structured data. `aggregateRating` is only emitted when real ratings exist —
+     Google penalises marked-up ratings a page doesn't actually show, and this codebase
+     doesn't publish numbers it can't back up either way. */
+  const bookJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    name: ebook.title,
+    url: absoluteUrl(`/ebooks/${ebook.slug}`),
+    inLanguage: "fr",
+    description: ebook.description,
+    genre: ebook.category,
+    ...(ebook.author ? { author: { "@type": "Person", name: ebook.author } } : {}),
+    ...(ebook.coverImageUrl ? { image: absoluteUrl(ebook.coverImageUrl) } : {}),
+    ...(ebook.publishedYear ? { datePublished: String(ebook.publishedYear) } : {}),
+    ...(isPdf ? {} : { numberOfPages: pages.length }),
+    offers: {
+      "@type": "Offer",
+      price: ebook.price,
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+      url: absoluteUrl(`/ebooks/${ebook.slug}`),
+    },
+    ...(ratingSummary.average !== null && ratingSummary.count > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: ratingSummary.average,
+            reviewCount: ratingSummary.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bookJsonLd) }}
+      />
       <LightHeader />
       <div className="ibook-shell">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 pt-6">

@@ -54,7 +54,7 @@ export default function BookDetailTabs({
 
   return (
     <div>
-      <div className={`mb-5 flex gap-6 border-b ${light ? "border-black/10" : "border-white/10"}`}>
+      <div className={`scrollbar-hide mb-5 flex gap-5 overflow-x-auto border-b sm:gap-6 ${light ? "border-black/10" : "border-white/10"}`}>
         {(
           [
             ...(episodes.length > 0 ? ([["episodes", "Épisodes"]] as const) : []),
@@ -65,7 +65,7 @@ export default function BookDetailTabs({
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`relative pb-3 text-sm font-bold transition ${tab === key ? activeTab : muted}`}
+            className={`relative shrink-0 whitespace-nowrap pb-3 pt-2 text-sm font-bold transition ${tab === key ? activeTab : muted}`}
           >
             {label}
             {tab === key && (

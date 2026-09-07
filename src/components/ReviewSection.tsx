@@ -113,7 +113,7 @@ export default function ReviewSection({
                 onClick={() => setRating(star)}
                 onMouseEnter={() => setHovered(star)}
                 aria-label={`Noter ${star} sur 5`}
-                className={`text-2xl leading-none transition hover:scale-110 ${
+                className={`px-0.5 py-1 text-3xl leading-none transition hover:scale-110 sm:text-2xl ${
                   star <= shown ? "text-[#f5b301]" : "text-black/20"
                 }`}
               >
@@ -151,7 +151,7 @@ export default function ReviewSection({
                 type="button"
                 disabled={isPending}
                 onClick={() => run(() => deleteReview(profileId, myReview.id, slug))}
-                className="text-xs font-bold text-[#6e6e73] transition hover:text-red-500"
+                className="-mx-2 rounded-lg px-2 py-2 text-xs font-bold text-[#6e6e73] transition hover:text-red-500"
               >
                 Supprimer mon avis
               </button>
@@ -196,7 +196,7 @@ export default function ReviewSection({
                           type="button"
                           disabled={isPending}
                           onClick={() => run(() => deleteReview(profileId, reply.id, slug))}
-                          className="mt-1 text-xs font-bold text-[#6e6e73] transition hover:text-red-500"
+                          className="-mx-2 mt-1 rounded-lg px-2 py-2 text-xs font-bold text-[#6e6e73] transition hover:text-red-500"
                         >
                           Supprimer
                         </button>
@@ -249,7 +249,7 @@ export default function ReviewSection({
                       <button
                         type="button"
                         onClick={() => setReplyTo(review.id)}
-                        className="text-xs font-bold text-[#5b3df0] hover:underline"
+                        className="-mx-2 rounded-lg px-2 py-2 text-xs font-bold text-[#5b3df0] hover:underline"
                       >
                         💬 Répondre
                       </button>
@@ -258,7 +258,7 @@ export default function ReviewSection({
                           type="button"
                           disabled={isPending}
                           onClick={() => run(() => deleteReview(profileId, review.id, slug))}
-                          className="text-xs font-bold text-[#6e6e73] transition hover:text-red-500"
+                          className="-mx-2 rounded-lg px-2 py-2 text-xs font-bold text-[#6e6e73] transition hover:text-red-500"
                         >
                           Supprimer
                         </button>
