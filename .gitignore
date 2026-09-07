@@ -1,29 +1,23 @@
 # dependencies
 /node_modules
 
-# next.js
-/.next/
-/out/
+# expo
+/.expo
+/dist
+/web-build
+expo-env.d.ts
 
-# production
-/build
+# builds natifs (générés par `expo prebuild`, pas versionnés)
+/ios
+/android
 
-# env files
+# env
 .env
 .env.local
 .env*.local
 
-# prisma
-/prisma/dev.db
-/prisma/dev.db-journal
-
-# misc
+# divers
 .DS_Store
 *.log
 npm-debug.log*
-
-# typescript
 *.tsbuildinfo
-next-env.d.ts
-
-/generated/prisma
