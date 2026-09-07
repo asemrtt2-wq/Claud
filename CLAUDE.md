@@ -9,23 +9,60 @@ Expo (React Native) et expo-router. Il n'y a plus de site web : l'ancienne plate
 L'app fonctionne **entièrement hors ligne** : les livres sont embarqués dans le bundle, la
 progression est stockée sur l'appareil. Aucun compte, aucun serveur, aucune donnée envoyée.
 
-## Règles de contenu — non négociables
+## Charte de contenu — non négociable
 
-Ces règles gouvernent chaque écran et chaque livre ajouté. Elles ont été posées par le
-propriétaire du projet et ne doivent pas être contournées « pour faire joli ».
+Cette charte a été posée par le propriétaire du projet. Elle gouverne **chaque livre ajouté au
+catalogue et chaque écran de l'app**, et ne doit pas être contournée « pour faire joli » ni
+assouplie parce qu'un contenu serait par ailleurs intéressant.
 
-1. **Aucune représentation figurative.** Ni personnage, ni visage, ni silhouette, ni animal —
-   dans l'interface comme sur les couvertures. C'est la raison pour laquelle
-   `src/components/BookCover.tsx` compose les couvertures en code (dégradé + motif géométrique
-   + typographie) au lieu d'afficher une image, et pourquoi l'onglet « Profil » porte une icône
-   de médaille plutôt que la silhouette de la maquette d'origine.
-   La maquette de référence montrait des portraits (Saladin, Ibn Sina, Marc Aurèle) sur les
-   couvertures : la mise en page a été suivie, l'imagerie non.
-2. **100 % halal, chaste et respectueux.** Le contenu des livres reste sobre et décent.
-3. **Respect du christianisme** comme des autres religions : aucun contenu qui les dénigre.
+| Domaine | Règle Lumia |
+| --- | --- |
+| 🔞 Pornographie / nudité | **Interdit** |
+| 💋 Contenu sexuellement suggestif | **Interdit** |
+| 🖼 Représentation figurative | **Interdit** : ni personnage, ni visage, ni silhouette, ni animal — interface comprise |
+| 🍷 Alcool | Pas de promotion ni incitation |
+| 🎰 Jeux d'argent | Pas de promotion |
+| 🔮 Magie / occultisme | Pas d'enseignement ni de promotion |
+| 💰 Pratiques financières contraires à la charte | Pas de promotion ; pour l'islam, vigilance particulière sur le **riba** |
+| 🤬 Contenu vulgaire | Éviter insultes, obscénités et vulgarité gratuite |
+| 🧨 Violence | Pas de glorification gratuite ; possible dans un contexte historique ou éducatif |
+| 🧠 Santé | Informations sérieuses et sourcées, sans faux diagnostic |
+| 📚 Histoire / science | Sources fiables, et distinction claire entre faits, hypothèses et opinions |
+| ✝️☪️✡️ Religion | Présenter chaque religion avec respect, sans caricature |
+| 📢 Publicité | Même charte que le catalogue : pas de publicité incompatible |
+| 💳 Abonnements | Prix clair, résiliation claire, aucune pratique trompeuse |
+| 👧 Enfants | Filtrage encore plus strict |
 
-Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal est à refuser
-ou à remplacer par un équivalent géométrique.
+### Ce que le code applique, et ce qu'il ne peut pas appliquer
+
+La distinction compte : ne jamais supposer que l'app filtre le contenu toute seule.
+
+**Appliqué par le code**, donc impossible à enfreindre par inadvertance :
+- L'**interdiction de toute représentation figurative**. `src/components/BookCover.tsx` compose
+  les couvertures en code (dégradé + motif géométrique + typographie) au lieu d'afficher une
+  image, `src/components/Ornament.tsx` ne dessine que de la géométrie, et l'onglet « Profil »
+  porte une icône de médaille plutôt que la silhouette de la maquette. La maquette de référence
+  montrait des portraits (Saladin, Ibn Sina, Marc Aurèle) : la mise en page a été suivie,
+  l'imagerie non.
+- **Aucun chiffre inventé**, ce qui sert la ligne « aucune pratique trompeuse » : l'onglet
+  « Avis » annonce qu'il n'est pas actif au lieu d'afficher une note fabriquée, « Populaires »
+  suit l'ordre du catalogue faute de statistiques réelles, et le temps de lecture du profil est
+  compté minute par minute dans le lecteur.
+
+**Éditorial — la responsabilité de qui écrit les livres.** Tout le reste du tableau porte sur le
+*texte* des livres : aucune vérification automatique n'est possible. Chaque livre ajouté à
+`src/data/books.ts`, écrit à la main ou importé via `npm run books:import`, doit être relu à
+l'aune de ce tableau avant d'être publié.
+
+**Pas encore construit** — à ne pas présenter comme existant :
+- Le **mode enfant** et son filtrage renforcé n'existent pas dans l'app. Il n'y a aujourd'hui
+  qu'un seul profil de lecture.
+- Les **abonnements réels** non plus : le « Pass Lumia » de l'écran Profil est un simple
+  interrupteur local. Le jour où un vrai paiement arrive, la ligne « prix clair, résiliation
+  claire » du tableau devient une contrainte de conception, pas un slogan.
+
+Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
+tombant dans une case « interdit » du tableau, est à refuser ou à remplacer.
 
 ## Lancer et construire
 

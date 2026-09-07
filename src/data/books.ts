@@ -9,6 +9,13 @@ import type { Book } from "@/data/types";
  *
  * Les deux livres ci-dessous sont des exemples courts, écrits pour que les écrans aient
  * quelque chose de réel à afficher. Ils sont faits pour être remplacés.
+ *
+ * ⚠️ Avant d'ajouter un livre ici, le relire à l'aune de la **charte de contenu** (tableau
+ * complet dans CLAUDE.md) : pas de nudité ni de contenu suggestif, pas de promotion de
+ * l'alcool, des jeux d'argent, de l'occultisme ou du riba, pas de vulgarité ni de violence
+ * glorifiée, des sources fiables en histoire, science et santé, et le respect de chaque
+ * religion. Aucune de ces règles n'est vérifiable par le code : elles se tiennent à la
+ * relecture.
  */
 export const BOOKS: Book[] = [
   {
