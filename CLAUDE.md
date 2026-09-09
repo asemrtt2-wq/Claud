@@ -62,7 +62,7 @@ l'aune de ce tableau avant d'être publié.
   claire » du tableau devient une contrainte de conception, pas un slogan.
 - **Aucun livre du catalogue n'est réservé au Pass** : le champ `premium` existe dans le format
   (`src/data/types.ts`) et la fiche livre sait verrouiller, mais aucune entrée ne le porte. Les
-  27 livres sont lisibles. Choisir lesquels réserver est une décision du propriétaire du
+  28 livres sont lisibles. Choisir lesquels réserver est une décision du propriétaire du
   projet, pas quelque chose à décider en écrivant le catalogue.
 
 Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
@@ -169,9 +169,9 @@ Deux façons :
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **27 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **28 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture et grands
-personnages, soit environ 230 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages, soit environ 245 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 ## Choix assumés
