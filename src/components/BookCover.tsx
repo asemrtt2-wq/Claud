@@ -41,7 +41,16 @@ export default function BookCover({
 }) {
   // Ratio d'un livre de poche, celui de la maquette.
   const height = width * 1.5;
-  const titleSize = compact ? Math.max(10, width * 0.115) : Math.max(12, width * 0.125);
+  const padding = compact ? 8 : 12;
+  /* Le titre ne doit jamais se couper au milieu d'un mot — « MACHIAVEL / LI ». On réduit donc
+     la police jusqu'à ce que le mot le plus long tienne sur une ligne. (`adjustsFontSizeToFit`
+     fait ce travail sur iOS et Android, mais pas au rendu web.) */
+  const longestWord = Math.max(...title.split(/\s+/).map((w) => w.length), 1);
+  const letterSpacing = compact ? 0.5 : 1.2;
+  const base = compact ? width * 0.115 : width * 0.125;
+  // Une capitale de Georgia occupe environ 0,72 em, à quoi s'ajoute l'interlettrage.
+  const fitsLongestWord = ((width - padding * 2) / longestWord - letterSpacing) / 0.72;
+  const titleSize = Math.max(compact ? 8 : 10, Math.min(base, fitsLongestWord));
 
   return (
     <View style={[styles.frame, { width, height, borderRadius: compact ? radius.md : radius.lg }]}>
@@ -59,7 +68,7 @@ export default function BookCover({
         <Text
           numberOfLines={4}
           adjustsFontSizeToFit
-          style={[styles.title, { fontSize: titleSize, letterSpacing: compact ? 0.5 : 1.2 }]}
+          style={[styles.title, { fontSize: titleSize, letterSpacing }]}
         >
           {title.toUpperCase()}
         </Text>
