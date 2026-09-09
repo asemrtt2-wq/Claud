@@ -19,19 +19,37 @@
  *   .box, .stat           → `## libellé` puis les paragraphes de l'encadré
  *   .box.warn             → `## libellé` puis des paragraphes `! ` (avertissement)
  *
- * Ce qui est écarté : les passages écrits pour commenter l'illustration de couverture du
- * livre d'origine (« Ce que dit l'affiche », « La phrase de l'affiche »…). Lumia compose
- * ses couvertures en code, sans aucune représentation figurative — un texte qui décrit une
- * image que le lecteur ne verra jamais n'a pas sa place dans l'app. Les mentions isolées
- * qui restent dans le corps d'un chapitre se relisent à la main.
+ * Ces livres commentent leur propre couverture, en l'appelant « l'affiche » — un chapitre
+ * d'ouverture « Ce que dit l'affiche », puis des renvois en plein texte. L'app affiche
+ * désormais ces couvertures (voir `src/data/covers.ts`), donc ces passages sont conservés :
+ * le lecteur a l'image sous les yeux. Seul le mot change, « affiche » devenant
+ * « couverture », qui est ce dont il s'agit.
+ *
+ * Le renommage ne s'applique qu'aux livres qui ont un intertitre consacré à leur couverture.
+ * Ailleurs — dans « Saladin » — « les affiches » désigne l'imagerie populaire du personnage,
+ * et le mot doit rester tel quel.
  */
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
 const THEMES = ["nuit", "or", "encre", "vin", "foret", "sable"];
 
-/** Un titre ou un intertitre qui annonce un commentaire de l'illustration de couverture. */
+/** Un titre ou un intertitre qui annonce un commentaire de la couverture du livre. */
 const COVER_HEADING = /\b(affiche|couverture)\b/i;
+
+/**
+ * « L'affiche » désigne la couverture du livre. Les deux mots sont féminins, le remplacement
+ * est donc direct ; les formes verbales (« il affiche », « afficher ») ne sont pas touchées.
+ */
+function renameCover(text) {
+  return text
+    .replace(/\bl'affiche\b/g, "la couverture")
+    .replace(/\bL'affiche\b/g, "La couverture")
+    .replace(/\b(une|cette|aucune|Une|Cette|Aucune)\s+affiche\b/g, "$1 couverture")
+    .replace(/\bton\s+affiche\b/g, "ta couverture")
+    .replace(/\bTon\s+affiche\b/g, "Ta couverture")
+    .replace(/\baffiche\b(?!\w)/g, "couverture");
+}
 
 function decode(text) {
   return text
@@ -100,28 +118,20 @@ function tableBlocks(html) {
   return blocks;
 }
 
-/**
- * Reconstruit un chapitre en texte brut, dans l'ordre du document.
- *
- * Renvoie `null` quand il ne reste rien une fois les passages de couverture retirés.
- */
+/** Reconstruit un chapitre en texte brut, dans l'ordre du document. */
 function bodyFrom(sectionHtml) {
   const blocks = [];
   // Les blocs sont pris dans l'ordre où ils apparaissent : un `<div>` d'encadré est
   // rencontré avant les `<p>` qu'il contient, et les consomme donc lui-même.
   const re =
     /<h4\b[^>]*>([\s\S]*?)<\/h4>|<div\b[^>]*class="([^"]*)"[^>]*>([\s\S]*?)<\/div>|<(p|blockquote|ul|ol|table)\b([^>]*)>([\s\S]*?)<\/\4>/gi;
-  // Vrai tant qu'on traverse une sous-partie consacrée à l'illustration de couverture.
-  let skipping = false;
   let m;
   while ((m = re.exec(sectionHtml))) {
     if (m[1] !== undefined) {
       const heading = stripTags(m[1]);
-      skipping = COVER_HEADING.test(heading);
-      if (!skipping && heading) blocks.push(`## ${heading}`);
+      if (heading) blocks.push(`## ${heading}`);
       continue;
     }
-    if (skipping) continue;
 
     if (m[2] !== undefined) {
       const cls = m[2];
@@ -141,7 +151,6 @@ function bodyFrom(sectionHtml) {
         );
         const rest = label ? inner.replace(label[0], "") : inner;
         const heading = label ? stripTags(label[1]) : "";
-        if (COVER_HEADING.test(heading)) continue;
         if (heading) blocks.push(`## ${heading}`);
         const inners = [...rest.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)].map((p) => p[1]);
         const paragraphs = (inners.length ? inners : [rest]).flatMap(paragraphsFrom);
@@ -174,9 +183,7 @@ function bodyFrom(sectionHtml) {
       if (items.length) blocks.push(items.map((i) => `- ${i}`).join("\n"));
     }
   }
-  // Un chapitre entièrement consacré à la couverture ne laisse que ses intertitres.
-  const substance = blocks.filter((b) => !b.startsWith("## "));
-  return substance.length ? blocks.join("\n\n") : null;
+  return blocks.join("\n\n");
 }
 
 function extract(path) {
@@ -189,7 +196,6 @@ function extract(path) {
   const subtitle = /^(ibook|ebook)$/i.test(subtitleRaw) ? "" : subtitleRaw;
 
   const chapters = [];
-  let skipped = 0;
   const sections = [
     ...raw.matchAll(/<section[^>]*class="[^"]*chapter[^"]*"[^>]*>([\s\S]*?)<\/section>/gi),
   ];
@@ -197,18 +203,24 @@ function extract(path) {
     const html = section[1];
     const h3 = html.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
     const name = h3 ? stripTags(h3[1]) : "";
-    if (COVER_HEADING.test(name)) {
-      skipped += 1;
-      continue;
-    }
     // Le titre du chapitre ne doit pas se retrouver aussi dans le corps.
     const withoutHeading = h3 ? html.replace(h3[0], "") : html;
-    const body = bodyFrom(withoutHeading);
-    if (body === null) {
-      skipped += 1;
-      continue;
+    chapters.push({
+      title: name || `Chapitre ${chapters.length + 1}`,
+      body: bodyFrom(withoutHeading),
+    });
+  }
+
+  /* Ce livre commente-t-il sa propre couverture ? Si oui, « affiche » y désigne cette
+     couverture, et le mot est remplacé. Sinon — « Saladin » — on n'y touche pas. */
+  const commentsItsCover = chapters.some(
+    (c) => COVER_HEADING.test(c.title) || c.body.split("\n\n").some((b) => b.startsWith("## ") && COVER_HEADING.test(b))
+  );
+  if (commentsItsCover) {
+    for (const chapter of chapters) {
+      chapter.title = renameCover(chapter.title);
+      chapter.body = renameCover(chapter.body);
     }
-    chapters.push({ title: name || `Chapitre ${chapters.length + 1}`, body });
   }
 
   // Le résumé sert de point de départ : il se réécrit à la main avant publication, parce
@@ -218,7 +230,7 @@ function extract(path) {
       .split("\n\n")
       .find((b) => b.length > 80 && !/^(##|>|-|!|—)/.test(b)) ?? "";
 
-  return { title, subtitle, description, chapters, skipped };
+  return { title, subtitle, description, chapters };
 }
 
 function toEntry(book, theme, addedAt) {
@@ -262,9 +274,8 @@ for (const [i, file] of files.entries()) {
   const book = extract(join(dir, file));
   const theme = themeArg ?? THEMES[i % THEMES.length];
   entries.push(toEntry(book, theme, today));
-  const note = book.skipped ? `  (${book.skipped} chapitre(s) de couverture écarté(s))` : "";
   console.error(
-    `✓ ${book.title.slice(0, 40).padEnd(42)} ${String(book.chapters.length).padStart(2)} chapitres${note}`
+    `✓ ${book.title.slice(0, 40).padEnd(42)} ${String(book.chapters.length).padStart(2)} chapitres`
   );
 }
 

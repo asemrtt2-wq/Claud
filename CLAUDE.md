@@ -78,7 +78,7 @@ l'aune de ce tableau avant d'être publié.
   claire » du tableau devient une contrainte de conception, pas un slogan.
 - **Aucun livre du catalogue n'est réservé au Pass** : le champ `premium` existe dans le format
   (`src/data/types.ts`) et la fiche livre sait verrouiller, mais aucune entrée ne le porte. Les
-  30 livres sont lisibles. Choisir lesquels réserver est une décision du propriétaire du
+  37 livres sont lisibles. Choisir lesquels réserver est une décision du propriétaire du
   projet, pas quelque chose à décider en écrivant le catalogue.
 
 Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
@@ -152,7 +152,7 @@ src/
     covers.ts               # slug → couverture embarquée (fichier généré)
   store/library.tsx         # progression, favoris, temps de lecture (AsyncStorage)
 scripts/import-books.mjs    # convertit des exports HTML en entrées de catalogue
-assets/couvertures/         # les 30 couvertures, 720 px de large, ~5,2 Mo au total
+assets/couvertures/         # les 37 couvertures, 720 px de large, ~6,3 Mo au total
 ```
 
 ## Ajouter des livres
@@ -173,12 +173,14 @@ Deux façons :
    le script y met le premier paragraphe du livre, ce qui n'est pas une quatrième de couverture.
 
    Le script conserve la structure du HTML : intertitres `<h4>`, encadrés `.box` et `.stat`,
-   avertissements `.box warn`, versets `.verse` avec leur référence, listes et tableaux. Il
-   **écarte** en revanche les chapitres et les sous-parties consacrés à commenter
-   l'illustration de couverture du livre d'origine (« Ce que dit l'affiche », « La phrase de
-   l'affiche »…) : Lumia compose ses couvertures en code, sans représentation figurative, et un
-   texte qui décrit une image que le lecteur ne verra jamais n'a pas sa place dans l'app. Les
-   mentions isolées qui restent en plein chapitre se relisent à la main.
+   avertissements `.box warn`, versets `.verse` avec leur référence, listes et tableaux.
+
+   Ces livres commentent leur propre couverture, qu'ils appellent « l'affiche » : un chapitre
+   d'ouverture « Ce que dit l'affiche », puis des renvois en plein texte. Comme l'app affiche
+   désormais ces couvertures, ces passages sont **conservés** — le lecteur a l'image sous les
+   yeux — et seul le mot change : « affiche » devient « couverture ». Le renommage ne
+   s'applique qu'aux livres qui ont un intertitre consacré à leur couverture ; dans
+   « Saladin », « les affiches » désigne l'imagerie populaire du personnage et reste tel quel.
 
 **Conventions du corps de texte** (interprétées par le lecteur) :
 - une ligne vide sépare deux blocs ;
@@ -187,9 +189,9 @@ Deux façons :
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **30 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **37 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture et grands
-personnages, soit environ 258 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages, soit environ 325 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 ## Choix assumés
