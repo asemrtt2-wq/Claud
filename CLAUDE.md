@@ -79,11 +79,10 @@ l'aune de ce tableau avant d'être publié.
   serait la pratique trompeuse que la charte interdit. Le jour où le paiement arrive, il devra
   passer par les achats intégrés d'Apple et de Google, qui l'imposent pour du contenu
   numérique, et la résiliation se fera dans leurs réglages.
-- **Aucun livre du catalogue n'est réservé à un abonnement** : le champ `premium` existe dans
-  le format (`src/data/types.ts`) et la fiche livre sait verrouiller, mais aucune entrée ne le
-  porte. Les 37 livres sont lisibles. Verrouiller le catalogue avant qu'un paiement existe le
-  rendrait inutilisable sans rien rapporter : c'est une décision à prendre le jour où l'achat
-  fonctionne.
+- **Le catalogue est verrouillé, mais rien ne se paie.** Un livre s'ouvre avec un abonnement,
+  avec le livre offert ou après achat — sauf que « acheter » ne débite rien et le dit. C'est
+  l'état à tenir jusqu'aux achats intégrés : la logique d'accès est complète et vérifiable,
+  seule la caisse manque.
 - **La demande de livre et le vote** de la formule Premium n'existent pas dans l'app. Ils
   demandent un serveur ; l'ancienne plateforme web en avait une version, supprimée avec elle.
 - **Aucune traduction n'est encore embarquée.** Le pipeline est prêt, le catalogue n'a qu'une
@@ -214,14 +213,40 @@ carrousel de l'accueil et la rangée « Populaires ».
 
 ## Abonnements et langues
 
-Trois formules, définies par le propriétaire du projet et décrites une seule fois dans
-`src/data/plans.ts` — l'écran d'abonnement les lit de là, il n'y a pas de prix écrit ailleurs :
+Les prix et le contenu de chaque formule sont décrits **une seule fois**, dans
+`src/data/plans.ts` — l'écran d'abonnement les lit de là, aucun prix n'est écrit ailleurs :
 
-| Formule | Prix | Ce qu'elle ajoute |
+| Accès | Prix | Ce qu'il donne |
 | --- | --- | --- |
+| Découverte | gratuit | **Un livre au choix**, gardé définitivement |
+| À l'unité | 4,99 € par livre | Le livre acheté, gardé définitivement |
 | Lumia Plus | 9,99 €/mois | Le catalogue complet en français |
 | Lumia Premium | 15,99 €/mois | Une demande de livre par mois et un vote ; les nouveautés en avance |
 | Lumia Extra | 19,99 €/mois | Toutes les langues, le changement de langue en cours de lecture, le mode bilingue |
+
+`canRead(slug)` est la seule porte du catalogue : abonné, livre offert, ou livre acheté. Le
+livre offert est **définitif** et l'app le dit avant de valider — un cadeau dont on découvre
+la limite après coup est la pratique trompeuse que la charte interdit.
+
+### Ce que la maquette proposait et qui n'a pas été repris
+
+La maquette de l'écran d'abonnement portait des éléments que Lumia ne peut pas afficher :
+
+- « **Rejoignez des milliers de lecteurs** » et une note de cinq étoiles signée « Membre
+  Lumia » : l'app n'a ni public mesuré ni avis. La règle du projet — n'afficher aucun chiffre
+  qu'on n'a pas mesuré — vaut ici comme pour l'onglet « Avis ».
+- « **Le plus populaire** » sur la formule Premium : c'est une statistique, et il n'y en a
+  pas. Remplacé par « Notre recommandation », qui est un avis d'éditeur assumé.
+- « **Des centaines d'iBooks** » : il y en a 37. Le nombre affiché est celui du catalogue.
+- « **Disponible sur tous vos appareils** » : il n'y a ni compte ni synchronisation.
+  Remplacé par « Lecture hors ligne, sans compte », qui est la vraie force.
+- « **Paiement sécurisé** » : aucun paiement n'existe encore, et l'écran le dit à la place.
+- Le mot « **iBooks** » est une marque d'Apple ; l'app dit « livres ».
+- La **photographie de personnage** du bandeau : la règle sur la représentation figurative
+  l'exclut. Remplacée par le motif géométrique.
+
+Les fonctions annoncées mais absentes — demande de livre, vote, nouveautés en avance,
+traductions — sont signalées sur la carte de leur formule, en clair.
 
 `hasPlan(plan, "extra")` est la seule porte des langues. Le reste de l'app passe par
 `canChangeLanguage`, exposé par le contexte bibliothèque, plutôt que de comparer des noms de

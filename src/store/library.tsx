@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { LOCALES, SOURCE_LOCALE, type LocaleCode } from "@/data/catalog";
-import { hasPlan, LANGUAGES_PLAN, type PlanId } from "@/data/plans";
+import { FREE_BOOKS, hasPlan, LANGUAGES_PLAN, type PlanId } from "@/data/plans";
 
 /**
  * L'état du lecteur : où il en est dans chaque livre, ses favoris, son temps de lecture.
@@ -41,6 +41,10 @@ type LibraryState = {
   locale: LocaleCode;
   /** Mode bilingue : le texte source sous chaque bloc traduit. */
   bilingual: boolean;
+  /** Les livres pris avec l'offre de bienvenue. Définitif, et gardé sans abonnement. */
+  freeBooks: string[];
+  /** Les livres achetés à l'unité. Gardés eux aussi, abonnement ou pas. */
+  purchased: string[];
 };
 
 const EMPTY: LibraryState = {
@@ -50,6 +54,8 @@ const EMPTY: LibraryState = {
   plan: null,
   locale: SOURCE_LOCALE,
   bilingual: false,
+  freeBooks: [],
+  purchased: [],
 };
 
 /**
@@ -73,6 +79,14 @@ type LibraryContextValue = LibraryState & {
   setPlan: (plan: PlanId | null) => void;
   setLocale: (locale: LocaleCode) => void;
   setBilingual: (value: boolean) => void;
+  /** Prend le livre offert. Sans effet si l'offre est déjà utilisée. */
+  claimFreeBook: (slug: string) => void;
+  /** Achète un livre à l'unité. Aucun paiement réel n'est encore branché. */
+  purchaseBook: (slug: string) => void;
+  /** Vrai si le lecteur peut ouvrir ce livre : abonné, livre offert, ou livre acheté. */
+  canRead: (slug: string) => boolean;
+  /** Vrai tant que l'offre de bienvenue n'a pas été utilisée. */
+  freeBookAvailable: boolean;
   /** Vrai quand la formule en cours donne accès aux langues. */
   canChangeLanguage: boolean;
   reset: () => void;
@@ -152,6 +166,20 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     setState((prev) => (hasPlan(prev.plan, LANGUAGES_PLAN) ? { ...prev, bilingual: value } : prev));
   }, []);
 
+  const claimFreeBook = useCallback((slug: string) => {
+    setState((prev) =>
+      prev.freeBooks.length >= FREE_BOOKS || prev.freeBooks.includes(slug)
+        ? prev
+        : { ...prev, freeBooks: [...prev.freeBooks, slug] }
+    );
+  }, []);
+
+  const purchaseBook = useCallback((slug: string) => {
+    setState((prev) =>
+      prev.purchased.includes(slug) ? prev : { ...prev, purchased: [...prev.purchased, slug] }
+    );
+  }, []);
+
   const reset = useCallback(() => setState(EMPTY), []);
 
   const value = useMemo<LibraryContextValue>(
@@ -165,10 +193,31 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setPlan,
       setLocale,
       setBilingual,
+      claimFreeBook,
+      purchaseBook,
+      // Un abonnement ouvre tout le catalogue ; sans lui, restent le livre offert et les
+      // livres achetés, qui appartiennent au lecteur même s'il ne s'abonne jamais.
+      canRead: (slug: string) =>
+        hasPlan(state.plan, "plus") ||
+        state.freeBooks.includes(slug) ||
+        state.purchased.includes(slug),
+      freeBookAvailable: state.freeBooks.length < FREE_BOOKS,
       canChangeLanguage: hasPlan(state.plan, LANGUAGES_PLAN),
       reset,
     }),
-    [state, ready, saveProgress, toggleFavorite, addMinutes, setPlan, setLocale, setBilingual, reset]
+    [
+      state,
+      ready,
+      saveProgress,
+      toggleFavorite,
+      addMinutes,
+      setPlan,
+      setLocale,
+      setBilingual,
+      claimFreeBook,
+      purchaseBook,
+      reset,
+    ]
   );
 
   return <LibraryContext.Provider value={value}>{children}</LibraryContext.Provider>;

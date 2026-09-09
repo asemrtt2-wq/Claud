@@ -4,26 +4,52 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type, touchTarget } from "@/theme";
-import { Divider } from "@/components/Ornament";
-import { everythingIn, PLAN_LIST, rankOf, type PlanId } from "@/data/plans";
+import { Divider, StarMotif } from "@/components/Ornament";
+import { BOOK_PRICE, PLANS, everythingIn, rankOf, type PlanId } from "@/data/plans";
+import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
 
 /**
- * L'écran des abonnements.
+ * L'écran des abonnements, sur la maquette fournie : promesse, quatre arguments, trois
+ * formules côte à côte, et les garanties en pied de page.
  *
  * La charte impose « prix clair, résiliation claire, aucune pratique trompeuse ». Trois
- * choses en découlent, et aucune n'est négociable :
+ * conséquences, et aucune n'est négociable :
  *
- * - chaque formule affiche son prix, sa périodicité et **tout** ce qu'elle contient, les
- *   formules précédentes comprises — pas seulement ce qu'elle ajoute ;
- * - la résiliation est expliquée sur le même écran que l'abonnement, pas enfouie ailleurs ;
- * - tant qu'aucun paiement réel n'existe, l'écran le dit. Laisser croire qu'on s'abonne
- *   serait exactement la pratique trompeuse que la charte interdit.
+ * - chaque formule affiche son prix et **tout** ce qu'elle contient, formules précédentes
+ *   comprises — pas seulement ce qu'elle ajoute ;
+ * - la résiliation est expliquée ici, sur l'écran qui vend, et pas ailleurs ;
+ * - ce qui n'existe pas encore est marqué comme tel. La maquette portait « le plus
+ *   populaire », « rejoignez des milliers de lecteurs » et une note de cinq étoiles :
+ *   Lumia n'a ni public mesuré ni avis, et l'app n'affiche aucun chiffre qu'elle n'a pas
+ *   mesuré. Ces éléments sont donc remplacés par ce qui est vrai — une recommandation
+ *   assumée par l'éditeur, qui n'est pas une statistique déguisée.
  */
+
+/** Chaque formule a sa couleur sur la maquette : sobre, or, bleu. */
+const ACCENTS: Record<PlanId, { border: string; tint: readonly [string, string]; label: string }> = {
+  plus: { border: colors.lineSoft, tint: ["#15161C", "#101116"], label: colors.text },
+  premium: { border: "#D6B26C", tint: ["#241C10", "#15110A"], label: "#EAD3A0" },
+  extra: { border: "#5B7FA6", tint: ["#141C26", "#0E1319"], label: "#A9C6E4" },
+};
+
+const TAGLINES: Record<PlanId, { subtitle: string; foot: string }> = {
+  plus: { subtitle: "L'essentiel pour commencer", foot: "Idéal pour découvrir Lumia" },
+  premium: {
+    subtitle: "Allez plus loin",
+    foot: "Pour peser sur les livres à venir et les lire en premier",
+  },
+  extra: {
+    subtitle: "Sans limites",
+    foot: "Pour lire sans frontière de langue",
+  },
+};
+
 export default function SubscriptionScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { plan, setPlan } = useLibrary();
+  const { plan, setPlan, freeBookAvailable } = useLibrary();
+  const { books } = useCatalog();
 
   return (
     <View style={styles.screen}>
@@ -45,17 +71,43 @@ export default function SubscriptionScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxxl }}
       >
-        <View style={styles.intro}>
-          <Text style={styles.title}>Trois formules</Text>
-          <Text style={styles.lede}>
-            Chacune contient tout ce que contient la précédente. Le prix affiché est celui qui
-            serait facturé, chaque mois, sans engagement.
+        {/* Promesse. Le motif remplace la photographie de la maquette : elle montrait un
+            personnage, ce que la règle sur la représentation figurative exclut. */}
+        <View style={styles.hero}>
+          <LinearGradient colors={["#1A1408", "#0B0B0F"]} style={StyleSheet.absoluteFill} />
+          <View style={styles.heroMotif}>
+            <StarMotif size={190} opacity={0.1} />
+          </View>
+          <Text style={styles.wordmark}>LUMIA</Text>
+          <Text style={styles.motto}>Des histoires qui changent votre vie</Text>
+          <Text style={styles.heroTitle}>
+            {"Investissez dans la\nmeilleure version\nde vous."}
           </Text>
-          <Divider width={30} style={{ marginTop: spacing.md }} />
+          <Text style={styles.heroLede}>
+            {`${books.length} livres courts sur l'histoire, la philosophie, la spiritualité et les sciences. Choisissez la formule qui vous correspond.`}
+          </Text>
         </View>
 
-        {/* Rien n'est facturé aujourd'hui : le dire ici, en clair, plutôt que de laisser
-            croire à un achat. */}
+        <View style={styles.promises}>
+          <Promise icon="book-outline" title="Des livres courts" detail="12 à 60 pages" />
+          <Promise
+            icon="school-outline"
+            title="Des sources vérifiables"
+            detail="chiffres et références"
+          />
+          <Promise
+            icon="leaf-outline"
+            title="Un contenu 100 % halal"
+            detail="charte respectée livre par livre"
+          />
+          <Promise
+            icon="cloud-offline-outline"
+            title="Lecture hors ligne"
+            detail="sans compte, sans donnée envoyée"
+          />
+        </View>
+
+        {/* Rien n'est facturé aujourd'hui : le dire ici, à l'endroit qui vend. */}
         <View style={styles.notice}>
           <Ionicons name="information-circle-outline" size={18} color={colors.gold} />
           <Text style={styles.noticeText}>
@@ -64,35 +116,51 @@ export default function SubscriptionScreen() {
           </Text>
         </View>
 
-        {PLAN_LIST.map((p) => {
-          const current = plan === p.id;
-          const included = rankOf(plan) >= rankOf(p.id);
-          return (
-            <PlanCard
-              key={p.id}
-              id={p.id}
-              name={p.name}
-              price={p.price}
-              period={p.period}
-              features={everythingIn(p.id)}
-              current={current}
-              included={included && !current}
-              onChoose={() => setPlan(p.id)}
-            />
-          );
-        })}
+        {(Object.keys(PLANS) as PlanId[]).map((id) => (
+          <PlanCard
+            key={id}
+            id={id}
+            current={plan === id}
+            included={rankOf(plan) > rankOf(id)}
+            onChoose={() => setPlan(id)}
+          />
+        ))}
+
+        {/* Sans abonnement : ce que le lecteur peut avoir quand même. */}
+        <View style={styles.without}>
+          <Text style={styles.withoutTitle}>Sans abonnement</Text>
+          <View style={styles.withoutRow}>
+            <Ionicons name="gift-outline" size={17} color={colors.gold} />
+            <Text style={styles.withoutText}>
+              {freeBookAvailable
+                ? "Un livre offert, celui que vous voulez. Il reste à vous."
+                : "Votre livre offert a été pris. Il reste à vous."}
+            </Text>
+          </View>
+          <View style={styles.withoutRow}>
+            <Ionicons name="pricetag-outline" size={17} color={colors.gold} />
+            <Text style={styles.withoutText}>
+              {`Ensuite ${BOOK_PRICE} par livre, achetés un par un et gardés pour toujours.`}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.guarantees}>
+          <Guarantee icon="close-circle-outline" label="Sans engagement" />
+          <Guarantee icon="calendar-outline" label="Annulation à tout moment" />
+        </View>
 
         <View style={styles.cancel}>
           <Text style={styles.cancelTitle}>Résilier</Text>
           <Text style={styles.cancelText}>
-            L'abonnement se résilie à tout moment, et reste actif jusqu'à la fin du mois déjà
+            L'abonnement se résilie à tout moment et reste actif jusqu'à la fin du mois déjà
             payé. Il n'y a ni durée minimale ni frais de résiliation.
           </Text>
           <Text style={styles.cancelText}>
             Quand le paiement sera en place, il passera par l'App Store et par Google Play, qui
             l'imposent pour ce type de contenu. La résiliation se fera alors dans les réglages
-            d'abonnement de ton téléphone — Lumia ne peut pas la faire à ta place, et aucun
-            écran de l'app ne cherchera à t'en dissuader.
+            d'abonnement de votre téléphone — Lumia ne peut pas la faire à votre place, et aucun
+            écran de l'app ne cherchera à vous en dissuader.
           </Text>
           {plan !== null && (
             <Pressable
@@ -104,84 +172,128 @@ export default function SubscriptionScreen() {
             </Pressable>
           )}
         </View>
+
+        <Divider width={30} style={styles.footDivider} />
+        <Text style={styles.footMotto}>Lire. Comprendre. Évoluer.</Text>
       </ScrollView>
+    </View>
+  );
+}
+
+function Promise({ icon, title, detail }: { icon: string; title: string; detail: string }) {
+  return (
+    <View style={styles.promise}>
+      <View style={styles.promiseIcon}>
+        <Ionicons name={icon as never} size={20} color={colors.gold} />
+      </View>
+      <Text style={styles.promiseTitle}>{title}</Text>
+      <Text style={styles.promiseDetail}>{detail}</Text>
+    </View>
+  );
+}
+
+function Guarantee({ icon, label }: { icon: string; label: string }) {
+  return (
+    <View style={styles.guarantee}>
+      <Ionicons name={icon as never} size={16} color={colors.textMuted} />
+      <Text style={styles.guaranteeLabel}>{label}</Text>
     </View>
   );
 }
 
 function PlanCard({
   id,
-  name,
-  price,
-  period,
-  features,
   current,
   included,
   onChoose,
 }: {
   id: PlanId;
-  name: string;
-  price: string;
-  period: string;
-  features: string[];
   /** La formule en cours. */
   current: boolean;
   /** Une formule inférieure, déjà comprise dans celle en cours. */
   included: boolean;
   onChoose: () => void;
 }) {
+  const plan = PLANS[id];
+  const accent = ACCENTS[id];
+  const tag = TAGLINES[id];
+
   return (
-    <View style={[styles.card, current && styles.cardCurrent]}>
-      {current && (
-        <LinearGradient
-          colors={["rgba(214,178,108,0.14)", "rgba(214,178,108,0.02)"]}
-          style={StyleSheet.absoluteFill}
-        />
+    <View style={[styles.card, { borderColor: current ? colors.gold : accent.border }]}>
+      <LinearGradient colors={accent.tint} style={StyleSheet.absoluteFill} />
+
+      {/* « Recommandé » est un avis d'éditeur, pas une statistique : Lumia n'a pas encore de
+          public à compter, et la maquette annonçait « le plus populaire ». */}
+      {id === "premium" && (
+        <View style={styles.recommended}>
+          <Ionicons name="star" size={11} color="#231B0C" />
+          <Text style={styles.recommendedText}>Notre recommandation</Text>
+        </View>
       )}
-      <View style={styles.cardHead}>
-        <Text style={styles.cardName}>{name}</Text>
-        {current && (
-          <View style={styles.pill}>
-            <Text style={styles.pillText}>Formule actuelle</Text>
-          </View>
-        )}
-      </View>
+
+      <Text style={styles.cardWordmark}>LUMIA</Text>
+      <Text style={[styles.cardName, { color: accent.label }]}>
+        {plan.name.replace("Lumia ", "")}
+      </Text>
+      <Text style={styles.cardSubtitle}>{tag.subtitle}</Text>
 
       <View style={styles.priceRow}>
-        <Text style={styles.price}>{price}</Text>
-        <Text style={styles.period}>{period}</Text>
-      </View>
-
-      <View style={styles.features}>
-        {features.map((feature) => (
-          <View key={feature} style={styles.feature}>
-            <Ionicons name="checkmark" size={15} color={colors.gold} />
-            <Text style={styles.featureText}>{feature}</Text>
-          </View>
-        ))}
+        <Text style={[styles.price, { color: accent.label }]}>{plan.price}</Text>
+        <Text style={styles.period}>{`/ ${plan.period.replace("par ", "")}`}</Text>
       </View>
 
       <Pressable
         onPress={onChoose}
         disabled={current}
         accessibilityRole="button"
-        accessibilityLabel={`Choisir ${name}, ${price} ${period}`}
+        accessibilityLabel={`Choisir ${plan.name}, ${plan.price} ${plan.period}`}
         style={({ pressed }) => [
           styles.choose,
+          { borderColor: accent.border },
+          id === "premium" && styles.chooseFilled,
           current && styles.chooseCurrent,
           pressed && !current && { opacity: 0.9 },
         ]}
       >
-        <Text style={[styles.chooseLabel, current && styles.chooseLabelCurrent]}>
-          {current ? "En cours" : included ? "Revenir à cette formule" : `Choisir ${name}`}
+        <Text
+          style={[
+            styles.chooseLabel,
+            id === "premium" && styles.chooseLabelFilled,
+            current && styles.chooseLabelCurrent,
+          ]}
+        >
+          {current ? "Formule actuelle" : included ? "Revenir à cette formule" : `Choisir ${plan.name}`}
         </Text>
       </Pressable>
 
-      {id === "extra" && !current && (
-        <Text style={styles.cardFoot}>
-          Les langues et le mode bilingue ne sont disponibles que dans cette formule.
+      <View style={styles.features}>
+        {everythingIn(id).map((feature) => (
+          <View key={feature} style={styles.feature}>
+            <Ionicons name="checkmark" size={15} color={accent.label} />
+            <Text style={styles.featureText}>{feature}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Ce qui n'existe pas encore est dit ici, pas caché : vendre une fonction absente
+          serait la pratique trompeuse que la charte interdit. */}
+      {id === "premium" && (
+        <Text style={styles.pending}>
+          La demande de livre, le vote et les nouveautés en avance demandent un serveur : ils
+          ne fonctionnent pas encore.
         </Text>
       )}
+      {id === "extra" && (
+        <Text style={styles.pending}>
+          Les traductions arrivent langue par langue, par mise à jour de l'app. Le catalogue
+          n'existe pour l'instant qu'en français.
+        </Text>
+      )}
+
+      <View style={styles.cardFoot}>
+        <Ionicons name="ellipse-outline" size={13} color={colors.textFaint} />
+        <Text style={styles.cardFootText}>{tag.foot}</Text>
+      </View>
     </View>
   );
 }
@@ -202,15 +314,51 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
   },
-  intro: { paddingHorizontal: spacing.xl, paddingTop: spacing.md },
-  title: { ...type.h1 },
-  lede: { ...type.bodyMuted, marginTop: spacing.sm, lineHeight: 22 },
+
+  hero: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, paddingBottom: spacing.xxl },
+  heroMotif: { position: "absolute", right: -40, top: 10, opacity: 0.9 },
+  wordmark: { fontFamily: fonts.display, fontSize: 20, letterSpacing: 6, color: colors.goldLight },
+  motto: { ...type.caption, marginTop: 4 },
+  heroTitle: {
+    fontFamily: fonts.display,
+    fontSize: 34,
+    lineHeight: 42,
+    color: colors.text,
+    marginTop: spacing.xl,
+  },
+  heroLede: { ...type.bodyMuted, marginTop: spacing.md, lineHeight: 22 },
+
+  promises: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: spacing.lg,
+    rowGap: spacing.xl,
+  },
+  promise: { width: "50%", alignItems: "center", paddingHorizontal: spacing.sm },
+  promiseIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.goldDeep,
+  },
+  promiseTitle: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.text,
+    textAlign: "center",
+    marginTop: spacing.sm,
+  },
+  promiseDetail: { ...type.caption, fontSize: 11, textAlign: "center", marginTop: 2 },
+
   notice: {
     flexDirection: "row",
     gap: spacing.md,
     alignItems: "flex-start",
     marginHorizontal: spacing.xl,
-    marginTop: spacing.xl,
+    marginTop: spacing.xxl,
     padding: spacing.lg,
     borderRadius: radius.md,
     backgroundColor: colors.surface,
@@ -218,44 +366,104 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.gold,
   },
   noticeText: { flex: 1, ...type.caption, lineHeight: 19 },
+
   card: {
     marginHorizontal: spacing.xl,
     marginTop: spacing.lg,
     padding: spacing.xl,
+    paddingTop: spacing.xxl,
     borderRadius: radius.lg,
     overflow: "hidden",
-    backgroundColor: colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.lineSoft,
+    borderWidth: 1,
+    alignItems: "center",
   },
-  cardCurrent: { borderColor: colors.gold },
-  cardHead: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-  cardName: { flex: 1, fontFamily: fonts.display, fontSize: 20, color: colors.text },
-  pill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-    backgroundColor: colors.goldGlow,
+  recommended: {
+    position: "absolute",
+    top: 0,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 5,
+    borderBottomLeftRadius: radius.md,
+    borderBottomRightRadius: radius.md,
+    backgroundColor: colors.gold,
   },
-  pillText: { fontFamily: fonts.body, fontSize: 10, color: colors.goldLight },
-  priceRow: { flexDirection: "row", alignItems: "baseline", gap: spacing.sm, marginTop: spacing.sm },
-  price: { fontFamily: fonts.display, fontSize: 28, color: colors.goldLight },
+  recommendedText: { fontFamily: fonts.body, fontSize: 10, fontWeight: "700", color: "#231B0C" },
+  cardWordmark: {
+    fontFamily: fonts.display,
+    fontSize: 11,
+    letterSpacing: 4,
+    color: colors.textMuted,
+  },
+  cardName: { fontFamily: fonts.display, fontSize: 32, marginTop: 2 },
+  cardSubtitle: { ...type.caption, marginTop: 2 },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: spacing.xs,
+    marginTop: spacing.md,
+  },
+  price: { fontFamily: fonts.display, fontSize: 30 },
   period: { ...type.caption },
-  features: { marginTop: spacing.lg, gap: spacing.sm },
-  feature: { flexDirection: "row", gap: spacing.md, alignItems: "flex-start" },
-  featureText: { flex: 1, ...type.body, color: colors.textMuted, lineHeight: 21 },
   choose: {
+    alignSelf: "stretch",
     height: touchTarget,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     alignItems: "center",
     justifyContent: "center",
     marginTop: spacing.lg,
-    backgroundColor: colors.gold,
+    borderWidth: StyleSheet.hairlineWidth,
   },
-  chooseCurrent: { backgroundColor: colors.surfaceRaised },
-  chooseLabel: { fontFamily: fonts.body, fontSize: 14, fontWeight: "700", color: "#231B0C" },
+  chooseFilled: { backgroundColor: colors.gold, borderColor: colors.gold },
+  chooseCurrent: { backgroundColor: colors.surfaceRaised, borderColor: colors.lineSoft },
+  chooseLabel: { fontFamily: fonts.body, fontSize: 14, fontWeight: "700", color: colors.text },
+  chooseLabelFilled: { color: "#231B0C" },
   chooseLabelCurrent: { color: colors.textMuted },
-  cardFoot: { ...type.caption, marginTop: spacing.md, fontSize: 11 },
+  features: { alignSelf: "stretch", marginTop: spacing.xl, gap: spacing.md },
+  feature: { flexDirection: "row", gap: spacing.md, alignItems: "flex-start" },
+  featureText: { flex: 1, ...type.body, color: colors.textMuted, lineHeight: 21 },
+  pending: {
+    alignSelf: "stretch",
+    ...type.caption,
+    fontSize: 11,
+    lineHeight: 17,
+    marginTop: spacing.lg,
+  },
+  cardFoot: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.lineSoft,
+  },
+  cardFootText: { flex: 1, ...type.caption, fontSize: 11, lineHeight: 16 },
+
+  without: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.xxl,
+    padding: spacing.lg,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    gap: spacing.md,
+  },
+  withoutTitle: { ...type.label },
+  withoutRow: { flexDirection: "row", gap: spacing.md, alignItems: "flex-start" },
+  withoutText: { flex: 1, ...type.body, color: colors.textMuted, lineHeight: 21 },
+
+  guarantees: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: spacing.xl,
+    marginTop: spacing.xxl,
+  },
+  guarantee: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  guaranteeLabel: { ...type.caption },
+
   cancel: { paddingHorizontal: spacing.xl, marginTop: spacing.xxl, gap: spacing.sm },
   cancelTitle: { ...type.h3 },
   cancelText: { ...type.bodyMuted, lineHeight: 22 },
@@ -269,4 +477,7 @@ const styles = StyleSheet.create({
     borderColor: colors.lineSoft,
   },
   cancelButtonLabel: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted },
+
+  footDivider: { alignSelf: "center", marginTop: spacing.xxl },
+  footMotto: { ...type.caption, textAlign: "center", marginTop: spacing.md, letterSpacing: 1 },
 });

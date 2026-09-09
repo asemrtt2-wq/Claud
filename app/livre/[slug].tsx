@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,7 +9,7 @@ import BookCover from "@/components/BookCover";
 import { estimateMinutes, estimatePages } from "@/data/books";
 import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
-import { hasPlan } from "@/data/plans";
+import { BOOK_PRICE, PLANS } from "@/data/plans";
 
 const TABS = ["À propos", "Chapitres", "Avis"] as const;
 
@@ -18,7 +18,8 @@ export default function BookScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { progress, isFavorite, toggleFavorite, plan } = useLibrary();
+  const { progress, isFavorite, toggleFavorite, canRead, freeBookAvailable, claimFreeBook, purchaseBook } =
+    useLibrary();
   const { books, getBook } = useCatalog();
   const [tab, setTab] = useState<(typeof TABS)[number]>("À propos");
 
@@ -43,9 +44,46 @@ export default function BookScreen() {
   const p = progress[book.slug];
   const percent = p ? (p.chapter + p.offset) / book.chapters.length : 0;
   const favorite = isFavorite(book.slug);
-  // Un livre marqué `premium` demande au moins la première formule. Aucun ne l'est
-  // aujourd'hui : le verrou existe, le catalogue reste ouvert.
-  const locked = Boolean(book.premium) && !hasPlan(plan, "plus");
+  // Le catalogue est payant : un livre s'ouvre avec un abonnement, avec le livre offert,
+  // ou après achat à l'unité.
+  const locked = !canRead(book.slug);
+
+  /* Le livre offert ne se rend pas : le dire avant, pas après. Un cadeau dont on découvre
+     la limite une fois qu'il est consommé est exactement ce que la charte appelle une
+     pratique trompeuse. */
+  const offerFreeBook = () => {
+    Alert.alert(
+      "Prendre ce livre gratuitement ?",
+      `« ${book.title} » sera à toi, définitivement et sans abonnement. C'est le seul livre offert : tu ne pourras pas l'échanger contre un autre ensuite.`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Le prendre",
+          onPress: () => {
+            claimFreeBook(book.slug);
+            router.push(`/lecture/${book.slug}`);
+          },
+        },
+      ]
+    );
+  };
+
+  const offerPurchase = () => {
+    Alert.alert(
+      `Acheter ce livre — ${BOOK_PRICE}`,
+      "Le paiement n'est pas encore en place : rien ne sera débité. Cette action débloque le livre sur cet appareil, pour essayer.",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Débloquer",
+          onPress: () => {
+            purchaseBook(book.slug);
+            router.push(`/lecture/${book.slug}`);
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.screen}>
@@ -111,10 +149,22 @@ export default function BookScreen() {
 
         <View style={styles.actions}>
           <GoldButton
-            label={locked ? "Réservé au Pass" : p ? "Reprendre" : "Lire"}
-            icon={locked ? "lock-closed" : "book"}
+            label={
+              !locked
+                ? p
+                  ? "Reprendre"
+                  : "Lire"
+                : freeBookAvailable
+                  ? "Lire gratuitement"
+                  : `Acheter — ${BOOK_PRICE}`
+            }
+            icon={!locked ? "book" : freeBookAvailable ? "gift" : "lock-open"}
             onPress={() =>
-              locked ? router.push("/(tabs)/profil") : router.push(`/lecture/${book.slug}`)
+              !locked
+                ? router.push(`/lecture/${book.slug}`)
+                : freeBookAvailable
+                  ? offerFreeBook()
+                  : offerPurchase()
             }
             style={styles.readButton}
           />
@@ -125,6 +175,33 @@ export default function BookScreen() {
             label={favorite ? "Retirer des favoris" : "Ajouter aux favoris"}
           />
         </View>
+
+        {/* Les autres façons d'accéder au livre, énoncées d'un bloc plutôt que dispersées :
+            le lecteur voit d'un coup ce que chaque option coûte. */}
+        {locked && (
+          <View style={styles.access}>
+            {freeBookAvailable ? (
+              <Text style={styles.accessLine}>
+                {`C'est ton livre offert. Sinon, ce livre seul coûte ${BOOK_PRICE}, et tout le catalogue ${PLANS.plus.price} par mois.`}
+              </Text>
+            ) : (
+              <Text style={styles.accessLine}>
+                {`Tu as déjà pris ton livre offert. Ce livre seul coûte ${BOOK_PRICE}, et il reste à toi.`}
+              </Text>
+            )}
+            <Pressable
+              onPress={() => router.push("/abonnement")}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.accessLink, pressed && { opacity: 0.7 }]}
+            >
+              <Ionicons name="albums-outline" size={16} color={colors.gold} />
+              <Text style={styles.accessLinkText}>
+                {`Tout le catalogue à partir de ${PLANS.plus.price} par mois`}
+              </Text>
+              <Ionicons name="chevron-forward" size={14} color={colors.textFaint} />
+            </Pressable>
+          </View>
+        )}
 
         <View style={styles.tabs}>
           {TABS.map((label) => {
@@ -157,7 +234,9 @@ export default function BookScreen() {
                   key={chapter.title}
                   onPress={() =>
                     locked
-                      ? router.push("/(tabs)/profil")
+                      ? freeBookAvailable
+                        ? offerFreeBook()
+                        : offerPurchase()
                       : router.push(`/lecture/${book.slug}?chapter=${i}`)
                   }
                   style={({ pressed }) => [styles.chapterRow, pressed && styles.chapterRowPressed]}
@@ -275,6 +354,15 @@ const styles = StyleSheet.create({
   },
   panel: { paddingHorizontal: spacing.lg, marginTop: spacing.lg },
   description: { ...type.body, color: colors.textMuted, lineHeight: 24 },
+  access: { paddingHorizontal: spacing.xl, marginTop: spacing.md, gap: spacing.sm },
+  accessLine: { ...type.caption, lineHeight: 19 },
+  accessLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  accessLinkText: { flex: 1, fontFamily: fonts.body, fontSize: 13, color: colors.goldLight },
   meta: { flexDirection: "row", gap: spacing.xl, marginTop: spacing.lg, flexWrap: "wrap" },
   metaItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   metaLabel: { ...type.caption, color: colors.textMuted },

@@ -44,8 +44,17 @@ export default function ReaderScreen() {
   }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { saveProgress, progress, addMinutes, locale, setLocale, bilingual, setBilingual, canChangeLanguage } =
-    useLibrary();
+  const {
+    saveProgress,
+    progress,
+    addMinutes,
+    locale,
+    setLocale,
+    bilingual,
+    setBilingual,
+    canChangeLanguage,
+    canRead,
+  } = useLibrary();
   const { getBook, getSource } = useCatalog();
 
   const book = getBook(String(slug));
@@ -99,6 +108,25 @@ export default function ReaderScreen() {
       <View style={[styles.screen, { paddingTop: insets.top + spacing.xxl }]}>
         <EmptyState title="Ce livre n'existe pas" />
         <GoldButton label="Retour" onPress={() => router.back()} style={styles.centerCta} />
+      </View>
+    );
+  }
+
+  /* Le lecteur se protège lui-même : la fiche livre n'est pas le seul chemin vers ici — un
+     lien direct ou un vieux raccourci y mènent aussi. */
+  if (!canRead(book.slug)) {
+    return (
+      <View style={[styles.screen, { paddingTop: insets.top + spacing.xxl }]}>
+        <EmptyState
+          icon="lock-closed-outline"
+          title="Ce livre n'est pas encore à toi"
+          hint="Ouvre sa fiche pour le prendre gratuitement, l'acheter seul, ou t'abonner."
+        />
+        <GoldButton
+          label="Voir la fiche"
+          onPress={() => router.replace(`/livre/${book.slug}`)}
+          style={styles.centerCta}
+        />
       </View>
     );
   }

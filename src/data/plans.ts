@@ -1,5 +1,5 @@
 /**
- * Les trois abonnements Lumia, tels que le propriétaire du projet les a définis.
+ * Ce qui donne accès aux livres : un livre offert, l'achat à l'unité, et trois abonnements.
  *
  * La charte de contenu impose « prix clair, résiliation claire, aucune pratique
  * trompeuse ». Ce fichier est donc la seule source de vérité sur les prix et sur ce que
@@ -11,6 +11,17 @@
  * doit passer par les achats intégrés d'Apple et de Google — les deux boutiques l'imposent
  * pour du contenu numérique — et la résiliation se fera dans leurs réglages, pas ici.
  */
+
+/**
+ * Le livre offert. Le lecteur en choisit un, une seule fois, et il le garde. Le choix est
+ * définitif — l'app le dit avant de valider, parce qu'un cadeau dont on découvre la limite
+ * après coup est exactement la pratique trompeuse que la charte interdit.
+ */
+export const FREE_BOOKS = 1;
+
+/** Le prix d'un livre acheté seul, sans abonnement. Achat définitif, pas une location. */
+export const BOOK_PRICE = "4,99 €";
+
 export const PLAN_IDS = ["plus", "premium", "extra"] as const;
 
 export type PlanId = (typeof PLAN_IDS)[number];
