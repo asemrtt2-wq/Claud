@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type } from "@/theme";
 import { EmptyState, ProgressBar } from "@/components/ui";
 import BookCover from "@/components/BookCover";
-import { BOOKS, getBook } from "@/data/books";
+import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
 import type { Book } from "@/data/types";
 
@@ -17,19 +17,20 @@ export default function LibraryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { progress, favorites } = useLibrary();
+  const { books: catalog, getBook } = useCatalog();
   const [filter, setFilter] = useState<Filter>("En cours");
 
   const books = useMemo(() => {
-    if (filter === "Tout") return BOOKS;
+    if (filter === "Tout") return catalog;
     if (filter === "Favoris") {
       return favorites.map((slug) => getBook(slug)).filter((b): b is Book => Boolean(b));
     }
     const wantFinished = filter === "Terminés";
-    return BOOKS.filter((book) => {
+    return catalog.filter((book) => {
       const p = progress[book.slug];
       return p ? p.finished === wantFinished : false;
     });
-  }, [filter, progress, favorites]);
+  }, [filter, progress, favorites, catalog, getBook]);
 
   const emptyHint: Record<Filter, string> = {
     "En cours": "Ouvre un livre depuis l'accueil : il apparaîtra ici avec ta progression.",

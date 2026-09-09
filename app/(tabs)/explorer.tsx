@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type } from "@/theme";
 import { EmptyState, SectionHeader } from "@/components/ui";
 import BookCover from "@/components/BookCover";
-import { BOOKS } from "@/data/books";
+import { useCatalog } from "@/store/catalog";
 import { CATEGORIES, CATEGORY_ICONS, type Book, type Category } from "@/data/types";
 
 /** L'écran « Explorer » : recherche, grille de catégories, Nouveautés, Les plus populaires. */
@@ -15,10 +15,11 @@ export default function ExplorerScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category | null>(null);
+  const { books } = useCatalog();
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return BOOKS.filter((book) => {
+    return books.filter((book) => {
       if (category && book.category !== category) return false;
       if (!q) return true;
       return (
@@ -28,13 +29,13 @@ export default function ExplorerScreen() {
         book.tags.some((t) => t.toLowerCase().includes(q))
       );
     });
-  }, [query, category]);
+  }, [query, category, books]);
 
   const searching = query.trim().length > 0 || category !== null;
 
   const newest = useMemo(
-    () => [...BOOKS].sort((a, b) => b.addedAt.localeCompare(a.addedAt)).slice(0, 8),
-    []
+    () => [...books].sort((a, b) => b.addedAt.localeCompare(a.addedAt)).slice(0, 8),
+    [books]
   );
 
   return (
@@ -130,7 +131,7 @@ export default function ExplorerScreen() {
             />
             <Row
               title="Les plus populaires"
-              books={BOOKS}
+              books={books}
               onOpen={(slug) => router.push(`/livre/${slug}`)}
             />
           </>

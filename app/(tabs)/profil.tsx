@@ -6,11 +6,13 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type } from "@/theme";
 import { Divider, StarMotif } from "@/components/Ornament";
-import { BOOKS } from "@/data/books";
+import { useCatalog } from "@/store/catalog";
+import { LOCALES } from "@/data/catalog";
+import { PLANS } from "@/data/plans";
 import { useLibrary } from "@/store/library";
 
 /**
- * « Mon espace » : les statistiques réelles du lecteur, le Pass Lumia, et les raccourcis.
+ * « Mon espace » : les statistiques réelles du lecteur, son abonnement, et les raccourcis.
  *
  * L'avatar de la maquette est un paysage ; ici c'est un médaillon géométrique — pas d'image,
  * conformément à la règle sur les représentations.
@@ -18,7 +20,8 @@ import { useLibrary } from "@/store/library";
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { progress, favorites, minutesRead, premium, setPremium, reset } = useLibrary();
+  const { progress, favorites, minutesRead, plan, locale, canChangeLanguage, reset } =
+    useLibrary();
 
   const stats = useMemo(() => {
     const entries = Object.values(progress);
@@ -84,36 +87,54 @@ export default function ProfileScreen() {
         </View>
 
         <Pressable
-          onPress={() => setPremium(!premium)}
+          onPress={() => router.push("/abonnement")}
+          accessibilityRole="button"
+          accessibilityLabel="Voir les abonnements"
           style={({ pressed }) => [styles.pass, pressed && { opacity: 0.9 }]}
         >
           <LinearGradient
-            colors={premium ? ["#EAD3A0", "#D6B26C"] : ["#2A2113", "#1B1710"]}
+            colors={plan ? ["#EAD3A0", "#D6B26C"] : ["#2A2113", "#1B1710"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
           <Ionicons
-            name={premium ? "ribbon" : "ribbon-outline"}
+            name={plan ? "ribbon" : "ribbon-outline"}
             size={22}
-            color={premium ? "#231B0C" : colors.gold}
+            color={plan ? "#231B0C" : colors.gold}
           />
           <View style={styles.passBody}>
-            <Text style={[styles.passTitle, premium && styles.passTitleActive]}>
-              Pass Lumia Premium
+            <Text style={[styles.passTitle, plan && styles.passTitleActive]}>
+              {plan ? PLANS[plan].name : "S'abonner à Lumia"}
             </Text>
-            <Text style={[styles.passHint, premium && styles.passHintActive]}>
-              {premium
-                ? "Actif — accès à tous les livres"
-                : `Accès illimité aux ${BOOKS.length} livres du catalogue`}
+            <Text style={[styles.passHint, plan && styles.passHintActive]}>
+              {plan
+                ? `${PLANS[plan].price} ${PLANS[plan].period} · résiliable à tout moment`
+                : `Trois formules, à partir de ${PLANS.plus.price} par mois`}
             </Text>
           </View>
           <Ionicons
             name="chevron-forward"
             size={16}
-            color={premium ? "#231B0C" : colors.textMuted}
+            color={plan ? "#231B0C" : colors.textMuted}
           />
         </Pressable>
+
+        {/* La langue n'apparaît que si elle sert : sans la formule qui la débloque, la
+            proposer reviendrait à montrer une porte fermée. */}
+        {canChangeLanguage && (
+          <Pressable
+            onPress={() => router.push("/langue")}
+            accessibilityRole="button"
+            accessibilityLabel="Changer la langue de lecture"
+            style={({ pressed }) => [styles.language, pressed && styles.menuItemPressed]}
+          >
+            <Ionicons name="language-outline" size={19} color={colors.gold} />
+            <Text style={styles.menuLabel}>Langue de lecture</Text>
+            <Text style={styles.languageValue}>{LOCALES[locale].endonym}</Text>
+            <Ionicons name="chevron-forward" size={15} color={colors.textFaint} />
+          </Pressable>
+        )}
 
         <View style={styles.menu}>
           {menu.map((item) => (
@@ -193,6 +214,18 @@ const styles = StyleSheet.create({
   },
   passBody: { flex: 1, gap: 2 },
   passTitle: { fontFamily: fonts.body, fontSize: 14, fontWeight: "700", color: colors.goldLight },
+  language: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    height: 52,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+  },
+  languageValue: { fontFamily: fonts.body, fontSize: 13, color: colors.goldLight },
   passTitleActive: { color: "#231B0C" },
   passHint: { ...type.caption, color: colors.textMuted },
   passHintActive: { color: "#4A3A18" },

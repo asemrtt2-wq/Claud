@@ -18,8 +18,8 @@ import { colors, fonts, gradients, radius, spacing, type, fillObject } from "@/t
 import { LatticePattern, StarMotif } from "@/components/Ornament";
 import { CircleButton, EmptyState, GoldButton, ProgressBar, SectionHeader, Tag } from "@/components/ui";
 import BookCover from "@/components/BookCover";
-import { BOOKS } from "@/data/books";
 import { getCover } from "@/data/covers";
+import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
 import type { Book } from "@/data/types";
 
@@ -30,6 +30,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { progress } = useLibrary();
+  const { books } = useCatalog();
   const [tab, setTab] = useState<(typeof TABS)[number]>("Pour vous");
   const [slide, setSlide] = useState(0);
   const heroRef = useRef<ScrollView>(null);
@@ -38,24 +39,24 @@ export default function HomeScreen() {
 
   const shown = useMemo(() => {
     if (tab === "Nouveautés") {
-      return [...BOOKS].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
+      return [...books].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
     }
     if (tab === "Populaires") {
       // Sans statistiques d'usage réelles, « Populaires » suit l'ordre du catalogue plutôt
       // que d'afficher un classement inventé.
-      return BOOKS;
+      return books;
     }
-    return BOOKS;
-  }, [tab]);
+    return books;
+  }, [tab, books]);
 
   /** Les livres commencés et pas encore finis, du plus récent au plus ancien. */
   const continueReading = useMemo(() => {
-    return BOOKS.map((book) => ({ book, p: progress[book.slug] }))
+    return books.map((book) => ({ book, p: progress[book.slug] }))
       .filter((entry): entry is { book: Book; p: NonNullable<typeof entry.p> } =>
         Boolean(entry.p && !entry.p.finished)
       )
       .sort((a, b) => b.p.updatedAt.localeCompare(a.p.updatedAt));
-  }, [progress]);
+  }, [progress, books]);
 
   function onHeroScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
     setSlide(Math.round(e.nativeEvent.contentOffset.x / (heroWidth + spacing.md)));

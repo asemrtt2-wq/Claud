@@ -9,7 +9,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "books:import": "node scripts/import-books.mjs"
+    "books:import": "node scripts/import-books.mjs",
+    "books:translate": "node scripts/translate-books.mjs",
+    "catalog:index": "node scripts/generate-catalog-index.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "^57.0.15",

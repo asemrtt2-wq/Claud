@@ -73,13 +73,21 @@ l'aune de ce tableau avant d'être publié.
 **Pas encore construit** — à ne pas présenter comme existant :
 - Le **mode enfant** et son filtrage renforcé n'existent pas dans l'app. Il n'y a aujourd'hui
   qu'un seul profil de lecture.
-- Les **abonnements réels** non plus : le « Pass Lumia » de l'écran Profil est un simple
-  interrupteur local. Le jour où un vrai paiement arrive, la ligne « prix clair, résiliation
-  claire » du tableau devient une contrainte de conception, pas un slogan.
-- **Aucun livre du catalogue n'est réservé au Pass** : le champ `premium` existe dans le format
-  (`src/data/types.ts`) et la fiche livre sait verrouiller, mais aucune entrée ne le porte. Les
-  37 livres sont lisibles. Choisir lesquels réserver est une décision du propriétaire du
-  projet, pas quelque chose à décider en écrivant le catalogue.
+- Les **paiements réels** non plus. Les trois formules existent (`src/data/plans.ts`,
+  `app/abonnement.tsx`) avec leurs prix et leur contenu, mais choisir une formule ne débite
+  rien : c'est un réglage local. L'écran le dit en toutes lettres — laisser croire à un achat
+  serait la pratique trompeuse que la charte interdit. Le jour où le paiement arrive, il devra
+  passer par les achats intégrés d'Apple et de Google, qui l'imposent pour du contenu
+  numérique, et la résiliation se fera dans leurs réglages.
+- **Aucun livre du catalogue n'est réservé à un abonnement** : le champ `premium` existe dans
+  le format (`src/data/types.ts`) et la fiche livre sait verrouiller, mais aucune entrée ne le
+  porte. Les 37 livres sont lisibles. Verrouiller le catalogue avant qu'un paiement existe le
+  rendrait inutilisable sans rien rapporter : c'est une décision à prendre le jour où l'achat
+  fonctionne.
+- **La demande de livre et le vote** de la formule Premium n'existent pas dans l'app. Ils
+  demandent un serveur ; l'ancienne plateforme web en avait une version, supprimée avec elle.
+- **Aucune traduction n'est encore embarquée.** Le pipeline est prêt, le catalogue n'a qu'une
+  langue : le français.
 
 Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
 tombant dans une case « interdit » du tableau, est à refuser ou à remplacer.
@@ -139,7 +147,9 @@ app/                        # les écrans (routage par fichiers, expo-router)
     bibliotheque.tsx        # En cours / Favoris / Terminés / Tout
     profil.tsx              # « Mon espace » : statistiques réelles, Pass Lumia
   livre/[slug].tsx          # fiche livre : À propos / Chapitres / Avis
-  lecture/[slug].tsx        # lecteur : chapitre par chapitre, réglages, sommaire
+  lecture/[slug].tsx        # lecteur : chapitre par chapitre, réglages, langue, sommaire
+  abonnement.tsx            # les trois formules : prix, contenu, résiliation
+  langue.tsx                # langue de lecture et mode bilingue (formule Extra)
 src/
   theme.ts                  # couleurs, typographie, espacements, cible tactile
   components/
@@ -149,9 +159,17 @@ src/
   data/
     types.ts                # le format d'un livre + les 7 catégories
     books.ts                # LE CATALOGUE — c'est ici qu'on ajoute des livres
+    books.<code>.ts         # le catalogue traduit (fichier généré, un par langue)
+    catalog.ts              # les langues disponibles (fichier généré)
     covers.ts               # slug → couverture embarquée (fichier généré)
-  store/library.tsx         # progression, favoris, temps de lecture (AsyncStorage)
-scripts/import-books.mjs    # convertit des exports HTML en entrées de catalogue
+    plans.ts                # les trois abonnements : prix et contenu
+  store/
+    library.tsx             # progression, favoris, temps, formule, langue (AsyncStorage)
+    catalog.tsx             # le catalogue dans la langue choisie
+scripts/
+  import-books.mjs          # convertit des exports HTML en entrées de catalogue
+  translate-books.mjs       # traduit le catalogue dans une autre langue
+  generate-catalog-index.mjs # écrit src/data/catalog.ts
 assets/couvertures/         # les 37 couvertures, 720 px de large, ~6,3 Mo au total
 ```
 
@@ -193,6 +211,54 @@ Le catalogue contient **37 livres**, importés depuis les exports HTML du propri
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture et grands
 personnages, soit environ 325 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
+
+## Abonnements et langues
+
+Trois formules, définies par le propriétaire du projet et décrites une seule fois dans
+`src/data/plans.ts` — l'écran d'abonnement les lit de là, il n'y a pas de prix écrit ailleurs :
+
+| Formule | Prix | Ce qu'elle ajoute |
+| --- | --- | --- |
+| Lumia Plus | 9,99 €/mois | Le catalogue complet en français |
+| Lumia Premium | 15,99 €/mois | Une demande de livre par mois et un vote ; les nouveautés en avance |
+| Lumia Extra | 19,99 €/mois | Toutes les langues, le changement de langue en cours de lecture, le mode bilingue |
+
+`hasPlan(plan, "extra")` est la seule porte des langues. Le reste de l'app passe par
+`canChangeLanguage`, exposé par le contexte bibliothèque, plutôt que de comparer des noms de
+formules un peu partout.
+
+### Traduire le catalogue
+
+```bash
+npm run books:translate -- en --dry-run   # volume et coût, sans rien appeler
+npm run books:translate -- en             # écrit src/data/books.en.ts
+npm run catalog:index                     # déclare la langue à l'app
+```
+
+La traduction est faite **une fois, hors ligne**, puis embarquée : traduire au moment de la
+lecture obligerait à appeler un serveur, ce qui casserait les trois promesses de Lumia et
+ferait payer chaque lecteur. Il faut `ANTHROPIC_API_KEY`, et le coût est par langue.
+
+Ce que le script garantit, et pourquoi :
+
+- **Les `slug` ne bougent jamais.** Ils identifient la progression et les favoris sur
+  l'appareil : c'est ce qui permet de changer de langue au milieu d'un livre sans perdre sa
+  page.
+- **Les citations religieuses ne sont pas traduites par la machine.** Un verset ou un hadith
+  re-traduit automatiquement ne serait la traduction reconnue de personne. Les blocs `>` dont
+  la source cite le Coran, un recueil de hadiths ou un texte biblique sont mis de côté et
+  restent en français — 58 des 60 citations du catalogue — puis listés en fin de course pour
+  qu'une traduction reconnue y soit placée à la main.
+- **Les chiffres et la structure sont vérifiés.** Un chapitre dont la traduction n'a pas
+  exactement les mêmes nombres et les mêmes marqueurs (`##`, `>`, `-`, `!`) est retraduit ;
+  s'il échoue encore, il reste en français et il est signalé. Mieux vaut une page non traduite
+  qu'une page dont « d = 0,65 » a bougé.
+- **Le travail reprend où il s'est arrêté** : chaque chapitre traduit est mis en cache dans
+  `.cache-traductions/` (non versionné).
+
+`src/data/catalog.ts` est **généré** par `npm run catalog:index` : Metro exige des chemins
+d'import littéraux, donc la liste des langues disponibles se déduit des `books.<code>.ts`
+présents sur le disque.
 
 ## Choix assumés
 

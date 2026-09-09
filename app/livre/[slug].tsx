@@ -6,8 +6,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type } from "@/theme";
 import { CircleButton, EmptyState, GoldButton, ProgressBar, SectionHeader, Tag } from "@/components/ui";
 import BookCover from "@/components/BookCover";
-import { BOOKS, estimateMinutes, estimatePages, getBook } from "@/data/books";
+import { estimateMinutes, estimatePages } from "@/data/books";
+import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
+import { hasPlan } from "@/data/plans";
 
 const TABS = ["À propos", "Chapitres", "Avis"] as const;
 
@@ -16,17 +18,18 @@ export default function BookScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { progress, isFavorite, toggleFavorite, premium } = useLibrary();
+  const { progress, isFavorite, toggleFavorite, plan } = useLibrary();
+  const { books, getBook } = useCatalog();
   const [tab, setTab] = useState<(typeof TABS)[number]>("À propos");
 
   const book = getBook(String(slug));
 
   const similar = useMemo(() => {
     if (!book) return [];
-    return BOOKS.filter(
+    return books.filter(
       (b) => b.slug !== book.slug && (b.category === book.category || b.tags.some((t) => book.tags.includes(t)))
     ).slice(0, 6);
-  }, [book]);
+  }, [book, books]);
 
   if (!book) {
     return (
@@ -40,7 +43,9 @@ export default function BookScreen() {
   const p = progress[book.slug];
   const percent = p ? (p.chapter + p.offset) / book.chapters.length : 0;
   const favorite = isFavorite(book.slug);
-  const locked = Boolean(book.premium) && !premium;
+  // Un livre marqué `premium` demande au moins la première formule. Aucun ne l'est
+  // aujourd'hui : le verrou existe, le catalogue reste ouvert.
+  const locked = Boolean(book.premium) && !hasPlan(plan, "plus");
 
   return (
     <View style={styles.screen}>

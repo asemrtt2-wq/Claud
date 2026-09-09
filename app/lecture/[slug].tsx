@@ -16,7 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type } from "@/theme";
 import { Divider } from "@/components/Ornament";
 import { EmptyState, GoldButton, ProgressBar } from "@/components/ui";
-import { getBook } from "@/data/books";
+import { useCatalog } from "@/store/catalog";
+import { LOCALES, LOCALE_CODES, SOURCE_LOCALE } from "@/data/catalog";
 import { useLibrary } from "@/store/library";
 
 /** Les trois tailles de texte proposées par le bouton « Aa » de la maquette. */
@@ -43,9 +44,12 @@ export default function ReaderScreen() {
   }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { saveProgress, progress, addMinutes } = useLibrary();
+  const { saveProgress, progress, addMinutes, locale, setLocale, bilingual, setBilingual, canChangeLanguage } =
+    useLibrary();
+  const { getBook, getSource } = useCatalog();
 
   const book = getBook(String(slug));
+  const source = getSource(String(slug));
   const saved = book ? progress[book.slug] : undefined;
 
   const [chapter, setChapter] = useState(() => {
@@ -81,6 +85,15 @@ export default function ReaderScreen() {
     return book.chapters[chapter]?.body.split(/\n\n+/).filter(Boolean) ?? [];
   }, [book, chapter]);
 
+  /* Le texte français, bloc par bloc, pour le mode bilingue. La traduction conserve la
+     structure des blocs — le script d'import le vérifie —, donc les deux listes s'alignent.
+     Si elles divergent malgré tout, on n'affiche rien plutôt que de mal apparier. */
+  const sourceBlocks = useMemo(() => {
+    if (!bilingual || locale === SOURCE_LOCALE || !source) return null;
+    const parts = source.chapters[chapter]?.body.split(/\n\n+/).filter(Boolean) ?? [];
+    return parts.length === blocks.length ? parts : null;
+  }, [bilingual, locale, source, chapter, blocks.length]);
+
   if (!book) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top + spacing.xxl }]}>
@@ -104,6 +117,93 @@ export default function ReaderScreen() {
   }
 
   const current = book.chapters[chapter];
+
+  /** Le rendu d'un bloc, selon son marqueur. Extrait pour que le mode bilingue puisse
+      poser le texte d'origine juste en dessous. */
+  function renderBlock(block: string) {
+          // Intertitre : les livres importés en comptent plusieurs par chapitre, et ce sont
+          // eux qui rendent un chapitre de trente paragraphes lisible sur un téléphone.
+          if (block.startsWith("## ")) {
+            return (
+              <Text
+                                style={[
+                  styles.subheading,
+                  { color: palette.accent, fontSize: TEXT_SIZES[sizeIndex] + 2 },
+                ]}
+              >
+                {block.slice(3)}
+              </Text>
+            );
+          }
+          if (block.startsWith("> ")) {
+            // Une ligne « — … » sous la citation en donne la source (verset, article, page).
+            const [raw, ...rest] = block.slice(2).split("\n");
+            // Beaucoup de citations arrivent déjà entre guillemets : ne pas les doubler.
+            const quoted = raw.replace(/^«\s?/, "").replace(/\s?»$/, "");
+            const source = rest.join(" ").replace(/^—\s?/, "");
+            return (
+              <View style={[styles.quote, { backgroundColor: palette.paper }]}>
+                <Text
+                  style={[
+                    styles.quoteText,
+                    { color: palette.text, fontSize: TEXT_SIZES[sizeIndex] },
+                  ]}
+                >
+                  {`« ${quoted} »`}
+                </Text>
+                {source ? (
+                  <Text style={[styles.quoteSource, { color: palette.muted }]}>{source}</Text>
+                ) : null}
+              </View>
+            );
+          }
+          // Encadré d'avertissement : mise en garde de santé, nuance à ne pas rater.
+          if (block.startsWith("! ")) {
+            return (
+              <View style={[styles.notice, { backgroundColor: palette.paper }]}>
+                <Text
+                  style={[
+                    styles.paragraph,
+                    {
+                      color: palette.text,
+                      fontSize: TEXT_SIZES[sizeIndex] - 1,
+                      marginBottom: 0,
+                    },
+                  ]}
+                >
+                  {block.slice(2)}
+                </Text>
+              </View>
+            );
+          }
+          const lines = block.split("\n").filter(Boolean);
+          if (lines.length > 0 && lines.every((l) => l.trimStart().startsWith("- "))) {
+            return (
+              <View style={styles.list}>
+                {lines.map((line, j) => (
+                  <View key={j} style={styles.listItem}>
+                    <View style={[styles.bullet, { backgroundColor: colors.gold }]} />
+                    <Text
+                      style={[
+                        styles.paragraph,
+                        { color: palette.text, fontSize: TEXT_SIZES[sizeIndex], flex: 1 },
+                      ]}
+                    >
+                      {line.trimStart().replace(/^-\s?/, "")}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            );
+          }
+          return (
+            <Text
+                            style={[styles.paragraph, { color: palette.text, fontSize: TEXT_SIZES[sizeIndex] }]}
+            >
+              {block}
+            </Text>
+          );
+  }
 
   return (
     <View style={[styles.screen, { backgroundColor: palette.bg }]}>
@@ -154,92 +254,23 @@ export default function ReaderScreen() {
         <Text style={[styles.chapterTitle, { color: palette.text }]}>{current.title}</Text>
         <Divider width={34} style={{ marginTop: spacing.lg, marginBottom: spacing.xl }} />
 
-        {blocks.map((block, i) => {
-          // Intertitre : les livres importés en comptent plusieurs par chapitre, et ce sont
-          // eux qui rendent un chapitre de trente paragraphes lisible sur un téléphone.
-          if (block.startsWith("## ")) {
-            return (
+        {blocks.map((block, i) => (
+          <View key={i}>
+            {renderBlock(block)}
+            {/* Mode bilingue : le français d'origine sous le bloc traduit. Un bloc identique
+                — chapitre laissé en français — ne se répète pas. */}
+            {sourceBlocks && sourceBlocks[i] !== block ? (
               <Text
-                key={i}
                 style={[
-                  styles.subheading,
-                  { color: palette.accent, fontSize: TEXT_SIZES[sizeIndex] + 2 },
+                  styles.sourceEcho,
+                  { color: palette.muted, fontSize: Math.max(12, TEXT_SIZES[sizeIndex] - 4) },
                 ]}
               >
-                {block.slice(3)}
+                {sourceBlocks[i].replace(/^(##|>|!|-)\s?/gm, "")}
               </Text>
-            );
-          }
-          if (block.startsWith("> ")) {
-            // Une ligne « — … » sous la citation en donne la source (verset, article, page).
-            const [raw, ...rest] = block.slice(2).split("\n");
-            // Beaucoup de citations arrivent déjà entre guillemets : ne pas les doubler.
-            const quoted = raw.replace(/^«\s?/, "").replace(/\s?»$/, "");
-            const source = rest.join(" ").replace(/^—\s?/, "");
-            return (
-              <View key={i} style={[styles.quote, { backgroundColor: palette.paper }]}>
-                <Text
-                  style={[
-                    styles.quoteText,
-                    { color: palette.text, fontSize: TEXT_SIZES[sizeIndex] },
-                  ]}
-                >
-                  {`« ${quoted} »`}
-                </Text>
-                {source ? (
-                  <Text style={[styles.quoteSource, { color: palette.muted }]}>{source}</Text>
-                ) : null}
-              </View>
-            );
-          }
-          // Encadré d'avertissement : mise en garde de santé, nuance à ne pas rater.
-          if (block.startsWith("! ")) {
-            return (
-              <View key={i} style={[styles.notice, { backgroundColor: palette.paper }]}>
-                <Text
-                  style={[
-                    styles.paragraph,
-                    {
-                      color: palette.text,
-                      fontSize: TEXT_SIZES[sizeIndex] - 1,
-                      marginBottom: 0,
-                    },
-                  ]}
-                >
-                  {block.slice(2)}
-                </Text>
-              </View>
-            );
-          }
-          const lines = block.split("\n").filter(Boolean);
-          if (lines.length > 0 && lines.every((l) => l.trimStart().startsWith("- "))) {
-            return (
-              <View key={i} style={styles.list}>
-                {lines.map((line, j) => (
-                  <View key={j} style={styles.listItem}>
-                    <View style={[styles.bullet, { backgroundColor: colors.gold }]} />
-                    <Text
-                      style={[
-                        styles.paragraph,
-                        { color: palette.text, fontSize: TEXT_SIZES[sizeIndex], flex: 1 },
-                      ]}
-                    >
-                      {line.trimStart().replace(/^-\s?/, "")}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            );
-          }
-          return (
-            <Text
-              key={i}
-              style={[styles.paragraph, { color: palette.text, fontSize: TEXT_SIZES[sizeIndex] }]}
-            >
-              {block}
-            </Text>
-          );
-        })}
+            ) : null}
+          </View>
+        ))}
 
         {chapter === total - 1 && (
           <View style={[styles.end, { backgroundColor: palette.paper }]}>
@@ -319,6 +350,39 @@ export default function ReaderScreen() {
             </Pressable>
           ))}
         </View>
+
+        {/* Changer de langue sans quitter sa page : le chapitre et la position sont attachés
+            au slug, qui est commun à toutes les langues. */}
+        {canChangeLanguage && LOCALE_CODES.length > 1 && (
+          <>
+            <Text style={styles.sheetLabel}>Langue</Text>
+            <View style={styles.sheetRow}>
+              {LOCALE_CODES.map((code) => (
+                <Pressable
+                  key={code}
+                  onPress={() => setLocale(code)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: locale === code }}
+                  style={[styles.chip, locale === code && styles.chipActive]}
+                >
+                  <Text style={styles.chipText}>{LOCALES[code].endonym}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {locale !== SOURCE_LOCALE && (
+              <Pressable
+                onPress={() => setBilingual(!bilingual)}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: bilingual }}
+                style={[styles.chip, styles.chipWide, bilingual && styles.chipActive]}
+              >
+                <Text style={styles.chipText}>
+                  {bilingual ? "Mode bilingue activé" : "Afficher aussi le français"}
+                </Text>
+              </Pressable>
+            )}
+          </>
+        )}
       </Sheet>
 
       {/* Sommaire */}
@@ -403,6 +467,14 @@ const styles = StyleSheet.create({
   },
   quoteText: { fontFamily: fonts.display, lineHeight: 28, fontStyle: "italic" },
   quoteSource: { ...type.caption, marginTop: spacing.sm, fontSize: 11 },
+  sourceEcho: {
+    fontFamily: fonts.reading,
+    fontStyle: "italic",
+    lineHeight: 24,
+    marginTop: -spacing.md,
+    marginBottom: spacing.lg,
+    opacity: 0.75,
+  },
   subheading: {
     fontFamily: fonts.display,
     lineHeight: 28,
@@ -463,6 +535,7 @@ const styles = StyleSheet.create({
     borderColor: colors.lineSoft,
   },
   chipActive: { borderColor: colors.gold, backgroundColor: colors.goldGlow },
+  chipWide: { flex: 0, paddingHorizontal: spacing.lg, marginTop: spacing.sm },
   chipText: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
   toc: { maxHeight: 380 },
   tocRow: { flexDirection: "row", gap: spacing.lg, paddingVertical: spacing.md, alignItems: "center" },

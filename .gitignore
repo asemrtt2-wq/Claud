@@ -21,3 +21,4 @@ expo-env.d.ts
 *.log
 npm-debug.log*
 *.tsbuildinfo
+.cache-traductions/

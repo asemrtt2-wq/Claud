@@ -8,6 +8,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { LOCALES, SOURCE_LOCALE, type LocaleCode } from "@/data/catalog";
+import { hasPlan, LANGUAGES_PLAN, type PlanId } from "@/data/plans";
 
 /**
  * L'état du lecteur : où il en est dans chaque livre, ses favoris, son temps de lecture.
@@ -33,10 +35,34 @@ type LibraryState = {
   favorites: string[];
   /** Minutes de lecture cumulées, toutes lectures confondues. */
   minutesRead: number;
-  premium: boolean;
+  /** Formule en cours, ou `null` sans abonnement. Réglage local : rien n'est facturé. */
+  plan: PlanId | null;
+  /** Langue de lecture choisie. Le français est la langue source et le repli. */
+  locale: LocaleCode;
+  /** Mode bilingue : le texte source sous chaque bloc traduit. */
+  bilingual: boolean;
 };
 
-const EMPTY: LibraryState = { progress: {}, favorites: [], minutesRead: 0, premium: false };
+const EMPTY: LibraryState = {
+  progress: {},
+  favorites: [],
+  minutesRead: 0,
+  plan: null,
+  locale: SOURCE_LOCALE,
+  bilingual: false,
+};
+
+/**
+ * Relit un état stocké par une version antérieure. La première version ne connaissait
+ * qu'un interrupteur `premium` : un lecteur qui l'avait activé se retrouve sur la formule
+ * qui débloquait la même chose, plutôt que sans rien.
+ */
+function migrate(stored: Record<string, unknown>): LibraryState {
+  const state = { ...EMPTY, ...(stored as Partial<LibraryState>) };
+  if (state.plan == null && stored.premium === true) state.plan = "extra";
+  if (!(state.locale in LOCALES)) state.locale = SOURCE_LOCALE;
+  return state;
+}
 
 type LibraryContextValue = LibraryState & {
   ready: boolean;
@@ -44,7 +70,11 @@ type LibraryContextValue = LibraryState & {
   toggleFavorite: (slug: string) => void;
   isFavorite: (slug: string) => boolean;
   addMinutes: (minutes: number) => void;
-  setPremium: (value: boolean) => void;
+  setPlan: (plan: PlanId | null) => void;
+  setLocale: (locale: LocaleCode) => void;
+  setBilingual: (value: boolean) => void;
+  /** Vrai quand la formule en cours donne accès aux langues. */
+  canChangeLanguage: boolean;
   reset: () => void;
 };
 
@@ -59,7 +89,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (!cancelled && raw) setState({ ...EMPTY, ...(JSON.parse(raw) as LibraryState) });
+        if (!cancelled && raw) setState(migrate(JSON.parse(raw) as Record<string, unknown>));
       } catch {
         // Un stockage illisible ne doit pas empêcher l'app de démarrer : on repart à vide.
       } finally {
@@ -103,8 +133,23 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, minutesRead: prev.minutesRead + minutes }));
   }, []);
 
-  const setPremium = useCallback((value: boolean) => {
-    setState((prev) => ({ ...prev, premium: value }));
+  const setPlan = useCallback((plan: PlanId | null) => {
+    setState((prev) => ({
+      ...prev,
+      plan,
+      // Quitter la formule qui donnait les langues ramène au français : mieux vaut ça
+      // qu'un catalogue à moitié verrouillé dont on ne comprend pas l'état.
+      locale: hasPlan(plan, LANGUAGES_PLAN) ? prev.locale : SOURCE_LOCALE,
+      bilingual: hasPlan(plan, LANGUAGES_PLAN) ? prev.bilingual : false,
+    }));
+  }, []);
+
+  const setLocale = useCallback((locale: LocaleCode) => {
+    setState((prev) => (hasPlan(prev.plan, LANGUAGES_PLAN) ? { ...prev, locale } : prev));
+  }, []);
+
+  const setBilingual = useCallback((value: boolean) => {
+    setState((prev) => (hasPlan(prev.plan, LANGUAGES_PLAN) ? { ...prev, bilingual: value } : prev));
   }, []);
 
   const reset = useCallback(() => setState(EMPTY), []);
@@ -117,10 +162,13 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       toggleFavorite,
       isFavorite: (slug: string) => state.favorites.includes(slug),
       addMinutes,
-      setPremium,
+      setPlan,
+      setLocale,
+      setBilingual,
+      canChangeLanguage: hasPlan(state.plan, LANGUAGES_PLAN),
       reset,
     }),
-    [state, ready, saveProgress, toggleFavorite, addMinutes, setPremium, reset]
+    [state, ready, saveProgress, toggleFavorite, addMinutes, setPlan, setLocale, setBilingual, reset]
   );
 
   return <LibraryContext.Provider value={value}>{children}</LibraryContext.Provider>;
