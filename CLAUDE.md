@@ -38,16 +38,30 @@ assouplie parce qu'un contenu serait par ailleurs intéressant.
 La distinction compte : ne jamais supposer que l'app filtre le contenu toute seule.
 
 **Appliqué par le code**, donc impossible à enfreindre par inadvertance :
-- L'**interdiction de toute représentation figurative**. `src/components/BookCover.tsx` compose
-  les couvertures en code (dégradé + motif géométrique + typographie) au lieu d'afficher une
-  image, `src/components/Ornament.tsx` ne dessine que de la géométrie, et l'onglet « Profil »
-  porte une icône de médaille plutôt que la silhouette de la maquette. La maquette de référence
-  montrait des portraits (Saladin, Ibn Sina, Marc Aurèle) : la mise en page a été suivie,
-  l'imagerie non.
 - **Aucun chiffre inventé**, ce qui sert la ligne « aucune pratique trompeuse » : l'onglet
   « Avis » annonce qu'il n'est pas actif au lieu d'afficher une note fabriquée, « Populaires »
   suit l'ordre du catalogue faute de statistiques réelles, et le temps de lecture du profil est
   compté minute par minute dans le lecteur.
+- **L'interface elle-même reste non figurative** : `src/components/Ornament.tsx` ne dessine que
+  de la géométrie, et l'onglet « Profil » porte une icône de médaille plutôt que la silhouette
+  de la maquette.
+
+**Les couvertures : une décision explicite du propriétaire du projet.** L'app affichait au
+départ des couvertures composées en code, sans aucune image, pour tenir la ligne
+« représentation figurative — interdit, interface comprise ». Le propriétaire a ensuite fourni
+ses propres couvertures et demandé qu'elles soient utilisées. Elles sont donc embarquées dans
+`assets/couvertures/` et référencées par `src/data/covers.ts`.
+
+Ce que cela change, et ce que cela ne change pas :
+- Ces couvertures ne montrent **ni personne ni animal** — objets, architecture, paysages,
+  typographie. La seule exception relevée est **« L'intelligence sociale »**, dont douze masques
+  de théâtre portent des visages ; elle a été signalée au propriétaire, qui a choisi de la
+  garder. L'aigle impérial brodé sur les drapeaux de « Napoléon » est un emblème héraldique.
+- La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
+  absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
+- **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
+  animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
+  Marc Aurèle) sur les couvertures : ceux-là restent exclus.
 
 **Éditorial — la responsabilité de qui écrit les livres.** Tout le reste du tableau porte sur le
 *texte* des livres : aucune vérification automatique n'est possible. Chaque livre ajouté à
@@ -127,14 +141,16 @@ app/                        # les écrans (routage par fichiers, expo-router)
 src/
   theme.ts                  # couleurs, typographie, espacements, cible tactile
   components/
-    BookCover.tsx           # couverture composée, sans image
+    BookCover.tsx           # couverture du livre : image fournie, ou composée en repli
     Ornament.tsx            # motifs géométriques (étoile à 8 branches, filets, trame)
     ui.tsx                  # étiquettes, en-têtes, barre de progression, boutons
   data/
     types.ts                # le format d'un livre + les 7 catégories
     books.ts                # LE CATALOGUE — c'est ici qu'on ajoute des livres
+    covers.ts               # slug → couverture embarquée (fichier généré)
   store/library.tsx         # progression, favoris, temps de lecture (AsyncStorage)
 scripts/import-books.mjs    # convertit des exports HTML en entrées de catalogue
+assets/couvertures/         # les 28 couvertures, 720 px de large, ~4,7 Mo au total
 ```
 
 ## Ajouter des livres

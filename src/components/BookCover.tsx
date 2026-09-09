@@ -1,17 +1,24 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors, fonts, radius, fillObject } from "@/theme";
 import { LatticePattern, Rule, StarMotif } from "@/components/Ornament";
+import { COVER_RATIO, getCover } from "@/data/covers";
 import type { CoverTheme } from "@/data/types";
 
 /**
  * La couverture d'un livre Lumia.
  *
- * Aucune image : la maquette d'origine posait des portraits (Saladin, Ibn Sina, Marc
- * Aurèle) sur les couvertures, ce que la règle « pas de représentation figurative » interdit.
- * La couverture est donc composée — dégradé, motif géométrique, filets dorés et titre à
- * empattements — et rendue entièrement en code. Avantage secondaire : rien à télécharger,
- * et une couverture correcte existe pour un livre le jour où il est créé.
+ * Deux rendus, dans cet ordre :
+ *
+ * 1. **La couverture dessinée par l'auteur**, quand `slug` en désigne une dans
+ *    `src/data/covers.ts`. C'est le cas des 28 livres du catalogue.
+ * 2. **Une couverture composée en code** sinon — dégradé, motif géométrique, filets dorés et
+ *    titre à empattements, sans aucune image. Elle sert de repli, et fait qu'un livre a une
+ *    couverture correcte le jour où il est créé, avant que la vraie soit dessinée.
+ *
+ * La maquette d'origine posait des portraits (Saladin, Ibn Sina, Marc Aurèle) : ceux-là
+ * restent exclus. Les couvertures fournies ne montrent ni personnage ni visage — voir la
+ * note sur la représentation figurative dans CLAUDE.md.
  */
 const THEMES: Record<CoverTheme, readonly [string, string, string]> = {
   nuit: ["#1B1F2E", "#12131C", "#0A0A10"],
@@ -30,6 +37,7 @@ export default function BookCover({
   label,
   width,
   compact = false,
+  slug,
 }: {
   title: string;
   theme?: CoverTheme;
@@ -38,9 +46,13 @@ export default function BookCover({
   width: number;
   /** Allège l'ornementation sur les toutes petites vignettes. */
   compact?: boolean;
+  /** Identifiant du livre : sert à retrouver sa couverture dessinée, s'il en a une. */
+  slug?: string;
 }) {
-  // Ratio d'un livre de poche, celui de la maquette.
-  const height = width * 1.5;
+  const artwork = slug ? getCover(slug) : undefined;
+  /* Toutes les couvertures partagent le même cadre, sans quoi les rangées se décalent. Sans
+     image, on garde le ratio d'un livre de poche, celui de la maquette. */
+  const height = width * (artwork ? COVER_RATIO : 1.5);
   const padding = compact ? 8 : 12;
   /* Le titre ne doit jamais se couper au milieu d'un mot — « MACHIAVEL / LI ». On réduit donc
      la police jusqu'à ce que le mot le plus long tienne sur une ligne. (`adjustsFontSizeToFit`
@@ -51,6 +63,32 @@ export default function BookCover({
   // Une capitale de Georgia occupe environ 0,72 em, à quoi s'ajoute l'interlettrage.
   const fitsLongestWord = ((width - padding * 2) / longestWord - letterSpacing) / 0.72;
   const titleSize = Math.max(compact ? 8 : 10, Math.min(base, fitsLongestWord));
+
+  if (artwork) {
+    return (
+      <View
+        style={[styles.frame, { width, height, borderRadius: compact ? radius.md : radius.lg }]}
+      >
+        {/* Le dégradé reste derrière : les deux couvertures un peu moins hautes que les autres
+            sont centrées dessus plutôt que rognées. */}
+        <LinearGradient colors={THEMES[theme]} style={StyleSheet.absoluteFill} />
+        {/* Dimensions explicites : `absoluteFill` seul laisse l'image à sa taille naturelle
+            au rendu web, et elle déborde alors du cadre. */}
+        <Image
+          source={artwork}
+          resizeMode="contain"
+          style={styles.artwork}
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={`Couverture de ${title}`}
+        />
+        <View
+          pointerEvents="none"
+          style={[styles.bezel, { borderRadius: compact ? radius.md : radius.lg }]}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.frame, { width, height, borderRadius: compact ? radius.md : radius.lg }]}>
@@ -98,6 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     justifyContent: "center",
   },
+  artwork: { width: "100%", height: "100%" },
   motif: { ...fillObject, alignItems: "center", justifyContent: "center" },
   inner: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   topRule: { opacity: 0.7 },

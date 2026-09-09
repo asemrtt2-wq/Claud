@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
+  Image,
   useWindowDimensions,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -18,6 +19,7 @@ import { LatticePattern, StarMotif } from "@/components/Ornament";
 import { CircleButton, EmptyState, GoldButton, ProgressBar, SectionHeader, Tag } from "@/components/ui";
 import BookCover from "@/components/BookCover";
 import { BOOKS } from "@/data/books";
+import { getCover } from "@/data/covers";
 import { useLibrary } from "@/store/library";
 import type { Book } from "@/data/types";
 
@@ -165,6 +167,7 @@ export default function HomeScreen() {
                     style={styles.continueCard}
                   >
                     <BookCover
+                      slug={book.slug}
                       title={book.title}
                       theme={book.theme}
                       width={104}
@@ -198,31 +201,48 @@ function HeroCard({
   onRead: () => void;
   onOpen: () => void;
 }) {
+  const artwork = getCover(book.slug);
   return (
     <Pressable onPress={onOpen} style={[styles.hero, { width }]}>
       <LinearGradient colors={gradients.night} style={StyleSheet.absoluteFill} />
       <LatticePattern rows={6} columns={4} opacity={0.08} />
-      <View style={styles.heroMotif}>
-        <StarMotif size={width * 0.55} opacity={0.12} />
-      </View>
+      {!artwork && (
+        <View style={styles.heroMotif}>
+          <StarMotif size={width * 0.55} opacity={0.12} />
+        </View>
+      )}
       <LinearGradient colors={gradients.scrim} style={StyleSheet.absoluteFill} />
 
-      <View style={styles.heroBody}>
-        <Text numberOfLines={2} style={styles.heroTitle}>
-          {book.title.toUpperCase()}
-        </Text>
-        <Text numberOfLines={2} style={styles.heroSubtitle}>
-          {book.subtitle}
-        </Text>
-        <View style={styles.heroTags}>
-          {book.tags.slice(0, 3).map((t) => (
-            <Tag key={t} label={t} />
-          ))}
+      <View style={styles.heroContent}>
+        <View style={styles.heroBody}>
+          <Text numberOfLines={3} style={styles.heroTitle}>
+            {book.title.toUpperCase()}
+          </Text>
+          <Text numberOfLines={3} style={styles.heroSubtitle}>
+            {book.subtitle}
+          </Text>
+          <View style={styles.heroTags}>
+            {book.tags.slice(0, 2).map((t) => (
+              <Tag key={t} label={t} />
+            ))}
+          </View>
+          <View style={styles.heroActions}>
+            <GoldButton label="Lire maintenant" icon="play" onPress={onRead} />
+            <CircleButton icon="add" onPress={onOpen} label="Voir la fiche du livre" />
+          </View>
         </View>
-        <View style={styles.heroActions}>
-          <GoldButton label="Lire maintenant" icon="play" onPress={onRead} />
-          <CircleButton icon="add" onPress={onOpen} label="Voir la fiche du livre" />
-        </View>
+        {/* La couverture entière, jamais rognée : c'est elle qu'on vient regarder. Le titre
+            reste écrit à côté, pour rester lisible quelle que soit l'image. */}
+        {artwork ? (
+          <Image
+            source={artwork}
+            resizeMode="contain"
+            style={styles.heroArt}
+            accessible
+            accessibilityRole="image"
+            accessibilityLabel={`Couverture de ${book.title}`}
+          />
+        ) : null}
       </View>
     </Pressable>
   );
@@ -262,8 +282,16 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
   },
   heroMotif: { ...fillObject, alignItems: "center", justifyContent: "center" },
-  heroBody: { padding: spacing.lg, gap: spacing.sm },
-  heroTitle: { fontFamily: fonts.display, fontSize: 32, letterSpacing: 2, color: colors.text },
+  heroContent: { flex: 1, flexDirection: "row", alignItems: "flex-end" },
+  heroBody: { flex: 1, padding: spacing.lg, gap: spacing.sm },
+  heroArt: {
+    width: 150,
+    height: "100%",
+    marginRight: spacing.lg,
+    marginVertical: spacing.lg,
+    borderRadius: radius.md,
+  },
+  heroTitle: { fontFamily: fonts.display, fontSize: 26, letterSpacing: 1.5, color: colors.text },
   heroSubtitle: {
     fontFamily: fonts.display,
     fontSize: 14,

@@ -76,6 +76,7 @@ export default function BookScreen() {
       >
         <View style={styles.header}>
           <BookCover
+            slug={book.slug}
             title={book.title}
             theme={book.theme}
             width={132}
@@ -191,7 +192,13 @@ export default function BookScreen() {
                   onPress={() => router.replace(`/livre/${other.slug}`)}
                   style={styles.similarCard}
                 >
-                  <BookCover title={other.title} theme={other.theme} width={104} compact />
+                  <BookCover
+                    slug={other.slug}
+                    title={other.title}
+                    theme={other.theme}
+                    width={104}
+                    compact
+                  />
                   <Text numberOfLines={2} style={styles.similarTitle}>
                     {other.title}
                   </Text>

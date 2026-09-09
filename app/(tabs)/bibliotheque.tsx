@@ -82,6 +82,7 @@ export default function LibraryScreen() {
                   style={styles.item}
                 >
                   <BookCover
+                    slug={book.slug}
                     title={book.title}
                     theme={book.theme}
                     width={64}

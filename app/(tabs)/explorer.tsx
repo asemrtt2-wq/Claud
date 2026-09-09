@@ -161,6 +161,7 @@ function Row({
         {books.map((book) => (
           <Pressable key={book.slug} onPress={() => onOpen(book.slug)} style={styles.rowCard}>
             <BookCover
+              slug={book.slug}
               title={book.title}
               theme={book.theme}
               width={118}
@@ -182,7 +183,7 @@ function Row({
 function GridCard({ book, onPress }: { book: Book; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={styles.gridCard}>
-      <BookCover title={book.title} theme={book.theme} width={104} />
+      <BookCover slug={book.slug} title={book.title} theme={book.theme} width={104} />
       <Text numberOfLines={2} style={styles.rowTitle}>
         {book.title}
       </Text>
