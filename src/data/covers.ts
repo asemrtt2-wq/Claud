@@ -17,6 +17,7 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "napoleon": require("../../assets/couvertures/napoleon.jpg"),
   "niccolo-machiavelli": require("../../assets/couvertures/niccolo-machiavelli.jpg"),
   "nikola-tesla": require("../../assets/couvertures/nikola-tesla.jpg"),
+  "leonardo-da-vinci": require("../../assets/couvertures/leonardo-da-vinci.jpg"),
   "l-histoire-de-la-medecine": require("../../assets/couvertures/l-histoire-de-la-medecine.jpg"),
   "les-grandes-inventions": require("../../assets/couvertures/les-grandes-inventions.jpg"),
   "comprendre-la-science": require("../../assets/couvertures/comprendre-la-science.jpg"),
@@ -40,6 +41,7 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "la-soif-du-monde": require("../../assets/couvertures/la-soif-du-monde.jpg"),
   "le-sacre-liquide": require("../../assets/couvertures/le-sacre-liquide.jpg"),
   "le-voile": require("../../assets/couvertures/le-voile.jpg"),
+  "les-bienfaits-de-la-journee-d-un-musulman": require("../../assets/couvertures/les-bienfaits-de-la-journee-d-un-musulman.jpg"),
   "allah-est-avec-toi": require("../../assets/couvertures/allah-est-avec-toi.jpg"),
 };
 

@@ -53,10 +53,12 @@ ses propres couvertures et demandé qu'elles soient utilisées. Elles sont donc 
 `assets/couvertures/` et référencées par `src/data/covers.ts`.
 
 Ce que cela change, et ce que cela ne change pas :
-- Ces couvertures ne montrent **ni personne ni animal** — objets, architecture, paysages,
-  typographie. La seule exception relevée est **« L'intelligence sociale »**, dont douze masques
-  de théâtre portent des visages ; elle a été signalée au propriétaire, qui a choisi de la
-  garder. L'aigle impérial brodé sur les drapeaux de « Napoléon » est un emblème héraldique.
+- Ces couvertures ne montrent **presque jamais de personne ni d'animal** — objets,
+  architecture, paysages, typographie. Deux exceptions ont été signalées au propriétaire, qui a
+  choisi de les garder : les douze masques de théâtre de **« L'intelligence sociale »**, qui
+  portent des visages, et les pictogrammes stylisés (mains en prière, famille, poignée de main)
+  du schéma de **« Les bienfaits de la journée d'un musulman »**. L'aigle impérial brodé sur les
+  drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
@@ -76,7 +78,7 @@ l'aune de ce tableau avant d'être publié.
   claire » du tableau devient une contrainte de conception, pas un slogan.
 - **Aucun livre du catalogue n'est réservé au Pass** : le champ `premium` existe dans le format
   (`src/data/types.ts`) et la fiche livre sait verrouiller, mais aucune entrée ne le porte. Les
-  28 livres sont lisibles. Choisir lesquels réserver est une décision du propriétaire du
+  30 livres sont lisibles. Choisir lesquels réserver est une décision du propriétaire du
   projet, pas quelque chose à décider en écrivant le catalogue.
 
 Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
@@ -150,7 +152,7 @@ src/
     covers.ts               # slug → couverture embarquée (fichier généré)
   store/library.tsx         # progression, favoris, temps de lecture (AsyncStorage)
 scripts/import-books.mjs    # convertit des exports HTML en entrées de catalogue
-assets/couvertures/         # les 28 couvertures, 720 px de large, ~4,7 Mo au total
+assets/couvertures/         # les 30 couvertures, 720 px de large, ~5,2 Mo au total
 ```
 
 ## Ajouter des livres
@@ -185,9 +187,9 @@ Deux façons :
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **28 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **30 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture et grands
-personnages, soit environ 245 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages, soit environ 258 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 ## Choix assumés
