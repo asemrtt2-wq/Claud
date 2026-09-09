@@ -4,7 +4,16 @@ export type CoverTheme = "nuit" | "or" | "encre" | "vin" | "foret" | "sable";
 export type Chapter = {
   /** Titre du chapitre, sans le mot « Chapitre ». */
   title: string;
-  /** Corps du chapitre. Deux sauts de ligne séparent les paragraphes. */
+  /**
+   * Corps du chapitre. Deux sauts de ligne séparent les blocs, et un bloc est interprété
+   * par le lecteur (`app/lecture/[slug].tsx`) selon son premier caractère :
+   *
+   *   `## `  intertitre
+   *   `> `   citation encadrée ; une ligne `— …` juste après en donne la source
+   *   `- `   liste à puces (une ligne par élément)
+   *   `! `   encadré d'avertissement
+   *   sinon  paragraphe
+   */
   body: string;
 };
 

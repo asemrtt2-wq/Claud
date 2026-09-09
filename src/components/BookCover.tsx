@@ -63,8 +63,12 @@ export default function BookCover({
         >
           {title.toUpperCase()}
         </Text>
+        {/* Deux lignes hors vignette : « Développement personnel » ne tient pas sur une. */}
         {label ? (
-          <Text numberOfLines={1} style={[styles.label, { fontSize: compact ? 7 : 9 }]}>
+          <Text
+            numberOfLines={compact ? 1 : 2}
+            style={[styles.label, { fontSize: compact ? 7 : 9 }]}
+          >
             {label.toUpperCase()}
           </Text>
         ) : null}

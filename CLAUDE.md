@@ -60,6 +60,10 @@ l'aune de ce tableau avant d'être publié.
 - Les **abonnements réels** non plus : le « Pass Lumia » de l'écran Profil est un simple
   interrupteur local. Le jour où un vrai paiement arrive, la ligne « prix clair, résiliation
   claire » du tableau devient une contrainte de conception, pas un slogan.
+- **Aucun livre du catalogue n'est réservé au Pass** : le champ `premium` existe dans le format
+  (`src/data/types.ts`) et la fiche livre sait verrouiller, mais aucune entrée ne le porte. Les
+  27 livres sont lisibles. Choisir lesquels réserver est une décision du propriétaire du
+  projet, pas quelque chose à décider en écrivant le catalogue.
 
 Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
 tombant dans une case « interdit » du tableau, est à refuser ou à remplacer.
@@ -147,16 +151,28 @@ Deux façons :
 
    Le script écrit un fichier `books-a-coller.ts` à côté des HTML. Il ne modifie jamais le
    catalogue tout seul : les entrées se collent dans `BOOKS`, et il reste à renseigner
-   `category` et `tags`, que le HTML ne contient pas.
+   `category` et `tags`, que le HTML ne contient pas, ainsi qu'à **réécrire `description`** —
+   le script y met le premier paragraphe du livre, ce qui n'est pas une quatrième de couverture.
+
+   Le script conserve la structure du HTML : intertitres `<h4>`, encadrés `.box` et `.stat`,
+   avertissements `.box warn`, versets `.verse` avec leur référence, listes et tableaux. Il
+   **écarte** en revanche les chapitres et les sous-parties consacrés à commenter
+   l'illustration de couverture du livre d'origine (« Ce que dit l'affiche », « La phrase de
+   l'affiche »…) : Lumia compose ses couvertures en code, sans représentation figurative, et un
+   texte qui décrit une image que le lecteur ne verra jamais n'a pas sa place dans l'app. Les
+   mentions isolées qui restent en plein chapitre se relisent à la main.
 
 **Conventions du corps de texte** (interprétées par le lecteur) :
-- une ligne vide sépare deux paragraphes ;
-- une ligne commençant par `> ` devient une citation encadrée ;
-- des lignes commençant par `- ` deviennent une liste à puces.
+- une ligne vide sépare deux blocs ;
+- `## ` en début de bloc devient un intertitre doré ;
+- `> ` devient une citation encadrée ; une ligne `— …` juste en dessous en donne la source ;
+- des lignes commençant par `- ` deviennent une liste à puces ;
+- `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Les deux livres présents (« L'art de la discipline », « La patience comme force ») sont des
-exemples courts, écrits pour que les écrans aient quelque chose de réel à afficher. Ils sont
-faits pour être remplacés.
+Le catalogue contient **27 livres**, importés depuis les exports HTML du propriétaire du
+projet : histoire, sciences, savoirs essentiels, développement personnel, culture et grands
+personnages, soit environ 230 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+carrousel de l'accueil et la rangée « Populaires ».
 
 ## Choix assumés
 

@@ -5,27 +5,59 @@
  *   npm run books:import -- <dossier-des-html> [--theme or]
  *
  * Le script lit chaque fichier `.html`, en extrait le titre, le sous-titre, le résumé et
- * les chapitres, puis affiche des entrées prêtes à coller dans `src/data/books.ts`.
+ * les chapitres, puis écrit des entrées prêtes à coller dans `src/data/books.ts`.
  *
  * Il n'écrit rien tout seul : le catalogue reste un fichier relu et versionné, plutôt
  * qu'un dossier généré que personne ne regarde.
+ *
+ * Ce qui est conservé de la mise en forme d'origine (voir `src/data/types.ts` pour les
+ * conventions que le lecteur interprète) :
+ *   <h4>                  → `## Sous-titre`
+ *   <blockquote>, .verse  → `> citation`, suivie de `— source` pour la référence
+ *   <ul>, <ol>            → lignes `- `
+ *   <table>               → intitulés en paragraphe, puis une ligne `- ` par rangée
+ *   .box, .stat           → `## libellé` puis les paragraphes de l'encadré
+ *   .box.warn             → `## libellé` puis des paragraphes `! ` (avertissement)
+ *
+ * Ce qui est écarté : les passages écrits pour commenter l'illustration de couverture du
+ * livre d'origine (« Ce que dit l'affiche », « La phrase de l'affiche »…). Lumia compose
+ * ses couvertures en code, sans aucune représentation figurative — un texte qui décrit une
+ * image que le lecteur ne verra jamais n'a pas sa place dans l'app. Les mentions isolées
+ * qui restent dans le corps d'un chapitre se relisent à la main.
  */
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
 const THEMES = ["nuit", "or", "encre", "vin", "foret", "sable"];
 
-function stripTags(html) {
-  return html
-    .replace(/<svg[\s\S]*?<\/svg>/gi, "")
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]+>/g, "")
+/** Un titre ou un intertitre qui annonce un commentaire de l'illustration de couverture. */
+const COVER_HEADING = /\b(affiche|couverture)\b/i;
+
+function decode(text) {
+  return text
     .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
     .replace(/&(?:quot|#34);/g, '"')
     .replace(/&(?:#39|apos|rsquo);/g, "'")
+    .replace(/&(?:lsquo);/g, "'")
+    .replace(/&(?:ldquo);/g, "«")
+    .replace(/&(?:rdquo);/g, "»")
+    .replace(/&(?:hellip);/g, "…")
+    .replace(/&(?:mdash);/g, "—")
+    .replace(/&(?:ndash);/g, "–")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function stripTags(html) {
+  return decode(
+    html
+      .replace(/<svg[\s\S]*?<\/svg>/gi, "")
+      // Les exposants ne servent qu'aux ordinaux (« XII<sup>e</sup> ») : on colle la lettre.
+      .replace(/<sup\b[^>]*>([\s\S]*?)<\/sup>/gi, "$1")
+      .replace(/<br\s*\/?>/gi, " ")
+      .replace(/<[^>]+>/g, "")
+  )
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -40,21 +72,100 @@ function slugify(text) {
     .slice(0, 70);
 }
 
-/** Reconstruit un chapitre en texte brut, avec les conventions du lecteur. */
+/** Les paragraphes d'un encadré, séparés dans le HTML par des `<br><br>`. */
+function paragraphsFrom(html) {
+  return html
+    .split(/(?:<br\s*\/?>\s*){2,}/i)
+    .map(stripTags)
+    .filter(Boolean);
+}
+
+/**
+ * Un tableau devient les intitulés de colonnes en paragraphe, puis une ligne `- ` par
+ * rangée : le lecteur est un téléphone, une grille y serait illisible.
+ */
+function tableBlocks(html) {
+  const rows = [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)].map((tr) =>
+    [...tr[1].matchAll(/<(th|td)\b[^>]*>([\s\S]*?)<\/\1>/gi)]
+      .map((cell) => stripTags(cell[2]))
+      .filter(Boolean)
+  );
+  const hasHead = /<th\b/i.test(html);
+  const blocks = [];
+  if (hasHead && rows[0]?.length) blocks.push(rows[0].join(" / "));
+  const lines = (hasHead ? rows.slice(1) : rows)
+    .filter((cells) => cells.length)
+    .map((cells) => `- ${cells.join(" — ")}`);
+  if (lines.length) blocks.push(lines.join("\n"));
+  return blocks;
+}
+
+/**
+ * Reconstruit un chapitre en texte brut, dans l'ordre du document.
+ *
+ * Renvoie `null` quand il ne reste rien une fois les passages de couverture retirés.
+ */
 function bodyFrom(sectionHtml) {
   const blocks = [];
-  const re = /<(p|blockquote|ul|ol)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+  // Les blocs sont pris dans l'ordre où ils apparaissent : un `<div>` d'encadré est
+  // rencontré avant les `<p>` qu'il contient, et les consomme donc lui-même.
+  const re =
+    /<h4\b[^>]*>([\s\S]*?)<\/h4>|<div\b[^>]*class="([^"]*)"[^>]*>([\s\S]*?)<\/div>|<(p|blockquote|ul|ol|table)\b([^>]*)>([\s\S]*?)<\/\4>/gi;
+  // Vrai tant qu'on traverse une sous-partie consacrée à l'illustration de couverture.
+  let skipping = false;
   let m;
   while ((m = re.exec(sectionHtml))) {
-    const tag = m[1].toLowerCase();
-    const inner = m[2];
+    if (m[1] !== undefined) {
+      const heading = stripTags(m[1]);
+      skipping = COVER_HEADING.test(heading);
+      if (!skipping && heading) blocks.push(`## ${heading}`);
+      continue;
+    }
+    if (skipping) continue;
+
+    if (m[2] !== undefined) {
+      const cls = m[2];
+      const inner = m[3];
+      if (/\bornament\b/.test(cls)) continue;
+      if (/\bverse\b/.test(cls)) {
+        const ref = inner.match(/<span[^>]*class="[^"]*\bref\b[^"]*"[^>]*>([\s\S]*?)<\/span>/i);
+        const text = stripTags(ref ? inner.replace(ref[0], "") : inner);
+        if (!text) continue;
+        const source = ref ? stripTags(ref[1]) : "";
+        blocks.push(source ? `> ${text}\n— ${source}` : `> ${text}`);
+        continue;
+      }
+      if (/\b(box|stat)\b/.test(cls)) {
+        const label = inner.match(
+          /<span[^>]*class="[^"]*\b(?:label|big)\b[^"]*"[^>]*>([\s\S]*?)<\/span>/i
+        );
+        const rest = label ? inner.replace(label[0], "") : inner;
+        const heading = label ? stripTags(label[1]) : "";
+        if (COVER_HEADING.test(heading)) continue;
+        if (heading) blocks.push(`## ${heading}`);
+        const inners = [...rest.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)].map((p) => p[1]);
+        const paragraphs = (inners.length ? inners : [rest]).flatMap(paragraphsFrom);
+        // « ! » en début de ligne : le lecteur en fait un encadré d'avertissement.
+        const prefix = /\bwarn\b/.test(cls) ? "! " : "";
+        for (const p of paragraphs) blocks.push(prefix + p);
+        continue;
+      }
+      continue;
+    }
+
+    const tag = m[4].toLowerCase();
+    const attrs = m[5] ?? "";
+    const inner = m[6];
     if (tag === "p") {
+      if (/class="[^"]*\bornament\b/i.test(attrs)) continue;
       const text = stripTags(inner);
       if (text) blocks.push(text);
     } else if (tag === "blockquote") {
       const text = stripTags(inner);
       // « > » en début de bloc : le lecteur en fait une citation encadrée.
       if (text) blocks.push(`> ${text}`);
+    } else if (tag === "table") {
+      blocks.push(...tableBlocks(inner));
     } else {
       const items = [...inner.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)]
         .map((li) => stripTags(li[1]))
@@ -63,7 +174,9 @@ function bodyFrom(sectionHtml) {
       if (items.length) blocks.push(items.map((i) => `- ${i}`).join("\n"));
     }
   }
-  return blocks.join("\n\n");
+  // Un chapitre entièrement consacré à la couverture ne laisse que ses intertitres.
+  const substance = blocks.filter((b) => !b.startsWith("## "));
+  return substance.length ? blocks.join("\n\n") : null;
 }
 
 function extract(path) {
@@ -76,24 +189,36 @@ function extract(path) {
   const subtitle = /^(ibook|ebook)$/i.test(subtitleRaw) ? "" : subtitleRaw;
 
   const chapters = [];
-  const sections = [...raw.matchAll(/<section[^>]*class="[^"]*chapter[^"]*"[^>]*>([\s\S]*?)<\/section>/gi)];
+  let skipped = 0;
+  const sections = [
+    ...raw.matchAll(/<section[^>]*class="[^"]*chapter[^"]*"[^>]*>([\s\S]*?)<\/section>/gi),
+  ];
   for (const section of sections) {
     const html = section[1];
     const h3 = html.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
     const name = h3 ? stripTags(h3[1]) : "";
+    if (COVER_HEADING.test(name)) {
+      skipped += 1;
+      continue;
+    }
     // Le titre du chapitre ne doit pas se retrouver aussi dans le corps.
     const withoutHeading = h3 ? html.replace(h3[0], "") : html;
     const body = bodyFrom(withoutHeading);
-    if (name || body) chapters.push({ title: name || `Chapitre ${chapters.length + 1}`, body });
+    if (body === null) {
+      skipped += 1;
+      continue;
+    }
+    chapters.push({ title: name || `Chapitre ${chapters.length + 1}`, body });
   }
 
-  const lede = raw.match(/<p[^>]*class="[^"]*lede[^"]*"[^>]*>([\s\S]*?)<\/p>/i);
+  // Le résumé sert de point de départ : il se réécrit à la main avant publication, parce
+  // qu'un chapô de chapitre n'est pas une quatrième de couverture.
   const description =
-    (lede ? stripTags(lede[1]) : "") ||
-    chapters[0]?.body.split("\n\n").find((b) => b.length > 80 && !b.startsWith(">")) ||
-    "";
+    chapters[0]?.body
+      .split("\n\n")
+      .find((b) => b.length > 80 && !/^(##|>|-|!|—)/.test(b)) ?? "";
 
-  return { title, subtitle, description, chapters };
+  return { title, subtitle, description, chapters, skipped };
 }
 
 function toEntry(book, theme, addedAt) {
@@ -137,8 +262,9 @@ for (const [i, file] of files.entries()) {
   const book = extract(join(dir, file));
   const theme = themeArg ?? THEMES[i % THEMES.length];
   entries.push(toEntry(book, theme, today));
+  const note = book.skipped ? `  (${book.skipped} chapitre(s) de couverture écarté(s))` : "";
   console.error(
-    `✓ ${book.title.slice(0, 40).padEnd(42)} ${String(book.chapters.length).padStart(2)} chapitres`
+    `✓ ${book.title.slice(0, 40).padEnd(42)} ${String(book.chapters.length).padStart(2)} chapitres${note}`
   );
 }
 
@@ -146,4 +272,4 @@ const out = join(dir, "books-a-coller.ts");
 writeFileSync(out, entries.join("\n") + "\n", "utf8");
 console.error(`\n→ ${out}`);
 console.error("Colle ces entrées dans le tableau BOOKS de src/data/books.ts,");
-console.error("puis renseigne `category` et `tags` pour chaque livre.");
+console.error("puis renseigne `category`, `tags` et réécris `description`.");

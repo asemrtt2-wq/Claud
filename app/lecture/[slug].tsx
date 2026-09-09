@@ -22,9 +22,16 @@ import { useLibrary } from "@/store/library";
 /** Les trois tailles de texte proposées par le bouton « Aa » de la maquette. */
 const TEXT_SIZES = [16, 18, 21] as const;
 const THEMES = {
-  nuit: { bg: colors.night, paper: colors.surface, text: colors.text, muted: colors.textMuted },
-  sepia: { bg: "#1A1610", paper: "#241E15", text: "#EFE3CE", muted: "#B0A48C" },
-  clair: { bg: "#F5F1E8", paper: "#FFFFFF", text: "#1B1A17", muted: "#6B675E" },
+  nuit: {
+    bg: colors.night,
+    paper: colors.surface,
+    text: colors.text,
+    muted: colors.textMuted,
+    accent: colors.goldLight,
+  },
+  sepia: { bg: "#1A1610", paper: "#241E15", text: "#EFE3CE", muted: "#B0A48C", accent: "#D9BE86" },
+  // Sur fond clair, l'or doit foncer : les intertitres restent lisibles au soleil.
+  clair: { bg: "#F5F1E8", paper: "#FFFFFF", text: "#1B1A17", muted: "#6B675E", accent: "#8A6A28" },
 } as const;
 type ReaderTheme = keyof typeof THEMES;
 
@@ -148,7 +155,27 @@ export default function ReaderScreen() {
         <Divider width={34} style={{ marginTop: spacing.lg, marginBottom: spacing.xl }} />
 
         {blocks.map((block, i) => {
+          // Intertitre : les livres importés en comptent plusieurs par chapitre, et ce sont
+          // eux qui rendent un chapitre de trente paragraphes lisible sur un téléphone.
+          if (block.startsWith("## ")) {
+            return (
+              <Text
+                key={i}
+                style={[
+                  styles.subheading,
+                  { color: palette.accent, fontSize: TEXT_SIZES[sizeIndex] + 2 },
+                ]}
+              >
+                {block.slice(3)}
+              </Text>
+            );
+          }
           if (block.startsWith("> ")) {
+            // Une ligne « — … » sous la citation en donne la source (verset, article, page).
+            const [raw, ...rest] = block.slice(2).split("\n");
+            // Beaucoup de citations arrivent déjà entre guillemets : ne pas les doubler.
+            const quoted = raw.replace(/^«\s?/, "").replace(/\s?»$/, "");
+            const source = rest.join(" ").replace(/^—\s?/, "");
             return (
               <View key={i} style={[styles.quote, { backgroundColor: palette.paper }]}>
                 <Text
@@ -157,7 +184,29 @@ export default function ReaderScreen() {
                     { color: palette.text, fontSize: TEXT_SIZES[sizeIndex] },
                   ]}
                 >
-                  {`« ${block.replace(/^>\s?/, "")} »`}
+                  {`« ${quoted} »`}
+                </Text>
+                {source ? (
+                  <Text style={[styles.quoteSource, { color: palette.muted }]}>{source}</Text>
+                ) : null}
+              </View>
+            );
+          }
+          // Encadré d'avertissement : mise en garde de santé, nuance à ne pas rater.
+          if (block.startsWith("! ")) {
+            return (
+              <View key={i} style={[styles.notice, { backgroundColor: palette.paper }]}>
+                <Text
+                  style={[
+                    styles.paragraph,
+                    {
+                      color: palette.text,
+                      fontSize: TEXT_SIZES[sizeIndex] - 1,
+                      marginBottom: 0,
+                    },
+                  ]}
+                >
+                  {block.slice(2)}
                 </Text>
               </View>
             );
@@ -353,6 +402,20 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.gold,
   },
   quoteText: { fontFamily: fonts.display, lineHeight: 28, fontStyle: "italic" },
+  quoteSource: { ...type.caption, marginTop: spacing.sm, fontSize: 11 },
+  subheading: {
+    fontFamily: fonts.display,
+    lineHeight: 28,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+  },
+  notice: {
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.goldDeep,
+  },
   list: { marginBottom: spacing.lg, gap: spacing.sm },
   listItem: { flexDirection: "row", gap: spacing.md, alignItems: "flex-start" },
   bullet: { width: 5, height: 5, borderRadius: 3, marginTop: 12 },
