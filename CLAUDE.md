@@ -211,6 +211,12 @@ projet : histoire, sciences, savoirs essentiels, développement personnel, cultu
 personnages, soit environ 510 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
+**Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois
+captures d'écran de l'app montrant les livres — pas un aperçu web à ouvrir. Un tel aperçu a
+existé : le bundle web empaqueté en une page unique de plusieurs méga-octets. Il n'a jamais
+réussi à s'ouvrir sur son téléphone, et il coûte du temps et de la place à chaque mise à
+jour. Des captures suffisent, et elles se regardent tout de suite.
+
 ## Abonnements et langues
 
 Les prix et le contenu de chaque formule sont décrits **une seule fois**, dans
