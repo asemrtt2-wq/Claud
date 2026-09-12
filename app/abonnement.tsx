@@ -151,10 +151,15 @@ export default function SubscriptionScreen() {
         </View>
 
         <View style={styles.cancel}>
-          <Text style={styles.cancelTitle}>Résilier</Text>
+          <Text style={styles.cancelTitle}>Renouvellement et résiliation</Text>
+          {/* Apple exige que l'écran qui vend un abonnement porte, dans l'app elle-même, sa
+              durée, son prix, le caractère automatique du renouvellement, et un lien
+              fonctionnel vers les conditions et la confidentialité. Rien de tout cela n'est
+              une contrainte gênante ici : c'est ce que la charte demandait déjà. */}
           <Text style={styles.cancelText}>
-            L'abonnement se résilie à tout moment et reste actif jusqu'à la fin du mois déjà
-            payé. Il n'y a ni durée minimale ni frais de résiliation.
+            Chaque formule dure un mois et se renouvelle automatiquement au même prix, jusqu'à
+            ce que vous la résiliiez. La résiliation se fait à tout moment : l'abonnement reste
+            actif jusqu'à la fin du mois déjà payé, puis s'arrête. Ni durée minimale, ni frais.
           </Text>
           <Text style={styles.cancelText}>
             Quand le paiement sera en place, il passera par l'App Store et par Google Play, qui
@@ -173,6 +178,12 @@ export default function SubscriptionScreen() {
           )}
         </View>
 
+        <View style={styles.legal}>
+          <LegalLink label="Conditions d'utilisation" onPress={() => router.push("/conditions")} />
+          <Text style={styles.legalSeparator}>·</Text>
+          <LegalLink label="Confidentialité" onPress={() => router.push("/confidentialite")} />
+        </View>
+
         <Divider width={30} style={styles.footDivider} />
         <Text style={styles.footMotto}>Lire. Comprendre. Évoluer.</Text>
       </ScrollView>
@@ -189,6 +200,17 @@ function Promise({ icon, title, detail }: { icon: string; title: string; detail:
       <Text style={styles.promiseTitle}>{title}</Text>
       <Text style={styles.promiseDetail}>{detail}</Text>
     </View>
+  );
+}
+
+/** Lien vers un texte juridique, souligné pour qu'on le reconnaisse comme un lien. */
+function LegalLink({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} hitSlop={10} accessibilityRole="link" accessibilityLabel={label}>
+      {({ pressed }) => (
+        <Text style={[styles.legalLink, pressed && { color: colors.goldLight }]}>{label}</Text>
+      )}
+    </Pressable>
   );
 }
 
@@ -477,6 +499,22 @@ const styles = StyleSheet.create({
     borderColor: colors.lineSoft,
   },
   cancelButtonLabel: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted },
+
+  legal: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+    paddingHorizontal: spacing.xl,
+  },
+  legalLink: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.gold,
+    textDecorationLine: "underline",
+  },
+  legalSeparator: { ...type.caption },
 
   footDivider: { alignSelf: "center", marginTop: spacing.xxl },
   footMotto: { ...type.caption, textAlign: "center", marginTop: spacing.md, letterSpacing: 1 },

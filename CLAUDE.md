@@ -87,6 +87,9 @@ l'aune de ce tableau avant d'être publié.
   demandent un serveur ; l'ancienne plateforme web en avait une version, supprimée avec elle.
 - **Aucune traduction n'est encore embarquée.** Le pipeline est prêt, le catalogue n'a qu'une
   langue : le français.
+- **L'éditeur de l'app n'est pas identifié.** `src/data/legal.ts` porte deux espaces
+  réservés — nom et adresse de contact — sans lesquels aucune des deux boutiques n'accepte
+  une soumission. Les écrans juridiques le signalent en rouge tant que c'est le cas.
 
 Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
 tombant dans une case « interdit » du tableau, est à refuser ou à remplacer.
@@ -149,14 +152,18 @@ app/                        # les écrans (routage par fichiers, expo-router)
   lecture/[slug].tsx        # lecteur : chapitre par chapitre, réglages, langue, sommaire
   abonnement.tsx            # les trois formules : prix, contenu, résiliation
   langue.tsx                # langue de lecture et mode bilingue (formule Extra)
+  conditions.tsx            # conditions d'utilisation (exigées par les boutiques)
+  confidentialite.tsx       # politique de confidentialité
 src/
   theme.ts                  # couleurs, typographie, espacements, cible tactile
   components/
     BookCover.tsx           # couverture du livre : image fournie, ou composée en repli
     Ornament.tsx            # motifs géométriques (étoile à 8 branches, filets, trame)
+    LegalDocument.tsx       # la coquille commune aux deux textes juridiques
     ui.tsx                  # étiquettes, en-têtes, barre de progression, boutons
   data/
     types.ts                # le format d'un livre + les 7 catégories
+    legal.ts                # l'éditeur de l'app et la date des textes juridiques
     books.ts                # LE CATALOGUE — c'est ici qu'on ajoute des livres
     books.<code>.ts         # le catalogue traduit (fichier généré, un par langue)
     catalog.ts              # les langues disponibles (fichier généré)
@@ -253,6 +260,51 @@ La maquette de l'écran d'abonnement portait des éléments que Lumia ne peut pa
 
 Les fonctions annoncées mais absentes — demande de livre, vote, nouveautés en avance,
 traductions — sont signalées sur la carte de leur formule, en clair.
+
+### Brancher les achats intégrés
+
+Le paiement doit se faire **dans l'app, sans que rien ne s'ouvre** : une fenêtre native de
+l'App Store ou de Google Play monte par-dessus Lumia, Face ID, terminé. Les deux boutiques
+l'imposent pour du contenu numérique — une app qui déverrouille un livre contre un paiement
+extérieur est rejetée à la validation. Stripe ne peut donc pas jouer ce rôle ici : il reste
+bon pour vendre sur un site, mais l'app n'a aucun moyen de savoir qu'un téléphone donné a
+payé sans comptes ni serveur, c'est-à-dire sans renoncer aux trois promesses de Lumia.
+
+Ce qui manque, dans l'ordre :
+
+1. **Les deux comptes développeur** — Apple Developer Program (99 $/an) et Google Play
+   Console (25 $ une fois). C'est la seule pièce bloquante, et elle appartient au
+   propriétaire du projet. S'inscrire en personne physique évite le numéro D-U-N-S
+   qu'Apple exige d'une société.
+2. **Déclarer les produits** dans App Store Connect et dans la Play Console, avec les
+   identifiants déjà fixés dans `src/data/plans.ts` : les trois abonnements dans un même
+   groupe (sinon le passage d'une formule à l'autre ne fonctionne pas), et un produit non
+   consommable par livre. Il faut aussi signer le contrat des applications payantes et
+   renseigner les coordonnées bancaires : sans lui, les produits restent invisibles.
+3. **Le code** : brancher la bibliothèque d'achat et remplacer `setPlan` et `purchaseBook`
+   dans `src/store/library.tsx`. Le reste ne bouge pas — `canRead(slug)` est déjà la seule
+   porte du catalogue, et les écrans d'achat existent déjà. Il faudra aussi ajouter le
+   bouton **« Restaurer mes achats »**, qu'Apple exige et qui n'a aucun sens tant qu'aucun
+   achat ne passe par une boutique.
+
+Deux choses à ne pas découvrir en route : les achats intégrés **ne se testent pas dans Expo
+Go** (il faut un build EAS signé, donc le compte Apple), et la vente à l'unité demande
+**112 fiches produit** à créer à la main, deux de plus par livre ajouté.
+
+### Ce que les boutiques exigent, et qui est déjà là
+
+- `app/conditions.tsx` et `app/confidentialite.tsx` portent les deux textes, atteignables
+  depuis l'écran d'abonnement **et** depuis « Mon espace » — un lecteur qui cherche la
+  politique de confidentialité n'a pas à traverser une page qui vend.
+- L'écran d'abonnement annonce la durée, le prix, le **renouvellement automatique** et le
+  lieu de la résiliation. Apple contrôle ces quatre points à la validation.
+- Les conditions ne recopient aucun prix : elles lisent `PLANS` et `BOOK_PRICE`. Un prix
+  recopié à la main finit par être faux, et un prix faux dans les conditions est la
+  pratique trompeuse que la charte interdit.
+- **`src/data/legal.ts` contient encore des espaces réservés** : le nom de l'éditeur et son
+  adresse de contact. Tant qu'ils le sont, les deux écrans affichent un avertissement
+  rouge, pour que des conditions signées « À COMPLÉTER » ne partent pas à la validation
+  sans que personne ne s'en aperçoive.
 
 `hasPlan(plan, "extra")` est la seule porte des langues. Le reste de l'app passe par
 `canChangeLanguage`, exposé par le contexte bibliothèque, plutôt que de comparer des noms de

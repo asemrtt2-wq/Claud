@@ -159,6 +159,29 @@ export default function ProfileScreen() {
           Ta progression est enregistrée sur cet appareil. Lumia ne demande aucun compte et
           n&apos;envoie rien sur Internet.
         </Text>
+
+        {/* Les deux textes juridiques doivent être atteignables sans passer par l'écran qui
+            vend : un lecteur qui cherche la politique de confidentialité n'a pas à traverser
+            une page d'abonnement pour la trouver. */}
+        <View style={styles.legal}>
+          <Pressable
+            onPress={() => router.push("/conditions")}
+            hitSlop={10}
+            accessibilityRole="link"
+            accessibilityLabel="Conditions d'utilisation"
+          >
+            <Text style={styles.legalLink}>Conditions d&apos;utilisation</Text>
+          </Pressable>
+          <Text style={styles.legalSeparator}>·</Text>
+          <Pressable
+            onPress={() => router.push("/confidentialite")}
+            hitSlop={10}
+            accessibilityRole="link"
+            accessibilityLabel="Politique de confidentialité"
+          >
+            <Text style={styles.legalLink}>Confidentialité</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </View>
   );
@@ -258,4 +281,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
     lineHeight: 17,
   },
+  legal: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  legalLink: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.gold,
+    textDecorationLine: "underline",
+  },
+  legalSeparator: { ...type.caption },
 });
