@@ -86,3 +86,40 @@ export function everythingIn(plan: PlanId): string[] {
 
 /** La formule qui débloque les langues. Le reste de l'app passe par cette constante. */
 export const LANGUAGES_PLAN: PlanId = "extra";
+
+/* ------------------------------------------------------- identifiants des boutiques */
+
+/**
+ * Les identifiants de produit à créer dans App Store Connect et dans la Google Play
+ * Console, le jour où le paiement est branché.
+ *
+ * **Stripe ne peut pas jouer ce rôle.** Apple et Google refusent qu'une app débloque du
+ * contenu numérique par un paiement extérieur au leur : une app qui le fait est rejetée à
+ * la validation. Stripe reste parfait pour vendre sur un site, mais l'app aurait alors
+ * besoin d'un serveur et de comptes — ce que Lumia n'a pas, et ce qui lui coûterait sa
+ * promesse de fonctionner hors ligne sans compte.
+ *
+ * Ces identifiants ne servent encore à rien : ils fixent la convention pour que le jour où
+ * les comptes développeur existent, il n'y ait plus qu'à les déclarer et à remplacer les
+ * deux fonctions locales `setPlan` et `purchaseBook` de `src/store/library.tsx`.
+ */
+const BUNDLE = "com.lumia.app";
+
+/** Abonnement mensuel renouvelable, un par formule. */
+export const SUBSCRIPTION_PRODUCTS: Record<PlanId, string> = {
+  plus: `${BUNDLE}.plus.monthly`,
+  premium: `${BUNDLE}.premium.monthly`,
+  extra: `${BUNDLE}.extra.monthly`,
+};
+
+/**
+ * Achat définitif d'un livre seul — un produit non consommable par livre.
+ *
+ * ⚠️ Conséquence à connaître avant de s'engager : vendre les livres à l'unité oblige à
+ * créer **un produit par livre dans chacune des deux boutiques**, soit cent douze fiches
+ * pour le catalogue actuel, et deux de plus à chaque nouveau livre. C'est du travail
+ * administratif récurrent, pas du code. Un abonnement seul l'éviterait entièrement.
+ */
+export function bookProductId(slug: string): string {
+  return `${BUNDLE}.book.${slug.replace(/-/g, "_")}`;
+}
