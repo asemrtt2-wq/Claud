@@ -105,17 +105,42 @@ npm run typecheck    # vérification TypeScript
 ```
 
 **Pour produire les vraies applications** (fichiers `.ipa` / `.aab` à envoyer aux stores), il
-faut EAS Build, qui compile dans le cloud — y compris la version iOS, sans posséder de Mac :
+faut EAS Build, qui compile dans le cloud — y compris la version iOS, sans posséder de Mac.
+`eas.json` est déjà écrit ; il n'y a donc pas de `build:configure` à lancer :
 
 ```bash
 npx eas login
-npx eas build:configure
-npx eas build --platform android    # .aab pour Google Play
-npx eas build --platform ios        # .ipa pour l'App Store
+npx eas build --platform android --profile production   # .aab pour Google Play
+npx eas build --platform ios --profile production       # .ipa pour l'App Store
 ```
+
+Trois profils : `development` (build de développement, seul moyen de tester les achats
+intégrés, qu'Expo Go ne sait pas faire), `preview` (un APK à installer directement, pour
+faire essayer l'app), `production` (ce qui part aux boutiques).
 
 Comptes nécessaires pour publier : **Apple Developer Program** (99 $/an) et **Google Play
 Console** (25 $ une fois). Ce sont les seules pièces qui manquent — le code, lui, est prêt.
+
+### La fiche des boutiques
+
+`boutique/fiche-boutiques.md` contient tout ce que les deux boutiques demandent d'écrire :
+nom, sous-titre, description, mots-clés, catégories, classification d'âge, et les réponses
+à la fiche de confidentialité — « aucune donnée collectée », ce qui n'est pas une prudence
+mais une conséquence de l'architecture. Deux URL restent à fournir : confidentialité et
+support. Les textes existent dans l'app, mais les boutiques exigent en plus une page web
+publique qui les héberge.
+
+```bash
+npm run boutique:captures   # boutique/captures/ — captures aux dimensions exactes
+```
+
+Le script rend l'app dans Chromium aux tailles imposées (1320 × 2868 pour l'App Store,
+1080 × 2340 pour Google Play) plutôt que de redimensionner après coup, ce qui donnerait du
+texte flou. Il **pose un état de lecture** avant chaque capture — livre offert pris,
+lecture en cours — parce qu'un navigateur neuf montrerait un écran verrouillé et un accueil
+vide. L'écran du livre offert, lui, est capturé sans état : l'offre n'a de sens que tant
+qu'elle n'est pas prise. Il produit aussi la bannière 1024 × 500 de Google Play, purement
+typographique comme le reste de l'interface.
 
 ## Règles iOS et Android appliquées
 
@@ -177,6 +202,11 @@ scripts/
   import-books.mjs          # convertit des exports HTML en entrées de catalogue
   translate-books.mjs       # traduit le catalogue dans une autre langue
   generate-catalog-index.mjs # écrit src/data/catalog.ts
+  captures-boutique.mjs     # les captures d'écran aux dimensions des boutiques
+boutique/
+  fiche-boutiques.md        # description, mots-clés, âge, confidentialité : le texte des fiches
+  captures/                 # les images à téléverser (générées)
+eas.json                    # les trois profils de build EAS
 assets/couvertures/         # les 56 couvertures, 720 px de large, ~9,6 Mo au total
 ```
 
