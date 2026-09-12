@@ -150,6 +150,7 @@ app/                        # les écrans (routage par fichiers, expo-router)
     profil.tsx              # « Mon espace » : statistiques réelles, Pass Lumia
   livre/[slug].tsx          # fiche livre : À propos / Chapitres / Avis
   lecture/[slug].tsx        # lecteur : chapitre par chapitre, réglages, langue, sommaire
+  cadeau.tsx                # le livre offert : les 5 proposés, un seul à garder
   abonnement.tsx            # les trois formules : prix, contenu, résiliation
   langue.tsx                # langue de lecture et mode bilingue (formule Extra)
   conditions.tsx            # conditions d'utilisation (exigées par les boutiques)
@@ -231,7 +232,7 @@ Les prix et le contenu de chaque formule sont décrits **une seule fois**, dans
 
 | Accès | Prix | Ce qu'il donne |
 | --- | --- | --- |
-| Découverte | gratuit | **Un livre au choix**, gardé définitivement |
+| Découverte | gratuit | **Un livre au choix parmi cinq**, gardé définitivement |
 | À l'unité | 4,99 € par livre | Le livre acheté, gardé définitivement |
 | Lumia Plus | 9,99 €/mois | Le catalogue complet en français |
 | Lumia Premium | 15,99 €/mois | Une demande de livre par mois et un vote ; les nouveautés en avance |
@@ -240,6 +241,23 @@ Les prix et le contenu de chaque formule sont décrits **une seule fois**, dans
 `canRead(slug)` est la seule porte du catalogue : abonné, livre offert, ou livre acheté. Le
 livre offert est **définitif** et l'app le dit avant de valider — un cadeau dont on découvre
 la limite après coup est la pratique trompeuse que la charte interdit.
+
+### Le livre offert : cinq livres, un seul à garder
+
+L'offre portait au départ sur tout le catalogue ; le propriétaire du projet l'a restreinte à
+une sélection de cinq. Elle vit dans `FREE_PICKS` (`src/data/plans.ts`) et **nulle part
+ailleurs** — c'est un choix éditorial, une ligne à changer. Les cinq retenus couvrent cinq
+catégories sur sept et se lisent sans rien connaître du reste : « Saladin », « L'histoire de
+l'argent », « Le piège du "encore 5 minutes" », « Les manipulations invisibles » et « Les
+bienfaits de la journée d'un musulman ».
+
+- `app/cadeau.tsx` présente les cinq et prend le choix. Il est atteignable depuis l'écran
+  d'ouverture, « Mon espace » et l'écran d'abonnement.
+- `claimFreeBook` **refuse un slug hors sélection** : la règle est dans le contexte, pas
+  dans les écrans, comme `canRead` pour le catalogue.
+- `canClaimFree(slug)` dit si *ce* livre peut être pris maintenant. La fiche livre s'en sert
+  pour ne proposer « Lire gratuitement » que sur les cinq — proposer puis refuser serait une
+  porte peinte sur un mur ; ailleurs, elle renvoie vers la sélection.
 
 ### Ce que la maquette proposait et qui n'a pas été repris
 
@@ -269,6 +287,13 @@ l'imposent pour du contenu numérique — une app qui déverrouille un livre con
 extérieur est rejetée à la validation. Stripe ne peut donc pas jouer ce rôle ici : il reste
 bon pour vendre sur un site, mais l'app n'a aucun moyen de savoir qu'un téléphone donné a
 payé sans comptes ni serveur, c'est-à-dire sans renoncer aux trois promesses de Lumia.
+
+**Apple Pay et Google Pay ne sont pas cela**, malgré la ressemblance. Ce sont des moyens de
+paiement pour des biens et des services hors de l'app ; Apple interdit expressément de s'en
+servir pour déverrouiller du contenu numérique. L'expérience recherchée — une fenêtre qui
+monte, un visage, terminé — est bien celle des achats intégrés, qui débitent la carte déjà
+enregistrée sur l'identifiant Apple ou le compte Google. Seul le nom diffère, et c'est le
+nom qui décide de l'acceptation à la validation.
 
 Ce qui manque, dans l'ordre :
 

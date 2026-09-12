@@ -20,7 +20,7 @@ import { useLibrary } from "@/store/library";
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { progress, favorites, minutesRead, plan, locale, canChangeLanguage, reset } =
+  const { progress, favorites, minutesRead, plan, locale, canChangeLanguage, freeBookAvailable, reset } =
     useLibrary();
 
   const stats = useMemo(() => {
@@ -36,6 +36,11 @@ export default function ProfileScreen() {
   }, [progress, minutesRead]);
 
   const menu = [
+    {
+      icon: "gift-outline",
+      label: freeBookAvailable ? "Choisir mon livre offert" : "Mon livre offert",
+      onPress: () => router.push("/cadeau"),
+    },
     { icon: "book-outline", label: "Mes livres", onPress: () => router.push("/(tabs)/bibliotheque") },
     { icon: "heart-outline", label: "Mes favoris", badge: favorites.length || undefined, onPress: () => router.push("/(tabs)/bibliotheque") },
     { icon: "compass-outline", label: "Explorer le catalogue", onPress: () => router.push("/(tabs)/explorer") },

@@ -18,8 +18,16 @@ export default function BookScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { progress, isFavorite, toggleFavorite, canRead, freeBookAvailable, claimFreeBook, purchaseBook } =
-    useLibrary();
+  const {
+    progress,
+    isFavorite,
+    toggleFavorite,
+    canRead,
+    freeBookAvailable,
+    canClaimFree,
+    claimFreeBook,
+    purchaseBook,
+  } = useLibrary();
   const { books, getBook } = useCatalog();
   const [tab, setTab] = useState<(typeof TABS)[number]>("À propos");
 
@@ -47,6 +55,9 @@ export default function BookScreen() {
   // Le catalogue est payant : un livre s'ouvre avec un abonnement, avec le livre offert,
   // ou après achat à l'unité.
   const locked = !canRead(book.slug);
+  /* L'offre de bienvenue ne porte que sur cinq livres. Ailleurs, proposer « gratuitement »
+     puis refuser serait une porte peinte sur un mur. */
+  const giftable = canClaimFree(book.slug);
 
   /* Le livre offert ne se rend pas : le dire avant, pas après. Un cadeau dont on découvre
      la limite une fois qu'il est consommé est exactement ce que la charte appelle une
@@ -154,15 +165,15 @@ export default function BookScreen() {
                 ? p
                   ? "Reprendre"
                   : "Lire"
-                : freeBookAvailable
+                : giftable
                   ? "Lire gratuitement"
                   : `Acheter — ${BOOK_PRICE}`
             }
-            icon={!locked ? "book" : freeBookAvailable ? "gift" : "lock-open"}
+            icon={!locked ? "book" : giftable ? "gift" : "lock-open"}
             onPress={() =>
               !locked
                 ? router.push(`/lecture/${book.slug}`)
-                : freeBookAvailable
+                : giftable
                   ? offerFreeBook()
                   : offerPurchase()
             }
@@ -180,14 +191,29 @@ export default function BookScreen() {
             le lecteur voit d'un coup ce que chaque option coûte. */}
         {locked && (
           <View style={styles.access}>
-            {freeBookAvailable ? (
+            {giftable ? (
               <Text style={styles.accessLine}>
-                {`C'est ton livre offert. Sinon, ce livre seul coûte ${BOOK_PRICE}, et tout le catalogue ${PLANS.plus.price} par mois.`}
+                {`Ce livre fait partie des cinq proposés en cadeau : tu peux le prendre gratuitement, une seule fois, et le garder. Sinon il coûte ${BOOK_PRICE}, et tout le catalogue ${PLANS.plus.price} par mois.`}
+              </Text>
+            ) : freeBookAvailable ? (
+              <Text style={styles.accessLine}>
+                {`Ce livre seul coûte ${BOOK_PRICE}, et il reste à toi. Ton livre offert, lui, est encore à prendre parmi les cinq de la sélection.`}
               </Text>
             ) : (
               <Text style={styles.accessLine}>
                 {`Tu as déjà pris ton livre offert. Ce livre seul coûte ${BOOK_PRICE}, et il reste à toi.`}
               </Text>
+            )}
+            {freeBookAvailable && !giftable && (
+              <Pressable
+                onPress={() => router.push("/cadeau")}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.accessLink, pressed && { opacity: 0.7 }]}
+              >
+                <Ionicons name="gift-outline" size={16} color={colors.gold} />
+                <Text style={styles.accessLinkText}>Voir les cinq livres offerts</Text>
+                <Ionicons name="chevron-forward" size={14} color={colors.textFaint} />
+              </Pressable>
             )}
             <Pressable
               onPress={() => router.push("/abonnement")}
@@ -234,7 +260,7 @@ export default function BookScreen() {
                   key={chapter.title}
                   onPress={() =>
                     locked
-                      ? freeBookAvailable
+                      ? giftable
                         ? offerFreeBook()
                         : offerPurchase()
                       : router.push(`/lecture/${book.slug}?chapter=${i}`)

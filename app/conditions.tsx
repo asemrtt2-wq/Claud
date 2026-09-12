@@ -1,4 +1,4 @@
-import { BOOK_PRICE, PLAN_LIST } from "@/data/plans";
+import { BOOK_PRICE, FREE_PICKS, PLAN_LIST } from "@/data/plans";
 import { LegalDocument, type Section } from "@/components/LegalDocument";
 
 /**
@@ -16,7 +16,8 @@ const SECTIONS: Section[] = [
     heading: "Où en est le paiement aujourd'hui",
     body: [
       "Aucun paiement n'est encore en place. Choisir une formule dans l'application ne débite rien : cela active seulement ses fonctions sur votre appareil, pour les essayer.",
-      "Les articles qui suivent décrivent les prix et les règles qui s'appliqueront le jour où le paiement sera actif, par les achats intégrés de l'App Store et de Google Play. Ils sont écrits ici à l'avance pour que rien ne vous surprenne, pas parce qu'ils vous engagent déjà.",
+      "Les articles qui suivent décrivent les prix et les règles qui s'appliqueront le jour où le paiement sera actif. Ils sont écrits ici à l'avance pour que rien ne vous surprenne, pas parce qu'ils vous engagent déjà.",
+      "Le paiement se fera alors sans quitter l'application : une fenêtre de l'App Store ou de Google Play s'ouvre par-dessus, avec le moyen de paiement déjà enregistré sur votre téléphone, et une empreinte ou un visage suffit à valider.",
     ],
   },
   {
@@ -29,8 +30,8 @@ const SECTIONS: Section[] = [
   {
     heading: "Le livre offert",
     body: [
-      "L'application offre un livre, celui que vous voulez, une seule fois. Ce choix est définitif : une fois validé, il ne peut pas être changé. L'application vous le dit avant que vous validiez.",
-      "Le livre offert vous reste acquis, même si vous ne prenez jamais d'abonnement.",
+      `L'application offre un livre, une seule fois, à choisir parmi une sélection de ${FREE_PICKS.length}. Ce choix est définitif : une fois validé, il ne peut être ni changé ni échangé. L'application le dit avant que vous validiez.`,
+      "Le livre offert vous reste acquis, même si vous ne prenez jamais d'abonnement. La sélection proposée peut changer avec les versions de l'application ; un livre déjà pris, lui, ne vous est jamais retiré.",
     ],
   },
   {

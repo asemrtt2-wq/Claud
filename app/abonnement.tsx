@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type, touchTarget } from "@/theme";
 import { Divider, StarMotif } from "@/components/Ornament";
-import { BOOK_PRICE, PLANS, everythingIn, rankOf, type PlanId } from "@/data/plans";
+import { BOOK_PRICE, FREE_PICKS, PLANS, everythingIn, rankOf, type PlanId } from "@/data/plans";
 import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
 
@@ -129,14 +129,20 @@ export default function SubscriptionScreen() {
         {/* Sans abonnement : ce que le lecteur peut avoir quand même. */}
         <View style={styles.without}>
           <Text style={styles.withoutTitle}>Sans abonnement</Text>
-          <View style={styles.withoutRow}>
+          <Pressable
+            onPress={() => router.push("/cadeau")}
+            accessibilityRole="button"
+            accessibilityLabel="Voir le livre offert"
+            style={({ pressed }) => [styles.withoutRow, pressed && { opacity: 0.7 }]}
+          >
             <Ionicons name="gift-outline" size={17} color={colors.gold} />
             <Text style={styles.withoutText}>
               {freeBookAvailable
-                ? "Un livre offert, celui que vous voulez. Il reste à vous."
+                ? `Un livre offert, à choisir parmi ${FREE_PICKS.length}. Il reste à vous.`
                 : "Votre livre offert a été pris. Il reste à vous."}
             </Text>
-          </View>
+            <Ionicons name="chevron-forward" size={14} color={colors.textFaint} />
+          </Pressable>
           <View style={styles.withoutRow}>
             <Ionicons name="pricetag-outline" size={17} color={colors.gold} />
             <Text style={styles.withoutText}>

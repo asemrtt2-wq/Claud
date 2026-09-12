@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { LOCALES, SOURCE_LOCALE, type LocaleCode } from "@/data/catalog";
-import { FREE_BOOKS, hasPlan, LANGUAGES_PLAN, type PlanId } from "@/data/plans";
+import { FREE_BOOKS, hasPlan, isFreePick, LANGUAGES_PLAN, type PlanId } from "@/data/plans";
 
 /**
  * L'état du lecteur : où il en est dans chaque livre, ses favoris, son temps de lecture.
@@ -79,8 +79,13 @@ type LibraryContextValue = LibraryState & {
   setPlan: (plan: PlanId | null) => void;
   setLocale: (locale: LocaleCode) => void;
   setBilingual: (value: boolean) => void;
-  /** Prend le livre offert. Sans effet si l'offre est déjà utilisée. */
+  /**
+   * Prend le livre offert. Sans effet si l'offre est déjà utilisée, ou si le livre ne fait
+   * pas partie de la sélection offerte.
+   */
   claimFreeBook: (slug: string) => void;
+  /** Vrai si ce livre précis peut être pris gratuitement, ici et maintenant. */
+  canClaimFree: (slug: string) => boolean;
   /** Achète un livre à l'unité. Aucun paiement réel n'est encore branché. */
   purchaseBook: (slug: string) => void;
   /** Vrai si le lecteur peut ouvrir ce livre : abonné, livre offert, ou livre acheté. */
@@ -166,7 +171,10 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     setState((prev) => (hasPlan(prev.plan, LANGUAGES_PLAN) ? { ...prev, bilingual: value } : prev));
   }, []);
 
+  /* L'offre ne porte que sur la sélection de `FREE_PICKS`. Le refus est vérifié ici plutôt
+     que dans les écrans : une seule porte, comme `canRead` pour le catalogue. */
   const claimFreeBook = useCallback((slug: string) => {
+    if (!isFreePick(slug)) return;
     setState((prev) =>
       prev.freeBooks.length >= FREE_BOOKS || prev.freeBooks.includes(slug)
         ? prev
@@ -194,6 +202,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setLocale,
       setBilingual,
       claimFreeBook,
+      canClaimFree: (slug: string) =>
+        state.freeBooks.length < FREE_BOOKS && isFreePick(slug) && !state.purchased.includes(slug),
       purchaseBook,
       // Un abonnement ouvre tout le catalogue ; sans lui, restent le livre offert et les
       // livres achetés, qui appartiennent au lecteur même s'il ne s'abonne jamais.

@@ -19,6 +19,29 @@
  */
 export const FREE_BOOKS = 1;
 
+/**
+ * Les cinq livres parmi lesquels se choisit le livre offert.
+ *
+ * L'offre portait au départ sur tout le catalogue. Le propriétaire du projet l'a restreinte
+ * à une sélection de cinq : le lecteur choisit celui qu'il veut parmi eux, et le garde.
+ *
+ * C'est un choix éditorial, pas une contrainte technique — cette liste se modifie ici et
+ * nulle part ailleurs. Les cinq retenus couvrent cinq des sept catégories et se lisent sans
+ * rien connaître du reste : ils servent de porte d'entrée, pas de fond de tiroir.
+ */
+export const FREE_PICKS: readonly string[] = [
+  "saladin",
+  "l-histoire-de-l-argent",
+  "le-piege-du-encore-5-minutes",
+  "les-manipulations-invisibles",
+  "les-bienfaits-de-la-journee-d-un-musulman",
+];
+
+/** Vrai si ce livre fait partie de la sélection offerte. */
+export function isFreePick(slug: string): boolean {
+  return FREE_PICKS.includes(slug);
+}
+
 /** Le prix d'un livre acheté seul, sans abonnement. Achat définitif, pas une location. */
 export const BOOK_PRICE = "4,99 €";
 

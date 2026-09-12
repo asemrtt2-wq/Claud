@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type } from "@/theme";
 import { Divider, LatticePattern } from "@/components/Ornament";
 import { CATEGORIES, CATEGORY_ICONS } from "@/data/types";
+import { FREE_PICKS } from "@/data/plans";
+import { useLibrary } from "@/store/library";
 
 /**
  * L'écran d'ouverture de la maquette : le logo, la promesse, les sept catégories, la devise.
@@ -16,6 +18,7 @@ import { CATEGORIES, CATEGORY_ICONS } from "@/data/types";
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { freeBookAvailable } = useLibrary();
 
   return (
     <View style={styles.screen}>
@@ -85,6 +88,22 @@ export default function WelcomeScreen() {
           <Text style={styles.ctaLabel}>Entrer dans la bibliothèque</Text>
           <Ionicons name="arrow-forward" size={16} color="#231B0C" />
         </Pressable>
+
+        {/* Le cadeau est annoncé dès l'ouverture, pas caché derrière un écran d'abonnement :
+            c'est la première chose que Lumia donne, avant de demander quoi que ce soit. */}
+        {freeBookAvailable && (
+          <Pressable
+            onPress={() => router.push("/cadeau")}
+            accessibilityRole="button"
+            accessibilityLabel="Choisir mon livre offert"
+            style={({ pressed }) => [styles.gift, pressed && { opacity: 0.7 }]}
+          >
+            <Ionicons name="gift-outline" size={15} color={colors.gold} />
+            <Text style={styles.giftLabel}>
+              {`Un livre offert, à choisir parmi ${FREE_PICKS.length}`}
+            </Text>
+          </Pressable>
+        )}
       </ScrollView>
     </View>
   );
@@ -136,4 +155,13 @@ const styles = StyleSheet.create({
   },
   ctaPressed: { opacity: 0.85 },
   ctaLabel: { fontFamily: fonts.body, fontSize: 15, fontWeight: "700", color: "#231B0C" },
+  gift: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  giftLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.gold },
 });
