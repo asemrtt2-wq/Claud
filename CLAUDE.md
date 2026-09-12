@@ -169,7 +169,7 @@ scripts/
   import-books.mjs          # convertit des exports HTML en entrées de catalogue
   translate-books.mjs       # traduit le catalogue dans une autre langue
   generate-catalog-index.mjs # écrit src/data/catalog.ts
-assets/couvertures/         # les 37 couvertures, 720 px de large, ~6,3 Mo au total
+assets/couvertures/         # les 56 couvertures, 720 px de large, ~9,6 Mo au total
 ```
 
 ## Ajouter des livres
@@ -206,9 +206,9 @@ Deux façons :
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **37 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **56 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture et grands
-personnages, soit environ 325 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages, soit environ 510 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 ## Abonnements et langues
