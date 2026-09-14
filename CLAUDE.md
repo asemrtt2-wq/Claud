@@ -61,12 +61,11 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Onze livres n'ont pas encore leur image** : les onze importés le 14 septembre 2026. Ils
-  affichent donc la couverture composée. C'est plus qu'un défaut d'esthétique — leur premier
-  chapitre s'intitule « Ce que dit la couverture » et décrit une image précise (un sablier,
-  une pomme entamée dans un miroir, une faille dans la banquise) que le lecteur n'a pas sous
-  les yeux. Les couvertures existent chez le propriétaire du projet, puisque les livres les
-  commentent : il faut les lui demander, et les ajouter à `assets/couvertures/`.
+- **Les 67 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+  chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
+  sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
+  lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
+  arriver avec sa couverture, et `npm run books:import` l'extrait désormais tout seul.
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
   animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
   Marc Aurèle) sur les couvertures : ceux-là restent exclus.
@@ -208,12 +207,14 @@ scripts/
   import-books.mjs          # convertit des exports HTML en entrées de catalogue
   translate-books.mjs       # traduit le catalogue dans une autre langue
   generate-catalog-index.mjs # écrit src/data/catalog.ts
+  import-covers.mjs         # embarque des couvertures, ramenées à 720 px
+  generate-covers.mjs       # écrit src/data/covers.ts
   captures-boutique.mjs     # les captures d'écran aux dimensions des boutiques
 boutique/
   fiche-boutiques.md        # description, mots-clés, âge, confidentialité : le texte des fiches
   captures/                 # les images à téléverser (générées)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 56 couvertures fournies, 720 px de large, ~9,6 Mo
+assets/couvertures/         # les 67 couvertures, 720 px de large, ~11,7 Mo
 ```
 
 ## Ajouter des livres
@@ -235,6 +236,21 @@ Deux façons :
 
    Le script conserve la structure du HTML : intertitres `<h4>`, encadrés `.box` et `.stat`,
    avertissements `.box warn`, versets `.verse` avec leur référence, listes et tableaux.
+
+   **Il extrait aussi la couverture.** Ces exports embarquent deux images en base64 — la
+   couverture, puis une affiche de synthèse « Ce qu'il faut retenir » — ce qui explique leurs
+   cinq à huit méga-octets pour cent kilo-octets de texte. Seule la première est retenue :
+   c'est celle que le premier chapitre décrit. Elle atterrit dans `couvertures/` à côté des
+   HTML, nommée par le slug du livre, et s'embarque ensuite :
+
+   ```bash
+   npm run covers:import -- ./mes-livres-html/couvertures   # redimensionne vers assets/
+   npm run covers:index                                     # écrit src/data/covers.ts
+   ```
+
+   Les onze livres du 14 septembre 2026 ont d'abord été importés sans leur image, parce que
+   personne n'avait pensé à regarder dans le HTML. Ne pas refaire le trajet : la couverture
+   est dans le fichier.
 
    Ces livres commentent leur propre couverture, qu'ils appellent « l'affiche » : un chapitre
    d'ouverture « Ce que dit l'affiche », puis des renvois en plein texte. Comme l'app affiche

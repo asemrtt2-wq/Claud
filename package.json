@@ -12,6 +12,8 @@
     "books:import": "node scripts/import-books.mjs",
     "books:translate": "node scripts/translate-books.mjs",
     "catalog:index": "node scripts/generate-catalog-index.mjs",
+    "covers:import": "node scripts/import-covers.mjs",
+    "covers:index": "node scripts/generate-covers.mjs",
     "boutique:captures": "node scripts/captures-boutique.mjs"
   },
   "dependencies": {

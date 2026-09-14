@@ -29,7 +29,7 @@
  * Ailleurs — dans « Saladin » — « les affiches » désigne l'imagerie populaire du personnage,
  * et le mot doit rester tel quel.
  */
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync, mkdirSync } from "node:fs";
 import { basename, join } from "node:path";
 
 const THEMES = ["nuit", "or", "encre", "vin", "foret", "sable"];
@@ -230,7 +230,22 @@ function extract(path) {
       .split("\n\n")
       .find((b) => b.length > 80 && !/^(##|>|-|!|—)/.test(b)) ?? "";
 
-  return { title, subtitle, description, chapters };
+  return { title, subtitle, description, chapters, cover: coverOf(raw) };
+}
+
+/**
+ * La couverture du livre, quand l'export l'embarque en base64.
+ *
+ * Ces exports en contiennent deux : la couverture d'abord, puis une affiche de synthèse
+ * « Ce qu'il faut retenir ». Seule la première nous intéresse — c'est celle que le premier
+ * chapitre décrit, et celle que la fiche livre doit montrer.
+ *
+ * Rien à faire si l'export n'en a pas : `BookCover` compose alors une couverture en code.
+ */
+function coverOf(raw) {
+  const m = raw.match(/data:image\/(png|jpe?g|webp);base64,([A-Za-z0-9+/=]{500,})/);
+  if (!m) return null;
+  return { ext: m[1] === "jpeg" ? "jpg" : m[1], data: Buffer.from(m[2], "base64") };
 }
 
 function toEntry(book, theme, addedAt) {
@@ -269,13 +284,21 @@ if (files.length === 0) {
 }
 
 const today = new Date().toISOString().slice(0, 10);
+const coverDir = join(dir, "couvertures");
 const entries = [];
+let covers = 0;
 for (const [i, file] of files.entries()) {
   const book = extract(join(dir, file));
   const theme = themeArg ?? THEMES[i % THEMES.length];
   entries.push(toEntry(book, theme, today));
+  if (book.cover) {
+    mkdirSync(coverDir, { recursive: true });
+    writeFileSync(join(coverDir, `${slugify(book.title)}.${book.cover.ext}`), book.cover.data);
+    covers += 1;
+  }
   console.error(
-    `✓ ${book.title.slice(0, 40).padEnd(42)} ${String(book.chapters.length).padStart(2)} chapitres`
+    `✓ ${book.title.slice(0, 40).padEnd(42)} ${String(book.chapters.length).padStart(2)} chapitres` +
+      (book.cover ? "  + couverture" : "")
   );
 }
 
@@ -284,3 +307,8 @@ writeFileSync(out, entries.join("\n") + "\n", "utf8");
 console.error(`\n→ ${out}`);
 console.error("Colle ces entrées dans le tableau BOOKS de src/data/books.ts,");
 console.error("puis renseigne `category`, `tags` et réécris `description`.");
+if (covers) {
+  console.error(`\n${covers} couverture(s) extraite(s) dans ${coverDir}`);
+  console.error("Pour les embarquer :  npm run covers:import -- " + coverDir);
+  console.error("                      npm run covers:index");
+}
