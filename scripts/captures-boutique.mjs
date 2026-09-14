@@ -157,7 +157,7 @@ const BANNER = `<!doctype html><meta charset="utf-8"><style>
   <div class="name">LUMIA</div>
   <div class="rule"></div>
   <div class="line">Lire · Comprendre · Évoluer</div>
-  <div class="foot">67 livres courts, hors ligne, sans compte</div>
+  <div class="foot">83 livres courts, hors ligne, sans compte</div>
 </div>`;
 
 /* ------------------------------------------------------------------------ main */

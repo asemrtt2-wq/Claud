@@ -61,7 +61,7 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Les 67 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+- **Les 83 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
   chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
   sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
   lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
@@ -214,7 +214,7 @@ boutique/
   fiche-boutiques.md        # description, mots-clés, âge, confidentialité : le texte des fiches
   captures/                 # les images à téléverser (générées)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 67 couvertures, 720 px de large, ~11,7 Mo
+assets/couvertures/         # les 83 couvertures, 720 px de large, ~13,9 Mo
 ```
 
 ## Ajouter des livres
@@ -259,6 +259,17 @@ Deux façons :
    s'applique qu'aux livres qui ont un intertitre consacré à leur couverture ; dans
    « Saladin », « les affiches » désigne l'imagerie populaire du personnage et reste tel quel.
 
+**Les seize livres du 14 septembre 2026 n'ont pas d'accents dans leur corps de texte** —
+« la canne a sucre cultivee descend d'especes sauvages selectionnees ». Le défaut vient de
+l'export HTML, pas de l'import : les onze livres de la veille sont parfaits. Le propriétaire
+du projet en a été averti, avec le choix entre réexporter et une reprise automatique ; il a
+répondu « laisse comme ça, je ferai attention pour la suite ». C'est donc un état **connu et
+accepté**, à ne pas « corriger » à l'aveugle.
+
+Ce qui a pu être réparé sans rien deviner l'a été : le sommaire de ces fichiers avait gardé
+ses accents, et l'import reprend de là le titre de chaque chapitre quand les deux graphies ne
+diffèrent que par les accents. Seul le corps reste tel quel.
+
 **Conventions du corps de texte** (interprétées par le lecteur) :
 - une ligne vide sépare deux blocs ;
 - `## ` en début de bloc devient un intertitre doré ;
@@ -266,9 +277,9 @@ Deux façons :
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **67 livres**, importés depuis les exports HTML du propriétaire du
-projet : histoire, sciences, savoirs essentiels, développement personnel, culture et grands
-personnages, philosophie, soit environ 578 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+Le catalogue contient **83 livres**, importés depuis les exports HTML du propriétaire du
+projet : histoire, sciences, savoirs essentiels, développement personnel, culture, grands
+personnages et philosophie, soit environ 696 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois

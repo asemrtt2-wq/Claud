@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 11,7 Mo pour 67 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 13,9 Mo pour 83 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -21,6 +21,7 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "hannibal-barca": require("../../assets/couvertures/hannibal-barca.jpg"),
   "albert-einstein": require("../../assets/couvertures/albert-einstein.jpg"),
   "gengis-khan": require("../../assets/couvertures/gengis-khan.jpg"),
+  "thabit-ibn-qurra": require("../../assets/couvertures/thabit-ibn-qurra.jpg"),
   "l-histoire-de-la-medecine": require("../../assets/couvertures/l-histoire-de-la-medecine.jpg"),
   "les-grandes-inventions": require("../../assets/couvertures/les-grandes-inventions.jpg"),
   "les-plus-grandes-bibliotheques-de-l-histoire": require("../../assets/couvertures/les-plus-grandes-bibliotheques-de-l-histoire.jpg"),
@@ -28,6 +29,13 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "la-route-de-la-soie": require("../../assets/couvertures/la-route-de-la-soie.jpg"),
   "l-histoire-de-l-argent": require("../../assets/couvertures/l-histoire-de-l-argent.jpg"),
   "l-histoire-du-cafe": require("../../assets/couvertures/l-histoire-du-cafe.jpg"),
+  "l-histoire-du-the": require("../../assets/couvertures/l-histoire-du-the.jpg"),
+  "l-histoire-du-sel": require("../../assets/couvertures/l-histoire-du-sel.jpg"),
+  "l-histoire-du-sucre": require("../../assets/couvertures/l-histoire-du-sucre.jpg"),
+  "l-histoire-du-savon": require("../../assets/couvertures/l-histoire-du-savon.jpg"),
+  "l-histoire-de-la-boussole": require("../../assets/couvertures/l-histoire-de-la-boussole.jpg"),
+  "l-histoire-de-l-imprimerie": require("../../assets/couvertures/l-histoire-de-l-imprimerie.jpg"),
+  "comment-les-gens-s-ecrivaient-avant-internet": require("../../assets/couvertures/comment-les-gens-s-ecrivaient-avant-internet.jpg"),
   "comprendre-la-science": require("../../assets/couvertures/comprendre-la-science.jpg"),
   "les-lois-de-l-univers": require("../../assets/couvertures/les-lois-de-l-univers.jpg"),
   "explorer-le-savoir": require("../../assets/couvertures/explorer-le-savoir.jpg"),
@@ -55,6 +63,9 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "le-piege-du-encore-5-minutes": require("../../assets/couvertures/le-piege-du-encore-5-minutes.jpg"),
   "le-pouvoir-de-l-ennui": require("../../assets/couvertures/le-pouvoir-de-l-ennui.jpg"),
   "l-illusion-du-controle": require("../../assets/couvertures/l-illusion-du-controle.jpg"),
+  "pourquoi-avons-nous-besoin-de-routines": require("../../assets/couvertures/pourquoi-avons-nous-besoin-de-routines.jpg"),
+  "pourquoi-nous-comparons-nous-aux-autres": require("../../assets/couvertures/pourquoi-nous-comparons-nous-aux-autres.jpg"),
+  "pourquoi-repensons-nous-a-nos-erreurs-la-nuit": require("../../assets/couvertures/pourquoi-repensons-nous-a-nos-erreurs-la-nuit.jpg"),
   "l-intelligence-sociale": require("../../assets/couvertures/l-intelligence-sociale.jpg"),
   "l-effet-de-foule": require("../../assets/couvertures/l-effet-de-foule.jpg"),
   "le-prix-de-la-celebrite": require("../../assets/couvertures/le-prix-de-la-celebrite.jpg"),
@@ -67,6 +78,11 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "pourquoi-avons-nous-peur-du-noir": require("../../assets/couvertures/pourquoi-avons-nous-peur-du-noir.jpg"),
   "pourquoi-les-odeurs-reveillent-elles-des-souvenirs": require("../../assets/couvertures/pourquoi-les-odeurs-reveillent-elles-des-souvenirs.jpg"),
   "pourquoi-oublions-nous-nos-reves": require("../../assets/couvertures/pourquoi-oublions-nous-nos-reves.jpg"),
+  "l-effet-premiere-impression": require("../../assets/couvertures/l-effet-premiere-impression.jpg"),
+  "le-piege-du-choix": require("../../assets/couvertures/le-piege-du-choix.jpg"),
+  "le-prix-de-la-conformite": require("../../assets/couvertures/le-prix-de-la-conformite.jpg"),
+  "pourquoi-aimons-nous-les-histoires": require("../../assets/couvertures/pourquoi-aimons-nous-les-histoires.jpg"),
+  "pourquoi-aimons-nous-les-promotions": require("../../assets/couvertures/pourquoi-aimons-nous-les-promotions.jpg"),
   "les-manipulations-invisibles": require("../../assets/couvertures/les-manipulations-invisibles.jpg"),
   "fake-news": require("../../assets/couvertures/fake-news.jpg"),
   "l-argent-change-t-il-l-homme": require("../../assets/couvertures/l-argent-change-t-il-l-homme.jpg"),

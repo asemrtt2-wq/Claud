@@ -80,6 +80,11 @@ function stripTags(html) {
     .trim();
 }
 
+/** Le même texte, accents retirés. Sert à comparer deux graphies d'un même titre. */
+function unaccent(text) {
+  return text.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
 function slugify(text) {
   return text
     .normalize("NFD")
@@ -195,14 +200,32 @@ function extract(path) {
   const [title, subtitleRaw = ""] = full.split("—").map((s) => s.trim());
   const subtitle = /^(ibook|ebook)$/i.test(subtitleRaw) ? "" : subtitleRaw;
 
+  /*
+   * Le sommaire, indexé par l'ancre du chapitre.
+   *
+   * Il sert de secours au titre : certains exports ont perdu les accents du corps et des
+   * `<h3>` — « La Nouvelle-Guinee » — mais les ont gardés dans les liens du sommaire. Quand
+   * les deux versions ne diffèrent que par les accents, celle du sommaire est la bonne.
+   */
+  const toc = new Map(
+    [...raw.matchAll(/<li><a href="#([^"]+)">([\s\S]*?)<\/a><\/li>/gi)].map((m) => [
+      m[1],
+      stripTags(m[2]),
+    ])
+  );
+
   const chapters = [];
   const sections = [
-    ...raw.matchAll(/<section[^>]*class="[^"]*chapter[^"]*"[^>]*>([\s\S]*?)<\/section>/gi),
+    ...raw.matchAll(
+      /<section[^>]*class="[^"]*chapter[^"]*"[^>]*?(?:\sid="([^"]*)")?[^>]*>([\s\S]*?)<\/section>/gi
+    ),
   ];
   for (const section of sections) {
-    const html = section[1];
+    const html = section[2];
     const h3 = html.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
-    const name = h3 ? stripTags(h3[1]) : "";
+    let name = h3 ? stripTags(h3[1]) : "";
+    const listed = toc.get(section[1]);
+    if (listed && listed !== name && unaccent(listed) === unaccent(name)) name = listed;
     // Le titre du chapitre ne doit pas se retrouver aussi dans le corps.
     const withoutHeading = h3 ? html.replace(h3[0], "") : html;
     chapters.push({
