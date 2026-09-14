@@ -6,8 +6,8 @@ boutiques disent la même chose.
 
 **Règle qui s'applique à ce fichier comme au reste du projet** : aucun chiffre qui n'a pas
 été mesuré. Pas de « des milliers de lecteurs », pas de note, pas de « des centaines de
-livres ». Les nombres ci-dessous viennent du catalogue : **56 livres, 1 488 chapitres, plus
-de 500 000 mots**. Ils changent quand le catalogue change.
+livres ». Les nombres ci-dessous viennent du catalogue : **67 livres, 1 842 chapitres, plus
+de 575 000 mots**. Ils changent quand le catalogue change.
 
 ---
 
@@ -17,7 +17,7 @@ de 500 000 mots**. Ils changent quand le catalogue change.
 | --- | --- |
 | Nom de l'app | `Lumia` |
 | Sous-titre App Store (30 car. max) | `Des livres qui éclairent` |
-| Brève description Play (80 car. max) | `56 livres courts à lire hors ligne. Sans compte, sans publicité, sans traqueur.` |
+| Brève description Play (80 car. max) | `67 livres courts à lire hors ligne. Sans compte, sans publicité, sans traqueur.` |
 | Identifiant iOS | `com.lumia.app` |
 | Nom de package Android | `com.lumia.app` |
 | Catégorie principale | Livres |
@@ -40,8 +40,8 @@ qui est une marque d'Apple.
 ```
 Lumia est une bibliothèque de livres courts, à lire tranquillement, sans être interrompu.
 
-56 livres, de douze à soixante pages, sur l'histoire, les sciences, la culture, les grandes
-figures et ce qu'il est utile de comprendre du monde. Un livre se lit en une soirée.
+67 livres, de douze à soixante pages, sur l'histoire, les sciences, la philosophie, la culture,
+les grandes figures et ce qu'il est utile de comprendre du monde. Un livre se lit en une soirée.
 
 TOUT FONCTIONNE HORS LIGNE
 Les livres sont déjà dans l'application au moment de l'installation. Pas de téléchargement,
@@ -81,7 +81,7 @@ Lire. Comprendre. Évoluer.
 ## Nouveautés de cette version (première publication)
 
 ```
-Première version de Lumia : 56 livres, un lecteur soigné, et tout qui fonctionne hors ligne.
+Première version de Lumia : 67 livres, un lecteur soigné, et tout qui fonctionne hors ligne.
 ```
 
 ## Classification d'âge

@@ -61,6 +61,12 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
+- **Onze livres n'ont pas encore leur image** : les onze importés le 14 septembre 2026. Ils
+  affichent donc la couverture composée. C'est plus qu'un défaut d'esthétique — leur premier
+  chapitre s'intitule « Ce que dit la couverture » et décrit une image précise (un sablier,
+  une pomme entamée dans un miroir, une faille dans la banquise) que le lecteur n'a pas sous
+  les yeux. Les couvertures existent chez le propriétaire du projet, puisque les livres les
+  commentent : il faut les lui demander, et les ajouter à `assets/couvertures/`.
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
   animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
   Marc Aurèle) sur les couvertures : ceux-là restent exclus.
@@ -207,7 +213,7 @@ boutique/
   fiche-boutiques.md        # description, mots-clés, âge, confidentialité : le texte des fiches
   captures/                 # les images à téléverser (générées)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 56 couvertures, 720 px de large, ~9,6 Mo au total
+assets/couvertures/         # les 56 couvertures fournies, 720 px de large, ~9,6 Mo
 ```
 
 ## Ajouter des livres
@@ -244,9 +250,9 @@ Deux façons :
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **56 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **67 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture et grands
-personnages, soit environ 510 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages, philosophie, soit environ 578 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois
