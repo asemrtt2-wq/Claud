@@ -10,6 +10,7 @@ import {
 } from "react";
 import { LOCALES, SOURCE_LOCALE, type LocaleCode } from "@/data/catalog";
 import { FREE_BOOKS, hasPlan, isFreePick, LANGUAGES_PLAN, type PlanId } from "@/data/plans";
+import { requiredPlan } from "@/data/books";
 
 /**
  * L'état du lecteur : où il en est dans chaque livre, ses favoris, son temps de lecture.
@@ -86,7 +87,10 @@ type LibraryContextValue = LibraryState & {
   claimFreeBook: (slug: string) => void;
   /** Vrai si ce livre précis peut être pris gratuitement, ici et maintenant. */
   canClaimFree: (slug: string) => boolean;
-  /** Achète un livre à l'unité. Aucun paiement réel n'est encore branché. */
+  /**
+   * Achète un livre à l'unité. Sans effet sur un livre réservé à une formule, qui ne se
+   * vend pas. Aucun paiement réel n'est encore branché.
+   */
   purchaseBook: (slug: string) => void;
   /** Vrai si le lecteur peut ouvrir ce livre : abonné, livre offert, ou livre acheté. */
   canRead: (slug: string) => boolean;
@@ -182,7 +186,9 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  /* Un livre réservé à une formule ne s'achète pas : le refus est ici, pas dans les écrans. */
   const purchaseBook = useCallback((slug: string) => {
+    if (requiredPlan(slug)) return;
     setState((prev) =>
       prev.purchased.includes(slug) ? prev : { ...prev, purchased: [...prev.purchased, slug] }
     );
@@ -203,14 +209,30 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setBilingual,
       claimFreeBook,
       canClaimFree: (slug: string) =>
-        state.freeBooks.length < FREE_BOOKS && isFreePick(slug) && !state.purchased.includes(slug),
+        state.freeBooks.length < FREE_BOOKS &&
+        isFreePick(slug) &&
+        !requiredPlan(slug) &&
+        !state.purchased.includes(slug),
       purchaseBook,
-      // Un abonnement ouvre tout le catalogue ; sans lui, restent le livre offert et les
-      // livres achetés, qui appartiennent au lecteur même s'il ne s'abonne jamais.
-      canRead: (slug: string) =>
-        hasPlan(state.plan, "plus") ||
-        state.freeBooks.includes(slug) ||
-        state.purchased.includes(slug),
+      /*
+       * La seule porte du catalogue.
+       *
+       * Un livre **réservé** ne s'ouvre que par l'abonnement, à partir de la formule que sa
+       * couverture annonce — ni le livre offert ni un achat à l'unité n'y donnent accès.
+       * Les formules s'empilant, un abonné Extra ouvre ce qui est réservé à Premium.
+       *
+       * Un livre ordinaire s'ouvre avec n'importe quel abonnement, avec le livre offert, ou
+       * après achat — ces deux derniers appartenant au lecteur même s'il ne s'abonne jamais.
+       */
+      canRead: (slug: string) => {
+        const required = requiredPlan(slug);
+        if (required) return hasPlan(state.plan, required);
+        return (
+          hasPlan(state.plan, "plus") ||
+          state.freeBooks.includes(slug) ||
+          state.purchased.includes(slug)
+        );
+      },
       freeBookAvailable: state.freeBooks.length < FREE_BOOKS,
       canChangeLanguage: hasPlan(state.plan, LANGUAGES_PLAN),
       reset,

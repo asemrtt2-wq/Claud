@@ -1,3 +1,5 @@
+import type { PlanId } from "./plans";
+
 /** Les six ambiances de couverture disponibles (voir `BookCover`). */
 export type CoverTheme = "nuit" | "or" | "encre" | "vin" | "foret" | "sable";
 
@@ -28,6 +30,19 @@ export type Book = {
   /** Étiquettes affichées sous le titre, comme sur la maquette. */
   tags: string[];
   theme: CoverTheme;
+  /**
+   * Formule minimale pour ouvrir ce livre, quand il est réservé.
+   *
+   * Absent, le livre suit la règle ordinaire : n'importe quel abonnement l'ouvre, et sans
+   * abonnement il s'achète à l'unité ou se prend avec l'offre de bienvenue. Renseigné, il ne
+   * s'achète pas et ne se prend pas : **seul l'abonnement y donne accès**, à partir de la
+   * formule indiquée. Les formules s'empilent — un abonné Extra ouvre ce qui est réservé à
+   * Premium et à Plus.
+   *
+   * La couverture de ces livres porte la mention en toutes lettres. Ce champ est ce qui la
+   * rend vraie : sans lui, l'image promettrait une exclusivité que l'app n'appliquerait pas.
+   */
+  plan?: PlanId;
   chapters: Chapter[];
   /** Série et numéro de tome, quand le livre en fait partie. */
   series?: { name: string; volume: number };

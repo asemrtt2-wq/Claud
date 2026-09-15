@@ -1,4 +1,5 @@
 import type { Book } from "@/data/types";
+import type { PlanId } from "@/data/plans";
 
 /**
  * Le catalogue de l'app.
@@ -10,10 +11,12 @@ import type { Book } from "@/data/types";
  * L'ordre du tableau compte : il donne le carrousel de l'accueil et la rangée
  * « Populaires », tant qu'aucune statistique d'usage réelle n'existe.
  *
- * Les livres importés avaient été écrits pour accompagner une illustration de couverture
- * figurative. Les passages qui la commentaient ont été retirés — Lumia compose ses
- * couvertures en code, sans aucune représentation figurative, et un texte qui décrit une
- * image que le lecteur ne verra jamais n'a pas sa place ici.
+ * Ces livres commentent leur propre couverture dans leur premier chapitre. Les couvertures
+ * fournies par l'auteur sont embarquées (`src/data/covers.ts`), donc ces passages sont
+ * conservés : le lecteur a l'image sous les yeux pendant qu'il la lit.
+ *
+ * Dix livres portent un champ `plan` : leur couverture annonce une exclusivité d'abonnement,
+ * et ce champ est ce qui la rend vraie. Voir `requiredPlan` en bas de fichier.
  *
  * ⚠️ Avant d'ajouter un livre ici, le relire à l'aune de la **charte de contenu** (tableau
  * complet dans CLAUDE.md) : pas de nudité ni de contenu suggestif, pas de promotion de
@@ -392,6 +395,7 @@ export const BOOKS: Book[] = [
     category: "Grands personnages",
     tags: ["Antiquité", "Égypte", "Alexandre"],
     theme: "sable",
+    plan: "premium",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Des colonnes de marbre sombre, une terrasse dominant un port, une carte en relief posée sur une table de pierre, des rouleaux, un diadème d'or, et au loin une tour blanche.\n\n## Ce que l'on voit\n\nUn palais ouvert sur la mer, une ville de marbre, des navires au mouillage, et un objet posé bien en évidence : un cercle d'or ouvert.\n\n## Ce que le diadème signifie\n\nCe bandeau n'est pas une couronne au sens médiéval. C'est la marque royale héritée des Perses puis adoptée par Alexandre, et son adoption par un ancien général est un acte politique daté.\n\nLe chapitre vingt-trois est consacré au jour où il a été mis.\n\n## Ce que l'image anticipe\n\nLa tour blanche au fond est le phare, commencé sous son règne et achevé sous celui de son fils. Le volume de cette collection consacré aux phares en suit l'histoire matérielle.\n\nLes rouleaux posés sur la table renvoient à la Bibliothèque, dont le chapitre trente-huit examine à qui la fondation revient.\n\n## Attention\n\n! L'Alexandrie de marbre blanc que montrent les images est une reconstitution tardive. Nous n'avons presque aucun vestige en élévation de la ville antique, ensevelie sous la ville moderne et en partie sous l'eau.\n\n## A retenir\n\nLe diadème, les rouleaux, le phare : trois objets qui correspondent à trois questions du livre. L'image de la ville, elle, est une reconstitution." },
@@ -450,6 +454,7 @@ export const BOOKS: Book[] = [
     category: "Grands personnages",
     tags: ["Rome", "Révolte", "Sources"],
     theme: "vin",
+    plan: "plus",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Une voie pavée qui monte vers une ville au soleil couchant, une étoffe rouge déchirée posée sur une dalle de marbre, et une lourde chaîne ouverte au premier plan. L'objet le plus important est celui qui est ouvert.\n\n## Ce que l'on voit\n\nUne chaussée romaine bordée d'enseignes, un aqueduc au loin, une ville sur une colline, et au premier plan un carcan et une chaîne.\n\n## Ce que l'image dit juste\n\nLa route. La voie Appienne est l'un des rares éléments matériels de cette histoire dont nous connaissons le tracé avec certitude, et le chapitre vingt-neuf explique pourquoi elle y figure.\n\nLe carcan est également juste : c'est un objet de série, pas un instrument exceptionnel.\n\n## Ce que l'image ne peut pas montrer\n\nLe visage. Aucune représentation antique de Spartacus n'est connue. Les statues et les tableaux qui le figurent datent tous du dix-neuvième siècle ou plus tard.\n\n## Attention\n\n! L'absence d'image est un symptôme du problème général de ce sujet, exposé au chapitre trois : nous n'avons rien qui vienne de son camp, pas même un portrait.\n\n## A retenir\n\nLa route et le carcan sont exacts. Aucune représentation antique de Spartacus n'existe, et l'absence est significative." },
@@ -647,6 +652,7 @@ export const BOOKS: Book[] = [
     category: "Grands personnages",
     tags: ["Navigation", "Pacifique", "Cartes"],
     theme: "encre",
+    plan: "premium",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Une carte du Pacifique déroulée sur une table de bois, une boussole de laiton, une règle, une longue-vue, une lanterne, et par les fenêtres de poupe un navire au soleil couchant. Les itinéraires sont tracés en pointillés.\n\n## Ce que l'on voit\n\nLa cabine d'un officier, les instruments de son métier, et une carte où des routes traversent l'océan.\n\n## Ce que l'image dit juste\n\nLa carte occupe le centre, et c'est exact : l'essentiel du travail de cet homme est un travail de levé et de report, effectué à la table plutôt qu'à la barre.\n\nLa règle et le compas sont plus représentatifs de ses journées que la longue-vue.\n\n## Ce que l'image omet\n\nL'instrument qui manque est celui qui donne son nom au thème de ce livre. Un sextant, ou son prédécesseur l'octant, sert à mesurer une hauteur d'astre, et c'est de là que vient tout le reste.\n\nLes pointillés supposent en outre une carte préexistante sur laquelle tracer. Cook, lui, dessinait le trait de côte à mesure, sans savoir ce qu'il y avait devant.\n\n## Attention\n\n! Une carte avec des itinéraires tracés est un document d'après. Pendant le voyage, la feuille est blanche à droite de l'endroit où l'on se trouve.\n\n## A retenir\n\nLa carte au centre est le bon cadrage. Ce qui manque, c'est l'instrument de mesure d'angle, et le fait que la carte se construisait au fur et à mesure." },
@@ -703,6 +709,7 @@ export const BOOKS: Book[] = [
     category: "Grands personnages",
     tags: ["Radio", "Brevets", "Techniques"],
     theme: "or",
+    plan: "extra",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Un appareil de laiton et de bois sur une table, une lampe, une carte du monde, une falaise, et un arc lumineux qui relie deux pylônes au-dessus de la mer.\n\nL'arc lumineux est la seule chose fausse de l'image, et c'est instructif.\n\n## L'arc\n\nUne onde radio ne se voit pas, ne brille pas, et ne suit pas un arc dessiné dans le ciel. Il n'existe aucune façon de représenter une transmission radio qui soit à la fois exacte et lisible.\n\nToutes les images de ce sujet, depuis 1900, dessinent donc quelque chose qui n'existe pas. C'est une contrainte du sujet, pas une erreur de la couverture.\n\n## L'appareil\n\nDu laiton, du bois, des bobines, un éclateur. Les premiers émetteurs radio n'ont rien d'électronique : ils produisent une étincelle, et l'étincelle rayonne.\n\n## La carte\n\nElle indique le véritable enjeu. Le problème n'était pas de transmettre : c'était de transmettre loin, et surtout au-dessus de la mer, là où aucun câble ne pouvait être posé rapidement.\n\n## La falaise\n\nPoldhu, en Cornouailles, et Signal Hill, à Terre-Neuve. Le chapitre seize raconte ce qui s'y est passé le 12 décembre 1901, et les chapitres suivants ce qu'on en pense aujourd'hui.\n\n## Ce que ce livre cherche\n\nLa différence entre découvrir un phénomène et en faire un service. Ce sont deux métiers, et ce livre montre qu'ils n'ont pas été exercés par les mêmes personnes.\n\n## A retenir\n\nDécouvrir un phénomène et en faire un service sont deux métiers différents. Tout ce livre tient dans cette distinction." },
@@ -744,6 +751,7 @@ export const BOOKS: Book[] = [
     category: "Grands personnages",
     tags: ["Linux", "Logiciel", "Licences"],
     theme: "encre",
+    plan: "plus",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Un bureau de bois, un ordinateur beige à écran cathodique, du code vert sur fond noir, une disquette, une lampe, et par la fenêtre une nuit d'hiver sur une ville du Nord.\n\n## Ce que l'on voit\n\nUne machine unique, à un seul poste, et derrière elle un réseau d'autres écrans reliés par des lignes lumineuses.\n\n## Ce que l'image dit juste\n\nLa disposition est exacte : un ordinateur au centre, une multitude ensuite. C'est l'ordre réel des événements, et le passage de l'un à l'autre est le sujet de ce livre.\n\nL'hiver et la ville portuaire correspondent à Helsinki, où tout commence.\n\n## Ce que l'image ne montre pas\n\nLe réseau représenté est visuel. En 1991, la mise en relation passait par des messages textuels déposés sur des groupes de discussion et par des fichiers copiés sur un serveur.\n\nIl n'y a pas d'image spectaculaire pour cela, et c'est pourtant l'infrastructure qui a tout permis.\n\n## A retenir\n\nUne machine, puis beaucoup : l'ordre est juste. Ce qui manque à l'image est le réseau réel de 1991, qui n'était fait que de texte." },
@@ -1488,6 +1496,7 @@ export const BOOKS: Book[] = [
     category: "Histoire",
     tags: ["Voyage", "Frontières", "Administration"],
     theme: "encre",
+    plan: "extra",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Un carnet de cuir sombre frappé d'un globe doré, posé sur des cartes anciennes, entre des rouleaux, des coffres, des monnaies et une boussole. Au fond, un port fortifié et des navires. Le carnet est l'anachronisme.\n\n## Ce que l'on voit\n\nUn quai de commerce d'un port méditerranéen, des marchandises débarquées, des documents, et au premier plan un livret relié.\n\n## Ce que l'image dit juste\n\nLe contexte. Les documents de voyage anciens sont nés du commerce, des routes et des ports, et non d'une administration centrale.\n\nLes rouleaux posés à côté sont également justes : ce qu'un voyageur portait était une lettre ou un rouleau, pas un livret.\n\n## L'anachronisme\n\nLe carnet relié, personnel, avec une couverture rigide et des pages numérotées, est un objet du vingtième siècle.\n\nSa forme a été décidée lors d'une réunion internationale en 1920, et le chapitre vingt-sept y est consacré.\n\n## Attention\n\n! Représenter un livret moderne dans une scène ancienne est l'erreur la plus courante sur ce sujet, et elle résume le malentendu que ce livre entreprend de dissiper.\n\n## A retenir\n\nLe port et les rouleaux sont exacts. Le carnet relié est un objet du vingtième siècle, dont la forme a été décidée en 1920." },
@@ -1853,6 +1862,7 @@ export const BOOKS: Book[] = [
     category: "Sciences",
     tags: ["Volcans", "Géologie", "Risque"],
     theme: "vin",
+    plan: "plus",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Un cône sombre, une colonne de cendres qui monte droit, une fontaine de matière incandescente au sommet, et des coulées orange qui descendent dans la nuit. L'image réunit deux choses qui ne vont pas ensemble.\n\n## Ce que l'on voit\n\nUn panache vertical très haut, et des coulées lumineuses qui s'étalent au pied du cône.\n\n## Pourquoi les deux vont rarement ensemble\n\nUn volcan qui produit une haute colonne de cendres n'émet en général pas de longues coulées fluides, et réciproquement.\n\nCes deux comportements correspondent à deux magmas différents, et tout ce livre consiste à expliquer pourquoi.\n\n## Ce que l'image dit juste\n\nLa colonne monte droit, ce qui est exact pour une éruption forte : la colonne s'élève par sa propre chaleur jusqu'à plusieurs dizaines de kilomètres, tant qu'elle est plus légère que l'air environnant.\n\n## Attention\n\n! Les images de volcans mêlent presque toujours les deux types. C'est spectaculaire et cela empêche de comprendre la seule question qui compte : pourquoi certains coulent et d'autres explosent.\n\n## A retenir\n\nCoulées et grande colonne de cendres correspondent à deux magmas différents et coexistent rarement." },
@@ -1884,6 +1894,7 @@ export const BOOKS: Book[] = [
     category: "Sciences",
     tags: ["Météo", "Nuages", "Foudre"],
     theme: "nuit",
+    plan: "plus",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Un nuage énorme en forme de tour, des éclairs qui en sortent de tous les côtés, un rideau de pluie sous la base, et une vallée éclairée par un couchant orange. La forme du nuage est la plus juste des informations.\n\n## Ce que l'on voit\n\nUne masse nuageuse dense, montant très haut, s'étalant au sommet, avec des précipitations visibles en dessous et des décharges lumineuses.\n\n## Ce que l'image dit juste\n\nLa forme en tour. Un orage n'est pas une couche de nuages : c'est une colonne verticale, et sa hauteur est sa caractéristique principale.\n\nLe rideau de pluie nettement délimité est également exact : un orage est un phénomène localisé, avec des bords francs.\n\n## Ce que l'image exagère\n\nLe nombre d'éclairs simultanés. Une photographie d'orage est presque toujours une pose longue, qui additionne des décharges séparées de plusieurs secondes.\n\nL'œil n'en voit jamais autant à la fois.\n\n## A retenir\n\nLa forme en tour et les bords francs sont exacts. Le nombre d'éclairs visibles en même temps est un artefact de pose longue." },
@@ -1914,6 +1925,7 @@ export const BOOKS: Book[] = [
     category: "Sciences",
     tags: ["Océans", "Séismes", "Risque"],
     theme: "encre",
+    plan: "plus",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Une vague immense qui s'enroule au-dessus d'un rivage de palmiers, une crête blanche, un tube bleu, un couchant orange derrière les montagnes. C'est une image de surf, et c'est le contraire d'un tsunami.\n\n## Ce que l'on voit\n\nUne vague haute, creuse, en train de déferler, avec une crête ourlée d'écume.\n\n## Pourquoi cette image est fausse\n\nUn tsunami ne se présente presque jamais ainsi. La vague représentée est une vague de vent : une ondulation de surface qui s'enroule parce que sa base freine sur le fond avant son sommet.\n\nUn tsunami arrive le plus souvent comme une montée rapide et continue du niveau de l'eau, sans crête ni rouleau. Le chapitre treize y revient.\n\n## Ce que l'image dit juste malgré tout\n\nL'échelle. Comparée aux maisons du rivage, la masse d'eau est disproportionnée, et c'est exact.\n\nLe calme apparent de l'horizon derrière est également juste : rien, au large, n'annonce ce qui arrive.\n\n## Attention\n\n! Cette représentation est universelle et elle est dangereuse : elle apprend à guetter une vague spectaculaire, alors que le signal réel est une montée d'eau qui ne cesse pas.\n\n## A retenir\n\nLe rouleau représenté est une vague de vent. Un tsunami monte au lieu de déferler, et cette image entretient une erreur." },
@@ -2360,6 +2372,7 @@ export const BOOKS: Book[] = [
     category: "Philosophie",
     tags: ["Stoïcisme", "Antiquité", "Doctrine"],
     theme: "encre",
+    plan: "extra",
     addedAt: "2026-09-15",
     chapters: [
     { title: "Ce que dit la couverture", body: "Une boussole de laiton posée sur une roche noire mouillée, un cercle d'or tracé autour d'elle, des feuilles emportées par le vent, la mer et un soleil bas. Le cercle est l'image juste.\n\n## Ce que l'on voit\n\nUn instrument d'orientation, un trait circulaire qui l'entoure, et tout autour des éléments que rien ne retient : l'eau, les feuilles, la lumière qui baisse.\n\n## Ce que le cercle signifie\n\nIl sépare un dedans et un dehors. C'est exactement la première opération que propose ce philosophe, et c'est aussi celle que l'on se représente le plus souvent de travers.\n\nLe chapitre dix-neuf établira que le dedans du cercle est beaucoup plus petit que ce que l'on croit.\n\n## Ce que la boussole suggère\n\nUne boussole n'empêche pas la tempête. Elle dit où est le nord pendant la tempête. C'est une bonne image de ce que cette philosophie prétend fournir, et de ce qu'elle ne prétend pas fournir.\n\n## Attention\n\n! Les feuilles emportées ne sont pas là pour dire qu'il faut se laisser porter. Le chapitre vingt-six explique pourquoi la confusion avec la résignation est un contresens.\n\n## A retenir\n\nUn cercle qui sépare, un instrument qui oriente sans protéger. Les deux images sont exactes, à condition de mesurer le cercle." },
@@ -4149,6 +4162,32 @@ export const BOOKS: Book[] = [
 
 export function getBook(slug: string): Book | undefined {
   return BOOKS.find((book) => book.slug === slug);
+}
+
+/**
+ * La formule exigée par les livres réservés, indexée une fois plutôt que cherchée à chaque
+ * rendu de carte.
+ *
+ * La table se construit sur le catalogue **français**, qui fait foi : l'accès à un livre ne
+ * dépend pas de la langue dans laquelle on le lit.
+ */
+const REQUIRED_PLAN = new Map<string, PlanId>(
+  BOOKS.flatMap((book) => (book.plan ? [[book.slug, book.plan] as [string, PlanId]] : []))
+);
+
+/**
+ * La formule minimale pour ouvrir ce livre, ou `undefined` s'il suit la règle ordinaire.
+ *
+ * Un livre réservé ne s'achète pas à l'unité et ne peut pas être le livre offert : sa
+ * couverture annonce une exclusivité d'abonnement, et c'est cette fonction qui la rend vraie.
+ */
+export function requiredPlan(slug: string): PlanId | undefined {
+  return REQUIRED_PLAN.get(slug);
+}
+
+/** Les livres qu'une formule donnée ajoute à la précédente. */
+export function booksReservedFor(plan: PlanId): Book[] {
+  return BOOKS.filter((book) => book.plan === plan);
 }
 
 /** Nombre de pages estimé, à ~1 400 caractères par page d'écran. */

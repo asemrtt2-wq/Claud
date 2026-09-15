@@ -69,22 +69,11 @@ Ce que cela change, et ce que cela ne change pas :
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
   animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
   Marc Aurèle) sur les couvertures : ceux-là restent exclus.
-- ⚠️ **Onze couvertures du 15 septembre 2026 portent un prix et une formule incrustés dans
-  l'image** : « EXCLUSIVITÉ PREMIUM · 15,99 €/MOIS » sur « James Cook » et « Ptolémée Ier »,
-  « EXCLUSIVITÉ EXTRA · 19,99 €/MOIS » sur « Épictète » et « Guglielmo Marconi »,
-  « INCLUS AVEC PLUS · 9,99 €/MOIS » sur « Spartacus » et « Linus Torvalds », et un écusson
-  « Lumia Plus 9,99 € » sur les trois livres de sciences, « L'invention de la roue » et
-  « Le premier passeport ». C'est un problème à deux titres, signalé au propriétaire du projet
-  et **non tranché** :
-  - un prix dans un JPEG ne peut plus être corrigé, alors que la règle du projet veut que les
-    prix soient écrits **une seule fois**, dans `src/data/plans.ts` ;
-  - `canRead(slug)` ne connaît **aucune formule par livre** : n'importe quel abonné à partir de
-    Plus ouvre tout le catalogue. Un lecteur abonné à Plus ouvrira donc « James Cook » malgré
-    la mention « exclusivité Premium », ce qui est une promesse que l'app ne tient pas.
-
-  Deux issues possibles : de nouvelles images sans bandeau, ou une formule par livre — un champ
-  `plan` dans `Book`, respecté par `canRead`, et l'écran d'abonnement à réécrire puisqu'il
-  promet aujourd'hui « le catalogue complet » dès Lumia Plus.
+- **Dix couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ PREMIUM ·
+  15,99 €/MOIS », « INCLUS AVEC PLUS · 9,99 €/MOIS ». C'était une promesse que l'app ne
+  tenait pas ; elle la tient désormais, voir « Les livres réservés » plus bas. Reste une
+  limite à connaître : **le prix est dans le JPEG**, donc un changement de tarif obligerait
+  à refaire ces dix images. Les prix du reste de l'app viennent tous de `plans.ts`.
 
 **Éditorial — la responsabilité de qui écrit les livres.** Tout le reste du tableau porte sur le
 *texte* des livres : aucune vérification automatique n'est possible. Chaque livre ajouté à
@@ -312,14 +301,45 @@ Les prix et le contenu de chaque formule sont décrits **une seule fois**, dans
 | Accès | Prix | Ce qu'il donne |
 | --- | --- | --- |
 | Découverte | gratuit | **Un livre au choix parmi cinq**, gardé définitivement |
-| À l'unité | 4,99 € par livre | Le livre acheté, gardé définitivement |
-| Lumia Plus | 9,99 €/mois | Le catalogue complet en français |
+| À l'unité | 4,99 € par livre | Le livre acheté, gardé définitivement — sauf les livres réservés, qui ne se vendent pas |
+| Lumia Plus | 9,99 €/mois | Le catalogue en français, hors les livres réservés à Premium et à Extra |
 | Lumia Premium | 15,99 €/mois | Une demande de livre par mois et un vote ; les nouveautés en avance |
 | Lumia Extra | 19,99 €/mois | Toutes les langues, le changement de langue en cours de lecture, le mode bilingue |
 
 `canRead(slug)` est la seule porte du catalogue : abonné, livre offert, ou livre acheté. Le
 livre offert est **définitif** et l'app le dit avant de valider — un cadeau dont on découvre
 la limite après coup est la pratique trompeuse que la charte interdit.
+
+### Les livres réservés à une formule
+
+Dix couvertures annoncent une exclusivité d'abonnement — « EXCLUSIVITÉ PREMIUM · 15,99 €/MOIS »
+sur « James Cook » et « Ptolémée Ier », « EXCLUSIVITÉ EXTRA · 19,99 €/MOIS » sur « Épictète »,
+« Guglielmo Marconi » et « Le premier passeport », « INCLUS AVEC PLUS · 9,99 €/MOIS » sur
+« Spartacus », « Linus Torvalds » et les trois livres de sciences naturelles.
+
+Le champ **`plan`** de `Book` est ce qui rend cette mention vraie. Sans lui, l'image
+promettrait une exclusivité que le code n'appliquerait pas, ce qui est exactement la pratique
+trompeuse interdite par la charte.
+
+Ce qu'il change, décidé par le propriétaire du projet :
+
+- **un livre réservé ne s'achète pas à l'unité** et ne peut pas être le livre offert. Seul
+  l'abonnement l'ouvre. `purchaseBook` et `canClaimFree` le refusent, dans le contexte et non
+  dans les écrans ;
+- **les formules s'empilent** : Premium ouvre ce qui est réservé à Plus, Extra ouvre tout.
+  C'est `hasPlan`, qui servait déjà aux langues ;
+- un livre **sans** `plan` garde la règle ordinaire : n'importe quel abonnement, le livre
+  offert, ou 4,99 € à l'unité.
+
+`requiredPlan(slug)` (`src/data/books.ts`) est la table de ces exigences, construite sur le
+catalogue **français** : l'accès ne dépend pas de la langue de lecture. Les écrans s'en
+servent pour ne jamais proposer d'acheter ce qui ne se vend pas — la fiche livre affiche
+« S'abonner à Lumia Premium » au lieu de « Acheter — 4,99 € ».
+
+Conséquence sur la formule Plus : elle **ne donne plus « le catalogue complet »**, et
+`plans.ts` ne l'écrit plus. L'écran d'abonnement affiche en outre, sous chaque carte, le
+nombre de livres que la formule est seule à ouvrir — compté dans le catalogue, comme tous
+les chiffres de l'app.
 
 ### Le livre offert : cinq livres, un seul à garder
 

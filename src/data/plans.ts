@@ -65,7 +65,9 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Lumia Plus",
     price: "9,99 €",
     period: "par mois",
-    adds: ["Le catalogue complet en français"],
+    // Ne pas écrire « le catalogue complet » : quelques livres sont réservés aux deux
+    // formules supérieures, et leur couverture l'annonce. Voir le champ `plan` de `Book`.
+    adds: ["Le catalogue en français, hors les livres réservés à Premium et à Extra"],
   },
   premium: {
     id: "premium",
@@ -73,6 +75,7 @@ export const PLANS: Record<PlanId, Plan> = {
     price: "15,99 €",
     period: "par mois",
     adds: [
+      "Les livres réservés à Lumia Premium",
       "Une demande de livre par mois, et un vote sur les prochains",
       "Les nouveautés en avance",
     ],
@@ -83,6 +86,7 @@ export const PLANS: Record<PlanId, Plan> = {
     price: "19,99 €",
     period: "par mois",
     adds: [
+      "Les livres réservés à Lumia Extra",
       "Toutes les langues du catalogue",
       "Changer de langue en cours de lecture",
       "Le mode bilingue, les deux langues côte à côte",

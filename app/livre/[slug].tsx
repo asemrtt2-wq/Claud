@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type } from "@/theme";
 import { CircleButton, EmptyState, GoldButton, ProgressBar, SectionHeader, Tag } from "@/components/ui";
 import BookCover from "@/components/BookCover";
-import { estimateMinutes, estimatePages } from "@/data/books";
+import { estimateMinutes, estimatePages, requiredPlan } from "@/data/books";
 import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
 import { BOOK_PRICE, PLANS } from "@/data/plans";
@@ -58,6 +58,9 @@ export default function BookScreen() {
   /* L'offre de bienvenue ne porte que sur cinq livres. Ailleurs, proposer « gratuitement »
      puis refuser serait une porte peinte sur un mur. */
   const giftable = canClaimFree(book.slug);
+  /* Les livres dont la couverture annonce une exclusivité d'abonnement : ils ne se vendent
+     pas à l'unité, et l'écran ne doit donc pas proposer de les acheter. */
+  const reserved = requiredPlan(book.slug);
 
   /* Le livre offert ne se rend pas : le dire avant, pas après. Un cadeau dont on découvre
      la limite une fois qu'il est consommé est exactement ce que la charte appelle une
@@ -165,17 +168,21 @@ export default function BookScreen() {
                 ? p
                   ? "Reprendre"
                   : "Lire"
-                : giftable
-                  ? "Lire gratuitement"
-                  : `Acheter — ${BOOK_PRICE}`
+                : reserved
+                  ? `S'abonner à ${PLANS[reserved].name}`
+                  : giftable
+                    ? "Lire gratuitement"
+                    : `Acheter — ${BOOK_PRICE}`
             }
-            icon={!locked ? "book" : giftable ? "gift" : "lock-open"}
+            icon={!locked ? "book" : reserved ? "ribbon" : giftable ? "gift" : "lock-open"}
             onPress={() =>
               !locked
                 ? router.push(`/lecture/${book.slug}`)
-                : giftable
-                  ? offerFreeBook()
-                  : offerPurchase()
+                : reserved
+                  ? router.push("/abonnement")
+                  : giftable
+                    ? offerFreeBook()
+                    : offerPurchase()
             }
             style={styles.readButton}
           />
@@ -191,7 +198,13 @@ export default function BookScreen() {
             le lecteur voit d'un coup ce que chaque option coûte. */}
         {locked && (
           <View style={styles.access}>
-            {giftable ? (
+            {reserved ? (
+              <Text style={styles.accessLine}>
+                {`Ce livre fait partie de ${PLANS[reserved].name}, à ${PLANS[reserved].price} par mois. Il ne s'achète pas à l'unité : seul l'abonnement l'ouvre${
+                  reserved === "plus" ? "" : ", à partir de cette formule"
+                }.`}
+              </Text>
+            ) : giftable ? (
               <Text style={styles.accessLine}>
                 {`Ce livre fait partie des cinq proposés en cadeau : tu peux le prendre gratuitement, une seule fois, et le garder. Sinon il coûte ${BOOK_PRICE}, et tout le catalogue ${PLANS.plus.price} par mois.`}
               </Text>
@@ -204,7 +217,7 @@ export default function BookScreen() {
                 {`Tu as déjà pris ton livre offert. Ce livre seul coûte ${BOOK_PRICE}, et il reste à toi.`}
               </Text>
             )}
-            {freeBookAvailable && !giftable && (
+            {freeBookAvailable && !giftable && !reserved && (
               <Pressable
                 onPress={() => router.push("/cadeau")}
                 accessibilityRole="button"
@@ -222,7 +235,9 @@ export default function BookScreen() {
             >
               <Ionicons name="albums-outline" size={16} color={colors.gold} />
               <Text style={styles.accessLinkText}>
-                {`Tout le catalogue à partir de ${PLANS.plus.price} par mois`}
+                {reserved
+                  ? "Voir les formules"
+                  : `Tout le catalogue à partir de ${PLANS.plus.price} par mois`}
               </Text>
               <Ionicons name="chevron-forward" size={14} color={colors.textFaint} />
             </Pressable>
@@ -260,9 +275,11 @@ export default function BookScreen() {
                   key={chapter.title}
                   onPress={() =>
                     locked
-                      ? giftable
-                        ? offerFreeBook()
-                        : offerPurchase()
+                      ? reserved
+                        ? router.push("/abonnement")
+                        : giftable
+                          ? offerFreeBook()
+                          : offerPurchase()
                       : router.push(`/lecture/${book.slug}?chapter=${i}`)
                   }
                   style={({ pressed }) => [styles.chapterRow, pressed && styles.chapterRowPressed]}

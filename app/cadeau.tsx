@@ -23,8 +23,9 @@ import { useLibrary } from "@/store/library";
 export default function GiftScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { getBook } = useCatalog();
+  const { getBook, books } = useCatalog();
   const { freeBooks, freeBookAvailable, claimFreeBook } = useLibrary();
+  const reservedTotal = books.filter((book) => book.plan).length;
 
   const picks = FREE_PICKS.map((slug) => getBook(slug)).filter((book) => book != null);
   const claimed = freeBooks.length > 0 ? getBook(freeBooks[0]) : null;
@@ -143,8 +144,15 @@ export default function GiftScreen() {
         <View style={styles.after}>
           <Text style={styles.afterTitle}>Et les autres livres</Text>
           <Text style={styles.afterText}>
-            {`Les autres livres du catalogue s'achètent ${BOOK_PRICE} l'unité, gardés eux aussi pour toujours, ou se lisent tous avec un abonnement à partir de ${PLANS.plus.price} par mois.`}
+            {`Les autres livres du catalogue s'achètent ${BOOK_PRICE} l'unité, gardés eux aussi pour toujours, ou se lisent avec un abonnement à partir de ${PLANS.plus.price} par mois.`}
           </Text>
+          {reservedTotal > 0 && (
+            <Text style={styles.afterText}>
+              {reservedTotal === 1
+                ? "Un livre fait exception : réservé à une formule, il ne se vend pas à l'unité, et sa couverture le dit."
+                : `${reservedTotal} livres font exception : réservés à une formule, ils ne se vendent pas à l'unité, et leur couverture le dit.`}
+            </Text>
+          )}
           <Pressable
             onPress={() => router.push("/abonnement")}
             accessibilityRole="button"

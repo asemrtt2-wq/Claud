@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, radius, spacing, type, touchTarget } from "@/theme";
 import { Divider, StarMotif } from "@/components/Ornament";
 import { BOOK_PRICE, FREE_PICKS, PLANS, everythingIn, rankOf, type PlanId } from "@/data/plans";
+import { booksReservedFor } from "@/data/books";
 import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
 
@@ -50,6 +51,7 @@ export default function SubscriptionScreen() {
   const insets = useSafeAreaInsets();
   const { plan, setPlan, freeBookAvailable } = useLibrary();
   const { books } = useCatalog();
+  const reservedTotal = books.filter((book) => book.plan).length;
 
   return (
     <View style={styles.screen}>
@@ -122,6 +124,7 @@ export default function SubscriptionScreen() {
             id={id}
             current={plan === id}
             included={rankOf(plan) > rankOf(id)}
+            reserved={booksReservedFor(id).length}
             onChoose={() => setPlan(id)}
           />
         ))}
@@ -149,6 +152,18 @@ export default function SubscriptionScreen() {
               {`Ensuite ${BOOK_PRICE} par livre, achetés un par un et gardés pour toujours.`}
             </Text>
           </View>
+          {/* Dire ici ce qui ne s'achète pas, plutôt que de le laisser découvrir sur une
+              fiche livre après avoir cru pouvoir tout prendre à l'unité. */}
+          {reservedTotal > 0 && (
+            <View style={styles.withoutRow}>
+              <Ionicons name="lock-closed-outline" size={17} color={colors.textMuted} />
+              <Text style={styles.withoutText}>
+                {reservedTotal === 1
+                  ? "Un livre fait exception : il est réservé à une formule et ne se vend pas à l'unité. Sa couverture le dit."
+                  : `${reservedTotal} livres font exception : réservés à une formule, ils ne se vendent pas à l'unité. Leur couverture le dit.`}
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.guarantees}>
@@ -233,6 +248,7 @@ function PlanCard({
   id,
   current,
   included,
+  reserved,
   onChoose,
 }: {
   id: PlanId;
@@ -240,6 +256,8 @@ function PlanCard({
   current: boolean;
   /** Une formule inférieure, déjà comprise dans celle en cours. */
   included: boolean;
+  /** Nombre de livres que seule cette formule ouvre, compté dans le catalogue. */
+  reserved: number;
   onChoose: () => void;
 }) {
   const plan = PLANS[id];
@@ -302,6 +320,16 @@ function PlanCard({
           </View>
         ))}
       </View>
+
+      {/* Le nombre de livres réservés est compté dans le catalogue, jamais annoncé de
+          mémoire : c'est la même règle que partout ailleurs dans l'app. */}
+      {reserved > 0 && (
+        <Text style={styles.pending}>
+          {reserved === 1
+            ? `Un livre du catalogue est réservé à cette formule. Il ne s'achète pas à l'unité.`
+            : `${reserved} livres du catalogue sont réservés à cette formule. Ils ne s'achètent pas à l'unité.`}
+        </Text>
+      )}
 
       {/* Ce qui n'existe pas encore est dit ici, pas caché : vendre une fonction absente
           serait la pratique trompeuse que la charte interdit. */}

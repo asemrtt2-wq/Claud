@@ -38,6 +38,7 @@ const SECTIONS: Section[] = [
     heading: "L'achat d'un livre seul",
     body: [
       `Un livre acheté seul coûte ${BOOK_PRICE}. C'est un achat définitif, pas une location : le livre reste accessible dans l'application sans limite de durée.`,
+      "Certains livres ne se vendent pas à l'unité : ils sont réservés à une formule d'abonnement, et leur couverture l'annonce en toutes lettres. Ceux-là ne s'ouvrent qu'avec l'abonnement concerné, ou avec une formule supérieure.",
       "Un achat est lié au compte de la boutique qui l'a encaissé — votre identifiant Apple ou votre compte Google. Il se retrouve sur vos autres appareils en restaurant vos achats depuis la même boutique.",
     ],
   },

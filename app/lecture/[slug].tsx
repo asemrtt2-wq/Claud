@@ -120,7 +120,7 @@ export default function ReaderScreen() {
         <EmptyState
           icon="lock-closed-outline"
           title="Ce livre n'est pas encore à toi"
-          hint="Ouvre sa fiche pour le prendre gratuitement, l'acheter seul, ou t'abonner."
+          hint="Ouvre sa fiche pour voir comment y accéder."
         />
         <GoldButton
           label="Voir la fiche"
