@@ -61,7 +61,7 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Les 83 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+- **Les 99 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
   chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
   sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
   lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
@@ -69,6 +69,22 @@ Ce que cela change, et ce que cela ne change pas :
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
   animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
   Marc Aurèle) sur les couvertures : ceux-là restent exclus.
+- ⚠️ **Onze couvertures du 15 septembre 2026 portent un prix et une formule incrustés dans
+  l'image** : « EXCLUSIVITÉ PREMIUM · 15,99 €/MOIS » sur « James Cook » et « Ptolémée Ier »,
+  « EXCLUSIVITÉ EXTRA · 19,99 €/MOIS » sur « Épictète » et « Guglielmo Marconi »,
+  « INCLUS AVEC PLUS · 9,99 €/MOIS » sur « Spartacus » et « Linus Torvalds », et un écusson
+  « Lumia Plus 9,99 € » sur les trois livres de sciences, « L'invention de la roue » et
+  « Le premier passeport ». C'est un problème à deux titres, signalé au propriétaire du projet
+  et **non tranché** :
+  - un prix dans un JPEG ne peut plus être corrigé, alors que la règle du projet veut que les
+    prix soient écrits **une seule fois**, dans `src/data/plans.ts` ;
+  - `canRead(slug)` ne connaît **aucune formule par livre** : n'importe quel abonné à partir de
+    Plus ouvre tout le catalogue. Un lecteur abonné à Plus ouvrira donc « James Cook » malgré
+    la mention « exclusivité Premium », ce qui est une promesse que l'app ne tient pas.
+
+  Deux issues possibles : de nouvelles images sans bandeau, ou une formule par livre — un champ
+  `plan` dans `Book`, respecté par `canRead`, et l'écran d'abonnement à réécrire puisqu'il
+  promet aujourd'hui « le catalogue complet » dès Lumia Plus.
 
 **Éditorial — la responsabilité de qui écrit les livres.** Tout le reste du tableau porte sur le
 *texte* des livres : aucune vérification automatique n'est possible. Chaque livre ajouté à
@@ -214,7 +230,7 @@ boutique/
   fiche-boutiques.md        # description, mots-clés, âge, confidentialité : le texte des fiches
   captures/                 # les images à téléverser (générées)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 83 couvertures, 720 px de large, ~13,9 Mo
+assets/couvertures/         # les 99 couvertures, 720 px de large, ~17,2 Mo
 ```
 
 ## Ajouter des livres
@@ -277,9 +293,9 @@ diffèrent que par les accents. Seul le corps reste tel quel.
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **83 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **99 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture, grands
-personnages et philosophie, soit environ 696 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages et philosophie, soit environ 780 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois

@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 13,9 Mo pour 83 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 17,2 Mo pour 99 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -22,6 +22,14 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "albert-einstein": require("../../assets/couvertures/albert-einstein.jpg"),
   "gengis-khan": require("../../assets/couvertures/gengis-khan.jpg"),
   "thabit-ibn-qurra": require("../../assets/couvertures/thabit-ibn-qurra.jpg"),
+  "ptolemee-ier": require("../../assets/couvertures/ptolemee-ier.jpg"),
+  "spartacus": require("../../assets/couvertures/spartacus.jpg"),
+  "ahmad-shah-durrani": require("../../assets/couvertures/ahmad-shah-durrani.jpg"),
+  "wellington": require("../../assets/couvertures/wellington.jpg"),
+  "amiral-togo-heihachiro": require("../../assets/couvertures/amiral-togo-heihachiro.jpg"),
+  "james-cook": require("../../assets/couvertures/james-cook.jpg"),
+  "guglielmo-marconi": require("../../assets/couvertures/guglielmo-marconi.jpg"),
+  "linus-torvalds": require("../../assets/couvertures/linus-torvalds.jpg"),
   "l-histoire-de-la-medecine": require("../../assets/couvertures/l-histoire-de-la-medecine.jpg"),
   "les-grandes-inventions": require("../../assets/couvertures/les-grandes-inventions.jpg"),
   "les-plus-grandes-bibliotheques-de-l-histoire": require("../../assets/couvertures/les-plus-grandes-bibliotheques-de-l-histoire.jpg"),
@@ -36,6 +44,8 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "l-histoire-de-la-boussole": require("../../assets/couvertures/l-histoire-de-la-boussole.jpg"),
   "l-histoire-de-l-imprimerie": require("../../assets/couvertures/l-histoire-de-l-imprimerie.jpg"),
   "comment-les-gens-s-ecrivaient-avant-internet": require("../../assets/couvertures/comment-les-gens-s-ecrivaient-avant-internet.jpg"),
+  "l-invention-de-la-roue": require("../../assets/couvertures/l-invention-de-la-roue.jpg"),
+  "le-premier-passeport": require("../../assets/couvertures/le-premier-passeport.jpg"),
   "comprendre-la-science": require("../../assets/couvertures/comprendre-la-science.jpg"),
   "les-lois-de-l-univers": require("../../assets/couvertures/les-lois-de-l-univers.jpg"),
   "explorer-le-savoir": require("../../assets/couvertures/explorer-le-savoir.jpg"),
@@ -43,6 +53,9 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "comment-le-desert-se-forme": require("../../assets/couvertures/comment-le-desert-se-forme.jpg"),
   "sous-la-glace": require("../../assets/couvertures/sous-la-glace.jpg"),
   "pourquoi-la-mer-est-salee": require("../../assets/couvertures/pourquoi-la-mer-est-salee.jpg"),
+  "pourquoi-les-volcans-explosent": require("../../assets/couvertures/pourquoi-les-volcans-explosent.jpg"),
+  "comment-nait-un-orage": require("../../assets/couvertures/comment-nait-un-orage.jpg"),
+  "comment-se-forme-un-tsunami": require("../../assets/couvertures/comment-se-forme-un-tsunami.jpg"),
   "les-bienfaits-de-la-montagne": require("../../assets/couvertures/les-bienfaits-de-la-montagne.jpg"),
   "la-nature": require("../../assets/couvertures/la-nature.jpg"),
   "le-silence-des-dunes": require("../../assets/couvertures/le-silence-des-dunes.jpg"),
@@ -53,6 +66,9 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "le-paradoxe-du-bonheur": require("../../assets/couvertures/le-paradoxe-du-bonheur.jpg"),
   "qui-sommes-nous-vraiment": require("../../assets/couvertures/qui-sommes-nous-vraiment.jpg"),
   "le-piege-des-apparences": require("../../assets/couvertures/le-piege-des-apparences.jpg"),
+  "diogene": require("../../assets/couvertures/diogene.jpg"),
+  "epictete": require("../../assets/couvertures/epictete.jpg"),
+  "ibn-bajja": require("../../assets/couvertures/ibn-bajja.jpg"),
   "le-mental-en-desordre": require("../../assets/couvertures/le-mental-en-desordre.jpg"),
   "toi-vs-toi": require("../../assets/couvertures/toi-vs-toi.jpg"),
   "recuperer": require("../../assets/couvertures/recuperer.jpg"),
