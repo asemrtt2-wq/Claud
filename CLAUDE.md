@@ -144,7 +144,27 @@ publique qui les héberge.
 npm run boutique:captures   # boutique/captures/ — captures aux dimensions exactes
 ```
 
-Le script rend l'app dans Chromium aux tailles imposées (1320 × 2868 pour l'App Store,
+```bash
+npm run boutique:pages      # boutique/pages/ — les pages légales du site
+```
+
+Les deux boutiques exigent une **adresse web publique** hébergeant la politique de
+confidentialité, en plus du texte affiché dans l'app. Les deux versions doivent dire la même
+chose : une politique à deux visages est un motif de rejet. Plutôt que de recopier les textes
+— une copie finit toujours par diverger — le script **ouvre les écrans `/conditions` et
+`/confidentialite` de l'app** dans Chromium et en extrait le rendu. Ce que le site publie est
+donc au mot près ce que le lecteur voit, prix compris, puisque ces écrans lisent `plans.ts`.
+
+Il reconnaît les intertitres à leur `accessibilityRole="header"`, posé dans `LegalDocument` —
+la même annotation sert à VoiceOver et à TalkBack. Il écarte deux choses qui n'ont pas leur
+place sur un site public : l'encadré qui rappelle de renseigner `src/data/legal.ts`, et les
+glyphes de la police d'icônes, qui arrivent dans le texte extrait et s'afficheraient en carrés.
+
+Il produit en plus un modèle de **mentions légales**, que l'app ne porte pas : en France, la
+loi impose de dire qui édite un site et qui l'héberge. Les champs entre crochets sont à
+remplir — et à faire vérifier, ce script ne donne pas de conseil juridique.
+
+Le script des captures rend l'app dans Chromium aux tailles imposées (1320 × 2868 pour l'App Store,
 1080 × 2340 pour Google Play) plutôt que de redimensionner après coup, ce qui donnerait du
 texte flou. Il **pose un état de lecture** avant chaque capture — livre offert pris,
 lecture en cours — parce qu'un navigateur neuf montrerait un écran verrouillé et un accueil
@@ -215,9 +235,11 @@ scripts/
   import-covers.mjs         # embarque des couvertures, ramenées à 720 px
   generate-covers.mjs       # écrit src/data/covers.ts
   captures-boutique.mjs     # les captures d'écran aux dimensions des boutiques
+  pages-legales.mjs         # les pages légales du site, extraites de l'app
 boutique/
   fiche-boutiques.md        # description, mots-clés, âge, confidentialité : le texte des fiches
   captures/                 # les images à téléverser (générées)
+  pages/                    # les pages légales du site (générées depuis l'app)
 eas.json                    # les trois profils de build EAS
 assets/couvertures/         # les 99 couvertures, 720 px de large, ~17,2 Mo
 ```

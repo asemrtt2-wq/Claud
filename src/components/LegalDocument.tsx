@@ -57,7 +57,12 @@ export function LegalDocument({
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxxl }}
       >
         <View style={styles.intro}>
-          <Text style={styles.title}>{title}</Text>
+          {/* Le rôle « header » sert VoiceOver et TalkBack, qui savent alors naviguer de
+              titre en titre — et il permet au générateur des pages du site de distinguer un
+              intertitre d'un paragraphe (voir scripts/pages-legales.mjs). */}
+          <Text accessibilityRole="header" style={styles.title}>
+            {title}
+          </Text>
           <Text style={styles.updated}>{`Dernière mise à jour : ${LEGAL_UPDATED}`}</Text>
           <Text style={styles.lede}>{lede}</Text>
           <Divider width={30} style={{ marginTop: spacing.md }} />
@@ -78,7 +83,9 @@ export function LegalDocument({
 
         {sections.map((section) => (
           <View key={section.heading} style={styles.section}>
-            <Text style={styles.heading}>{section.heading}</Text>
+            <Text accessibilityRole="header" style={styles.heading}>
+              {section.heading}
+            </Text>
             {section.body.map((paragraph) =>
               paragraph.startsWith("- ") ? (
                 <View key={paragraph} style={styles.bullet}>
@@ -95,7 +102,9 @@ export function LegalDocument({
         ))}
 
         <View style={styles.contact}>
-          <Text style={styles.heading}>Nous écrire</Text>
+          <Text accessibilityRole="header" style={styles.heading}>
+            Nous écrire
+          </Text>
           <Text style={styles.paragraph}>
             {`Une question sur ce texte, ou une demande à formuler : ${PUBLISHER.email}.`}
           </Text>
