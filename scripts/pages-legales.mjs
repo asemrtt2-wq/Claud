@@ -172,7 +172,7 @@ ${body}
  * Ce fichier est un modèle : les champs entre crochets doivent être remplis, et le tout
  * vérifié — ce script ne donne pas de conseil juridique.
  */
-function mentionsLegales(publisher) {
+function mentionsLegales(publisher, host) {
   const blocks = [
     { kind: "h1", text: "Mentions légales" },
     { kind: "p", text: "Informations sur l'éditeur et l'hébergement de ce site." },
@@ -191,14 +191,16 @@ function mentionsLegales(publisher) {
     { kind: "p", text: "Conformément à la loi pour la confiance dans l'économie numérique, l'éditeur, personne physique non professionnelle, ne publie pas son adresse personnelle. Son identité est détenue par l'hébergeur du site, qui la tient à la disposition de l'autorité judiciaire." },
     { kind: "p", text: `Directeur de la publication : ${publisher.name}` },
     { kind: "h2", text: "Hébergeur" },
-    { kind: "p", text: "Ce site est hébergé par Wix." },
-    { kind: "p", text: "Wix.com Ltd., 40 Namal Tel Aviv St., Tel Aviv 6350671, Israël." },
-    { kind: "p", text: "[ Vérifier et recopier les coordonnées exactes, téléphone compris, depuis les mentions légales de Wix — elles font foi et peuvent changer. ]" },
+    { kind: "p", text: `Ce site est hébergé par ${host.name}` },
+    { kind: "p", text: host.address },
+    host.phone
+      ? { kind: "p", text: `Téléphone : ${host.phone}` }
+      : { kind: "p", text: "[ Relever le téléphone de l'hébergeur sur ses propres mentions légales, et le renseigner dans src/data/legal.ts. ]" },
     { kind: "h2", text: "Propriété intellectuelle" },
     { kind: "p", text: "Les textes des livres, les couvertures et l'application Lumia sont la propriété de leur auteur. Toute reproduction ou diffusion intégrale, gratuite ou payante, est interdite sans autorisation écrite. La citation d'extraits avec mention de la source reste libre." },
     { kind: "h2", text: "Données personnelles" },
     { kind: "p", text: "L'application Lumia ne collecte aucune donnée personnelle : elle ne contacte aucun serveur et ne demande aucun compte. Le détail figure dans la politique de confidentialité." },
-    { kind: "p", text: "Ce site, lui, est hébergé par Wix, qui peut déposer des cookies et enregistrer des statistiques de visite. Le détail figure dans la politique de confidentialité et la politique de cookies de Wix, et dans les réglages du site. [ à vérifier dans le tableau de bord Wix, et à décrire ici si des outils de mesure sont activés ]" },
+    { kind: "p", text: `Ce site, lui, est hébergé par ${host.name}, qui peut déposer des cookies et enregistrer des statistiques de visite. Le détail figure dans la politique de confidentialité de l'hébergeur. [ à vérifier dans les réglages du site, et à décrire ici si des outils de mesure sont activés ]` },
     { kind: "h2", text: "Nous écrire" },
     { kind: "p", text: `Toute question sur ce site ou sur l'application : ${publisher.email}` },
   ];
@@ -291,12 +293,31 @@ for (const page of PAGES) {
   await tab.close();
 }
 
-/* L'éditeur est lu directement dans `src/data/legal.ts` : deux chaînes, une seule source. */
+/*
+ * L'éditeur et l'hébergeur sont lus dans `src/data/legal.ts` — une seule source pour l'app
+ * et pour le site. Chaque bloc est isolé avant lecture : `name` existe dans les deux.
+ */
 const legalSource = await readFile(join(ROOT, "src", "data", "legal.ts"), "utf8");
-const field = (name) =>
-  legalSource.match(new RegExp(`${name}:\\s*"((?:[^"\\\\]|\\\\.)*)"`))?.[1] ?? "À COMPLÉTER";
-const publisher = { name: field("name"), email: field("email") };
-await writeFile(join(OUT, "mentions-legales.html"), mentionsLegales(publisher), "utf8");
+const blockOf = (constant) => {
+  const start = legalSource.indexOf(`export const ${constant}`);
+  if (start < 0) throw new Error(`${constant} introuvable dans src/data/legal.ts`);
+  return legalSource.slice(start, legalSource.indexOf("};", start));
+};
+const field = (block, name) =>
+  block.match(new RegExp(`\\b${name}:\\s*"((?:[^"\\\\]|\\\\.)*)"`))?.[1] ?? "";
+
+const publisherBlock = blockOf("PUBLISHER");
+const publisher = {
+  name: field(publisherBlock, "name") || "À COMPLÉTER",
+  email: field(publisherBlock, "email") || "À COMPLÉTER",
+};
+const hostBlock = blockOf("HOST");
+const host = {
+  name: field(hostBlock, "name") || "À COMPLÉTER",
+  address: field(hostBlock, "address") || "À COMPLÉTER",
+  phone: field(hostBlock, "phone"),
+};
+await writeFile(join(OUT, "mentions-legales.html"), mentionsLegales(publisher, host), "utf8");
 console.log(`${"mentions-legales.html".padEnd(24)} modèle à compléter`);
 
 await browser.close();

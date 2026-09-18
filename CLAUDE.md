@@ -216,7 +216,7 @@ src/
     ui.tsx                  # étiquettes, en-têtes, barre de progression, boutons
   data/
     types.ts                # le format d'un livre + les 7 catégories
-    legal.ts                # l'éditeur de l'app et la date des textes juridiques
+    legal.ts                # l'éditeur, l'hébergeur du site, la date des textes
     books.ts                # LE CATALOGUE — c'est ici qu'on ajoute des livres
     books.<code>.ts         # le catalogue traduit (fichier généré, un par langue)
     catalog.ts              # les langues disponibles (fichier généré)
@@ -448,12 +448,15 @@ Go** (il faut un build EAS signé, donc le compte Apple), et la vente à l'unit�
   Le garde-fou reste en place — si ces champs repassaient à `À COMPLÉTER`, les deux écrans
   afficheraient de nouveau un avertissement rouge, et le générateur des pages du site le
   signalerait en fin de course.
-- **Le site est hébergé chez Wix**, et l'éditeur a demandé que **son adresse personnelle ne
-  soit pas publiée**. Les mentions légales générées s'appuient donc sur ce que la loi
-  autorise à un éditeur non professionnel : l'adresse n'est pas affichée, l'identité est
-  détenue par l'hébergeur, et ce sont les coordonnées de Wix qui rendent l'éditeur joignable
-  par la voie légale. Celles-ci sont à revérifier sur les mentions légales de Wix, qui font
-  foi.
+- **L'hébergeur du site vit dans la même constante `HOST`** (`src/data/legal.ts`) :
+  aujourd'hui Hostinger. Changer d'hébergeur, c'est changer ces trois lignes puis relancer
+  `npm run boutique:pages` — rien n'est écrit en dur dans le script. Ses coordonnées sont à
+  revérifier sur ses propres mentions légales, qui font foi ; son **téléphone est laissé
+  vide** plutôt qu'inventé, et la page le signale tant qu'il manque.
+- **L'éditeur a demandé que son adresse personnelle ne soit pas publiée.** Les mentions
+  légales s'appuient donc sur ce que la loi autorise à un éditeur non professionnel :
+  l'adresse n'est pas affichée, l'identité est détenue par l'hébergeur, et ce sont les
+  coordonnées de celui-ci qui rendent l'éditeur joignable par la voie légale.
 
 `hasPlan(plan, "extra")` est la seule porte des langues. Le reste de l'app passe par
 `canChangeLanguage`, exposé par le contexte bibliothèque, plutôt que de comparer des noms de
