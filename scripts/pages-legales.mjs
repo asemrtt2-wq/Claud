@@ -179,18 +179,26 @@ function mentionsLegales(publisher) {
     { kind: "h2", text: "Éditeur" },
     { kind: "p", text: `Nom : ${publisher.name}` },
     { kind: "p", text: `Contact : ${publisher.email}` },
-    { kind: "p", text: "Statut : [ particulier ou société — préciser, et pour une société : forme juridique, capital, RCS, TVA ]" },
-    { kind: "p", text: "Adresse : [ adresse de l'éditeur ]" },
-    { kind: "p", text: "Directeur de la publication : [ nom ]" },
+    { kind: "p", text: "Statut : éditeur non professionnel, personne physique." },
+    /*
+     * L'adresse personnelle n'est pas publiée, à la demande de l'éditeur.
+     *
+     * La loi pour la confiance dans l'économie numérique le permet à un éditeur non
+     * professionnel, à condition d'avoir communiqué son identité à l'hébergeur, qui la
+     * tient à disposition de l'autorité judiciaire. Les coordonnées de l'hébergeur, elles,
+     * restent publiques — c'est ce qui rend l'éditeur joignable par la voie légale.
+     */
+    { kind: "p", text: "Conformément à la loi pour la confiance dans l'économie numérique, l'éditeur, personne physique non professionnelle, ne publie pas son adresse personnelle. Son identité est détenue par l'hébergeur du site, qui la tient à la disposition de l'autorité judiciaire." },
+    { kind: "p", text: `Directeur de la publication : ${publisher.name}` },
     { kind: "h2", text: "Hébergeur" },
-    { kind: "p", text: "Nom : [ nom de l'hébergeur du site ]" },
-    { kind: "p", text: "Adresse : [ adresse de l'hébergeur ]" },
-    { kind: "p", text: "Téléphone : [ téléphone de l'hébergeur ]" },
+    { kind: "p", text: "Ce site est hébergé par Wix." },
+    { kind: "p", text: "Wix.com Ltd., 40 Namal Tel Aviv St., Tel Aviv 6350671, Israël." },
+    { kind: "p", text: "[ Vérifier et recopier les coordonnées exactes, téléphone compris, depuis les mentions légales de Wix — elles font foi et peuvent changer. ]" },
     { kind: "h2", text: "Propriété intellectuelle" },
     { kind: "p", text: "Les textes des livres, les couvertures et l'application Lumia sont la propriété de leur auteur. Toute reproduction ou diffusion intégrale, gratuite ou payante, est interdite sans autorisation écrite. La citation d'extraits avec mention de la source reste libre." },
     { kind: "h2", text: "Données personnelles" },
     { kind: "p", text: "L'application Lumia ne collecte aucune donnée personnelle : elle ne contacte aucun serveur et ne demande aucun compte. Le détail figure dans la politique de confidentialité." },
-    { kind: "p", text: "Pour ce site, se reporter aux informations de l'hébergeur : selon l'outil utilisé, il peut enregistrer des statistiques de visite. [ à vérifier et à décrire ici ]" },
+    { kind: "p", text: "Ce site, lui, est hébergé par Wix, qui peut déposer des cookies et enregistrer des statistiques de visite. Le détail figure dans la politique de confidentialité et la politique de cookies de Wix, et dans les réglages du site. [ à vérifier dans le tableau de bord Wix, et à décrire ici si des outils de mesure sont activés ]" },
     { kind: "h2", text: "Nous écrire" },
     { kind: "p", text: `Toute question sur ce site ou sur l'application : ${publisher.email}` },
   ];

@@ -97,9 +97,6 @@ l'aune de ce tableau avant d'être publié.
   demandent un serveur ; l'ancienne plateforme web en avait une version, supprimée avec elle.
 - **Aucune traduction n'est encore embarquée.** Le pipeline est prêt, le catalogue n'a qu'une
   langue : le français.
-- **L'éditeur de l'app n'est pas identifié.** `src/data/legal.ts` porte deux espaces
-  réservés — nom et adresse de contact — sans lesquels aucune des deux boutiques n'accepte
-  une soumission. Les écrans juridiques le signalent en rouge tant que c'est le cas.
 
 Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
 tombant dans une case « interdit » du tableau, est à refuser ou à remplacer.
@@ -447,10 +444,16 @@ Go** (il faut un build EAS signé, donc le compte Apple), et la vente à l'unit�
 - Les conditions ne recopient aucun prix : elles lisent `PLANS` et `BOOK_PRICE`. Un prix
   recopié à la main finit par être faux, et un prix faux dans les conditions est la
   pratique trompeuse que la charte interdit.
-- **`src/data/legal.ts` contient encore des espaces réservés** : le nom de l'éditeur et son
-  adresse de contact. Tant qu'ils le sont, les deux écrans affichent un avertissement
-  rouge, pour que des conditions signées « À COMPLÉTER » ne partent pas à la validation
-  sans que personne ne s'en aperçoive.
+- **L'éditeur est renseigné** dans `src/data/legal.ts` : Asem, cameradaction0@gmail.com.
+  Le garde-fou reste en place — si ces champs repassaient à `À COMPLÉTER`, les deux écrans
+  afficheraient de nouveau un avertissement rouge, et le générateur des pages du site le
+  signalerait en fin de course.
+- **Le site est hébergé chez Wix**, et l'éditeur a demandé que **son adresse personnelle ne
+  soit pas publiée**. Les mentions légales générées s'appuient donc sur ce que la loi
+  autorise à un éditeur non professionnel : l'adresse n'est pas affichée, l'identité est
+  détenue par l'hébergeur, et ce sont les coordonnées de Wix qui rendent l'éditeur joignable
+  par la voie légale. Celles-ci sont à revérifier sur les mentions légales de Wix, qui font
+  foi.
 
 `hasPlan(plan, "extra")` est la seule porte des langues. Le reste de l'app passe par
 `canChangeLanguage`, exposé par le contexte bibliothèque, plutôt que de comparer des noms de

@@ -22,8 +22,8 @@ export type Publisher = {
 export const TO_FILL = "À COMPLÉTER";
 
 export const PUBLISHER: Publisher = {
-  name: TO_FILL,
-  email: TO_FILL,
+  name: "Asem",
+  email: "cameradaction0@gmail.com",
 };
 
 /** Vrai tant que l'identité de l'éditeur n'est pas renseignée. */
