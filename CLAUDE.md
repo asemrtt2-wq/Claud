@@ -116,9 +116,14 @@ npm run verifier     # passe l'app en revue, écran par écran
 échouent bruyamment et renvoient un code d'erreur. Il construit l'export web au besoin,
 ouvre chaque écran en relevant les erreurs de console, puis **éprouve la porte du
 catalogue pour les quatre états d'abonnement** — sans abonnement, Plus, Premium, Extra —
-sur un livre de chaque sorte. Il vérifie enfin ce que l'app ne doit **jamais** proposer :
-acheter un livre réservé, l'offrir en cadeau, promettre « le catalogue complet », ou
-laisser traîner un « À COMPLÉTER » dans un texte juridique.
+sur **chacun des livres réservés**, plus un livre ordinaire. Il vérifie enfin ce que l'app
+ne doit **jamais** proposer : acheter un livre réservé, l'offrir en cadeau, promettre
+« le catalogue complet », ou laisser traîner un « À COMPLÉTER » dans un texte juridique.
+
+La liste des livres réservés n'est pas recopiée dans le script : il la **lit dans
+`src/data/books.ts`**. Ajouter un livre réservé sans le tester serait autrement trop
+facile — il entre dans la batterie tout seul, et les quatre formules sont éprouvées sur
+lui à la ligne suivante.
 
 **Pour produire les vraies applications** (fichiers `.ipa` / `.aab` à envoyer aux stores), il
 faut EAS Build, qui compile dans le cloud — y compris la version iOS, sans posséder de Mac.

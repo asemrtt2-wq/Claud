@@ -133,21 +133,47 @@ for (const [route, label, expected] of SCREENS) {
 
 /* ------------------------------------------ 2. la porte du catalogue, par formule */
 
-console.log("\n2. La porte du catalogue, pour chaque formule\n");
-// spartacus = Plus · james-cook = Premium · epictete = Extra · napoleon = ordinaire
-const ATTENDU = {
-  null:      { spartacus: false, "james-cook": false, epictete: false, napoleon: false },
-  plus:      { spartacus: true,  "james-cook": false, epictete: false, napoleon: true },
-  premium:   { spartacus: true,  "james-cook": true,  epictete: false, napoleon: true },
-  extra:     { spartacus: true,  "james-cook": true,  epictete: true,  napoleon: true },
-};
-for (const [plan, attendus] of Object.entries(ATTENDU)) {
-  for (const [slug, doitOuvrir] of Object.entries(attendus)) {
-    const { text } = await open(`/livre/${slug}`, state({ plan: plan === "null" ? null : plan }));
+/*
+ * Les livres réservés sont lus dans le catalogue, pas recopiés ici : ajouter un livre
+ * réservé sans le tester serait autrement trop facile.
+ */
+const catalogue = await readFile(join(PROJET, "src", "data", "books.ts"), "utf8");
+const RESERVES = [...catalogue.matchAll(/\n    slug: "([^"]+)",[\s\S]{0,900}?\n    plan: "(plus|premium|extra)",/g)]
+  .map((m) => ({ slug: m[1], plan: m[2] }));
+const RANGS = { plus: 1, premium: 2, extra: 3 };
+
+console.log(`\n2. La porte du catalogue — ${RESERVES.length} livres réservés × 4 formules\n`);
+check(`le catalogue déclare bien des livres réservés`, RESERVES.length > 0,
+  RESERVES.map((r) => `${r.slug}=${r.plan}`).join(", "));
+
+for (const formule of [null, "plus", "premium", "extra"]) {
+  const rangLecteur = formule ? RANGS[formule] : 0;
+  for (const { slug, plan } of RESERVES) {
+    const doitOuvrir = rangLecteur >= RANGS[plan];
+    const { text } = await open(`/livre/${slug}`, state({ plan: formule }));
     const ouvert = /\n(Lire|Reprendre)\n/.test(text);
-    check(`${String(plan).padEnd(8)} ${slug.padEnd(12)} ${doitOuvrir ? "doit ouvrir" : "doit rester fermé"}`,
-      ouvert === doitOuvrir);
+    check(
+      `${String(formule ?? "aucun").padEnd(8)} ${slug.slice(0, 34).padEnd(36)} réservé ${plan.padEnd(8)} ${doitOuvrir ? "doit ouvrir" : "doit rester fermé"}`,
+      ouvert === doitOuvrir
+    );
   }
+}
+
+console.log("\n2 bis. Un livre ordinaire suit l'autre règle\n");
+for (const [formule, doitOuvrir] of [[null, false], ["plus", true], ["premium", true], ["extra", true]]) {
+  const { text } = await open("/livre/napoleon", state({ plan: formule }));
+  check(`${String(formule ?? "aucun").padEnd(8)} napoleon (ordinaire) ${doitOuvrir ? "doit ouvrir" : "doit rester fermé"}`,
+    /\n(Lire|Reprendre)\n/.test(text) === doitOuvrir);
+}
+
+console.log("\n2 ter. Aucun livre réservé ne se vend ni ne s'offre\n");
+for (const { slug, plan } of RESERVES) {
+  const { text } = await open(`/livre/${slug}`);
+  const nom = { plus: "Lumia Plus", premium: "Lumia Premium", extra: "Lumia Extra" }[plan];
+  check(
+    `${slug.slice(0, 40).padEnd(42)} → « S'abonner à ${nom} »`,
+    !text.includes("Acheter —") && !text.includes("Lire gratuitement") && text.includes(`S'abonner à ${nom}`)
+  );
 }
 
 /* --------------------------------------- 3. ce qui ne doit jamais être proposé */
