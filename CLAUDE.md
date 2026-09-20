@@ -109,7 +109,16 @@ npm start            # serveur de développement ; scanner le QR code avec Expo 
 npm run android      # ouvrir sur un appareil / émulateur Android
 npm run ios          # ouvrir sur un simulateur iOS (nécessite un Mac)
 npm run typecheck    # vérification TypeScript
+npm run verifier     # passe l'app en revue, écran par écran
 ```
+
+`npm run verifier` n'est pas un aperçu à regarder : c'est une batterie de contrôles qui
+échouent bruyamment et renvoient un code d'erreur. Il construit l'export web au besoin,
+ouvre chaque écran en relevant les erreurs de console, puis **éprouve la porte du
+catalogue pour les quatre états d'abonnement** — sans abonnement, Plus, Premium, Extra —
+sur un livre de chaque sorte. Il vérifie enfin ce que l'app ne doit **jamais** proposer :
+acheter un livre réservé, l'offrir en cadeau, promettre « le catalogue complet », ou
+laisser traîner un « À COMPLÉTER » dans un texte juridique.
 
 **Pour produire les vraies applications** (fichiers `.ipa` / `.aab` à envoyer aux stores), il
 faut EAS Build, qui compile dans le cloud — y compris la version iOS, sans posséder de Mac.
@@ -233,6 +242,7 @@ scripts/
   generate-covers.mjs       # écrit src/data/covers.ts
   captures-boutique.mjs     # les captures d'écran aux dimensions des boutiques
   pages-legales.mjs         # les pages légales du site, extraites de l'app
+  verifier-app.mjs          # la revue écran par écran, et la porte du catalogue
 boutique/
   fiche-boutiques.md        # description, mots-clés, âge, confidentialité : le texte des fiches
   captures/                 # les images à téléverser (générées)

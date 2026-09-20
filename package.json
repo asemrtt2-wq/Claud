@@ -15,7 +15,8 @@
     "covers:import": "node scripts/import-covers.mjs",
     "covers:index": "node scripts/generate-covers.mjs",
     "boutique:captures": "node scripts/captures-boutique.mjs",
-    "boutique:pages": "node scripts/pages-legales.mjs"
+    "boutique:pages": "node scripts/pages-legales.mjs",
+    "verifier": "node scripts/verifier-app.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "^57.0.15",
