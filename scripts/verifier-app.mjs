@@ -9,7 +9,7 @@
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import { join, extname, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -41,10 +41,45 @@ const MIME = {
   ".json": "application/json", ".ttf": "font/ttf",
 };
 
+/**
+ * Date de la modification la plus récente sous un dossier — pour savoir si l'export web
+ * a pris du retard sur les sources.
+ */
+async function derniereModification(dossier) {
+  let recent = 0;
+  for (const entree of await readdir(dossier, { withFileTypes: true })) {
+    if (entree.name === "node_modules" || entree.name.startsWith(".")) continue;
+    const chemin = join(dossier, entree.name);
+    const quand = entree.isDirectory()
+      ? await derniereModification(chemin)
+      : (await stat(chemin)).mtimeMs;
+    if (quand > recent) recent = quand;
+  }
+  return recent;
+}
+
+/*
+ * L'export web est reconstruit s'il manque **ou s'il est plus vieux que les sources**.
+ *
+ * Le second cas est celui qui compte : une batterie qui passe contre un bundle périmé est
+ * pire qu'une absence de batterie, parce qu'elle donne le vert sur du code qui n'a pas été
+ * exécuté. C'est arrivé — un catalogue de quarante livres neufs déclaré conforme par une
+ * revue qui servait l'export de la veille.
+ */
+let exportPerime = "absent";
 try {
-  await stat(join(ROOT, "index.html"));
+  const bundle = (await stat(join(ROOT, "index.html"))).mtimeMs;
+  const sources = Math.max(
+    await derniereModification(join(PROJET, "src")),
+    await derniereModification(join(PROJET, "app"))
+  );
+  exportPerime = sources > bundle ? "en retard sur les sources" : "";
 } catch {
-  console.log("export web…");
+  /* export absent : la valeur initiale convient */
+}
+
+if (exportPerime) {
+  console.log(`export web (${exportPerime})…`);
   const built = spawnSync("npx", ["expo", "export", "--platform", "web", "--clear"], {
     cwd: PROJET,
     stdio: "inherit",

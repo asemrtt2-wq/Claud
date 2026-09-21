@@ -196,7 +196,13 @@ function extract(path) {
 
   const titleTag = raw.match(/<title>([\s\S]*?)<\/title>/i);
   let full = titleTag ? stripTags(titleTag[1]) : basename(path, ".html");
-  full = full.replace(/\s*[—-]\s*(iBook|eBook)$/i, "").trim();
+  /*
+   * Les exports récents suffixent le titre du nom de l'app — « Descartes - LUMIA ». Laissé
+   * tel quel, il partirait dans le titre affiché *et* dans le slug, qui identifie la
+   * progression sur l'appareil : « descartes-lumia » ne se renomme plus après coup sans
+   * perdre la page où le lecteur s'était arrêté.
+   */
+  full = full.replace(/\s*[—-]\s*(iBook|eBook|LUMIA)$/i, "").trim();
   const [title, subtitleRaw = ""] = full.split("—").map((s) => s.trim());
   const subtitle = /^(ibook|ebook)$/i.test(subtitleRaw) ? "" : subtitleRaw;
 

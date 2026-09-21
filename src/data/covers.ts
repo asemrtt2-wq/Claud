@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 17,2 Mo pour 99 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 24,4 Mo pour 139 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -112,6 +112,46 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "le-voile": require("../../assets/couvertures/le-voile.jpg"),
   "les-bienfaits-de-la-journee-d-un-musulman": require("../../assets/couvertures/les-bienfaits-de-la-journee-d-un-musulman.jpg"),
   "allah-est-avec-toi": require("../../assets/couvertures/allah-est-avec-toi.jpg"),
+  "abbas-ibn-firnas": require("../../assets/couvertures/abbas-ibn-firnas.jpg"),
+  "al-farabi": require("../../assets/couvertures/al-farabi.jpg"),
+  "al-idrisi": require("../../assets/couvertures/al-idrisi.jpg"),
+  "aristote": require("../../assets/couvertures/aristote.jpg"),
+  "ashoka": require("../../assets/couvertures/ashoka.jpg"),
+  "al-ghazali": require("../../assets/couvertures/al-ghazali.jpg"),
+  "albert-camus": require("../../assets/couvertures/albert-camus.jpg"),
+  "antisthene": require("../../assets/couvertures/antisthene.jpg"),
+  "comment-se-forme-une-ile": require("../../assets/couvertures/comment-se-forme-une-ile.jpg"),
+  "confucius": require("../../assets/couvertures/confucius.jpg"),
+  "constantin-xi": require("../../assets/couvertures/constantin-xi.jpg"),
+  "descartes": require("../../assets/couvertures/descartes.jpg"),
+  "dostoievski": require("../../assets/couvertures/dostoievski.jpg"),
+  "eratosthene": require("../../assets/couvertures/eratosthene.jpg"),
+  "friedrich-nietzsche": require("../../assets/couvertures/friedrich-nietzsche.jpg"),
+  "ibn-sina": require("../../assets/couvertures/ibn-sina.jpg"),
+  "ibn-tufayl": require("../../assets/couvertures/ibn-tufayl.jpg"),
+  "imam-shamil": require("../../assets/couvertures/imam-shamil.jpg"),
+  "john-locke": require("../../assets/couvertures/john-locke.jpg"),
+  "kant": require("../../assets/couvertures/kant.jpg"),
+  "karl-popper": require("../../assets/couvertures/karl-popper.jpg"),
+  "khalid-ibn-al-walid": require("../../assets/couvertures/khalid-ibn-al-walid.jpg"),
+  "les-phares": require("../../assets/couvertures/les-phares.jpg"),
+  "mithridate-vi": require("../../assets/couvertures/mithridate-vi.jpg"),
+  "nietzsche": require("../../assets/couvertures/nietzsche.jpg"),
+  "ou-vont-nos-poubelles": require("../../assets/couvertures/ou-vont-nos-poubelles.jpg"),
+  "platon": require("../../assets/couvertures/platon.jpg"),
+  "pourquoi-la-lune-ne-tombe-t-elle-pas": require("../../assets/couvertures/pourquoi-la-lune-ne-tombe-t-elle-pas.jpg"),
+  "pourquoi-le-metal-brille-t-il": require("../../assets/couvertures/pourquoi-le-metal-brille-t-il.jpg"),
+  "pourquoi-le-vent-souffle": require("../../assets/couvertures/pourquoi-le-vent-souffle.jpg"),
+  "rousseau": require("../../assets/couvertures/rousseau.jpg"),
+  "scipion-l-africain": require("../../assets/couvertures/scipion-l-africain.jpg"),
+  "selim-ier": require("../../assets/couvertures/selim-ier.jpg"),
+  "seneque": require("../../assets/couvertures/seneque.jpg"),
+  "socrate": require("../../assets/couvertures/socrate.jpg"),
+  "spinoza": require("../../assets/couvertures/spinoza.jpg"),
+  "sun-tzu": require("../../assets/couvertures/sun-tzu.jpg"),
+  "sundiata-keita": require("../../assets/couvertures/sundiata-keita.jpg"),
+  "trajan": require("../../assets/couvertures/trajan.jpg"),
+  "zhang-heng": require("../../assets/couvertures/zhang-heng.jpg"),
 };
 
 /**

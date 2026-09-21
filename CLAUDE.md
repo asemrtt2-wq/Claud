@@ -61,7 +61,7 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Les 99 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+- **Les 139 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
   chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
   sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
   lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
@@ -113,8 +113,10 @@ npm run verifier     # passe l'app en revue, écran par écran
 ```
 
 `npm run verifier` n'est pas un aperçu à regarder : c'est une batterie de contrôles qui
-échouent bruyamment et renvoient un code d'erreur. Il construit l'export web au besoin,
-ouvre chaque écran en relevant les erreurs de console, puis **éprouve la porte du
+échouent bruyamment et renvoient un code d'erreur. Il reconstruit l'export web **quand il
+manque ou qu'il est plus vieux que `src/` et `app/`** — sans cette comparaison de dates, la
+batterie passait au vert contre le bundle de la veille, ce qui est pire que pas de batterie
+du tout. Il ouvre ensuite chaque écran en relevant les erreurs de console, puis **éprouve la porte du
 catalogue pour les quatre états d'abonnement** — sans abonnement, Plus, Premium, Extra —
 sur **chacun des livres réservés**, plus un livre ordinaire. Il vérifie enfin ce que l'app
 ne doit **jamais** proposer : acheter un livre réservé, l'offrir en cadeau, promettre
@@ -253,7 +255,7 @@ boutique/
   captures/                 # les images à téléverser (générées)
   pages/                    # les pages légales du site (générées depuis l'app)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 99 couvertures, 720 px de large, ~17,2 Mo
+assets/couvertures/         # les 139 couvertures, 720 px de large, ~25 Mo
 ```
 
 ## Ajouter des livres
@@ -309,6 +311,33 @@ Ce qui a pu être réparé sans rien deviner l'a été : le sommaire de ces fich
 ses accents, et l'import reprend de là le titre de chaque chapitre quand les deux graphies ne
 diffèrent que par les accents. Seul le corps reste tel quel.
 
+**Le défaut est intermittent, pas systématique.** Sur les quarante livres du 21 septembre
+2026, trente-huit sont parfaitement accentués ; seuls « Abbas ibn Firnas » et « Al-Idrisi »
+sont touchés. Ne pas conclure d'un export au suivant : la densité d'accents se mesure en une
+commande, et un texte français sain tourne autour de 15 à 18 %.
+
+**Deux pièges de ces exports récents, tous deux réglés dans le script :**
+
+- Ils suffixent le titre du nom de l'app — `<title>Descartes - LUMIA</title>`. Laissé tel
+  quel, « LUMIA » partait dans le titre affiché **et dans le slug**, qui identifie la
+  progression sur l'appareil : `descartes-lumia` ne se renomme plus après coup sans perdre
+  la page où le lecteur s'était arrêté. `import-books.mjs` retire ce suffixe comme il
+  retirait déjà « — iBook ».
+- **La balise `<title>` perd des accents que le corps garde.** Le livre écrit « une île »,
+  « Ératosthène », « Dostoïevski », « le métal » ; sa balise écrit « une ile », « Eratosthene ».
+  Le titre affiché doit donc suivre **la graphie du corps du texte**, qui est la bonne —
+  vérification faite livre par livre, pas au jugé.
+
+**Deux livres différents peuvent porter le même nom.** Le catalogue contient « Nietzsche »
+et « Friedrich Nietzsche » : ce ne sont pas des doublons. Le premier porte sur la
+falsification de l'œuvre par sa sœur et l'archive de Weimar, le second est la vie et les
+livres. Les titres restent ceux du propriétaire du projet — inventer un titre serait un
+acte éditorial qui ne revient pas au code — et c'est le **sous-titre** qui les distingue.
+
+Un livre déjà au catalogue peut aussi être renvoyé : c'est arrivé pour « Le premier
+passeport » et « Guglielmo Marconi », réimportés à l'identique, au chapitre près. Comparer
+le slug et le nombre de chapitres avant d'insérer, et écarter le renvoi.
+
 **Conventions du corps de texte** (interprétées par le lecteur) :
 - une ligne vide sépare deux blocs ;
 - `## ` en début de bloc devient un intertitre doré ;
@@ -316,9 +345,9 @@ diffèrent que par les accents. Seul le corps reste tel quel.
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **99 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **139 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture, grands
-personnages et philosophie, soit environ 780 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages et philosophie, soit environ 1 200 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois
@@ -401,7 +430,9 @@ La maquette de l'écran d'abonnement portait des éléments que Lumia ne peut pa
   qu'on n'a pas mesuré — vaut ici comme pour l'onglet « Avis ».
 - « **Le plus populaire** » sur la formule Premium : c'est une statistique, et il n'y en a
   pas. Remplacé par « Notre recommandation », qui est un avis d'éditeur assumé.
-- « **Des centaines d'iBooks** » : il y en a 37. Le nombre affiché est celui du catalogue.
+- « **Des centaines d'iBooks** » : le nombre affiché est compté dans le catalogue, à
+  l'exécution. Ne pas le recopier ici — un chiffre écrit à la main devient faux au premier
+  import, et il l'était déjà (« 37 » pour un catalogue qui en comptait 99).
 - « **Disponible sur tous vos appareils** » : il n'y a ni compte ni synchronisation.
   Remplacé par « Lecture hors ligne, sans compte », qui est la vraie force.
 - « **Paiement sécurisé** » : aucun paiement n'existe encore, et l'écran le dit à la place.
