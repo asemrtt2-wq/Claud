@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 28,4 Mo pour 161 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 29,6 Mo pour 169 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -174,6 +174,14 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "reprendre-apres-avoir-abandonne": require("../../assets/couvertures/reprendre-apres-avoir-abandonne.jpg"),
   "thomas-nagel": require("../../assets/couvertures/thomas-nagel.jpg"),
   "voltaire": require("../../assets/couvertures/voltaire.jpg"),
+  "al-ghazali-doute-et-certitude": require("../../assets/couvertures/al-ghazali-doute-et-certitude.jpg"),
+  "apprendre-a-etre-seul": require("../../assets/couvertures/apprendre-a-etre-seul.jpg"),
+  "briser-une-mauvaise-habitude": require("../../assets/couvertures/briser-une-mauvaise-habitude.jpg"),
+  "la-regle-des-1-pour-cent": require("../../assets/couvertures/la-regle-des-1-pour-cent.jpg"),
+  "le-perfectionnisme": require("../../assets/couvertures/le-perfectionnisme.jpg"),
+  "le-pouvoir-des-petites-habitudes": require("../../assets/couvertures/le-pouvoir-des-petites-habitudes.jpg"),
+  "schopenhauer": require("../../assets/couvertures/schopenhauer.jpg"),
+  "tolstoi": require("../../assets/couvertures/tolstoi.jpg"),
 };
 
 /**
