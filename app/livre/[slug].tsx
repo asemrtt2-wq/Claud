@@ -145,6 +145,10 @@ export default function BookScreen() {
               {book.subtitle}
             </Text>
             <View style={styles.tags}>
+              {/* Le tome en premier, parce qu'il décide de la lecture : deux volumes portent
+                  le même nom (« Al-Farabi »), et `BookCover` n'affiche pas son étiquette
+                  quand la couverture est une image — ce qui est le cas de tout le catalogue. */}
+              {book.series ? <Tag label={`Tome ${book.series.volume}`} /> : null}
               {book.tags.map((t) => (
                 <Tag key={t} label={t} />
               ))}

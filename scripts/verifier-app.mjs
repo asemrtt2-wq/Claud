@@ -32,8 +32,17 @@ const { chromium } = loadPlaywright();
 
 const PROJET = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = join(PROJET, "dist");
-const PORT = 8110;
 const KEY = "lumia:library:v1";
+
+/*
+ * Le port est choisi par le système, et non fixé à l'avance.
+ *
+ * Deux revues lancées en même temps se battaient auparavant pour le port 8110 : la seconde
+ * mourait sur EADDRINUSE, et surtout son `expo export --clear` effaçait `dist/` sous les
+ * pieds de la première, qui signalait alors six faux échecs. Un port libre supprime la
+ * collision ; reste la règle, qui ne s'automatise pas : une revue à la fois.
+ */
+let port = 0;
 
 const MIME = {
   ".html": "text/html", ".js": "application/javascript", ".css": "text/css",
@@ -104,7 +113,9 @@ const server = createServer(async (req, res) => {
     res.end();
   }
 });
-await new Promise((ok) => server.listen(PORT, ok));
+await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
+port = server.address().port;
+console.log(`serveur de revue sur le port ${port}`);
 
 const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM || undefined,
@@ -131,7 +142,7 @@ async function open(route, seed = state()) {
   await page.addInitScript(([k, v]) => {
     try { localStorage.setItem(k, v); } catch { /* stockage indisponible */ }
   }, [KEY, seed]);
-  await page.goto(`http://localhost:${PORT}${route}`, { waitUntil: "networkidle" });
+  await page.goto(`http://127.0.0.1:${port}${route}`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);
   const text = await page.evaluate(() => document.body.innerText);
   await page.close();

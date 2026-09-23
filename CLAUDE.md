@@ -61,7 +61,7 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Les 139 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+- **Les 161 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
   chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
   sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
   lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
@@ -69,11 +69,33 @@ Ce que cela change, et ce que cela ne change pas :
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
   animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
   Marc Aurèle) sur les couvertures : ceux-là restent exclus.
-- **Dix couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ PREMIUM ·
-  15,99 €/MOIS », « INCLUS AVEC PLUS · 9,99 €/MOIS ». C'était une promesse que l'app ne
-  tenait pas ; elle la tient désormais, voir « Les livres réservés » plus bas. Reste une
-  limite à connaître : **le prix est dans le JPEG**, donc un changement de tarif obligerait
-  à refaire ces dix images. Les prix du reste de l'app viennent tous de `plans.ts`.
+- **Quarante-huit couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ
+  PREMIUM · 15,99 €/MOIS », « INCLUS AVEC PLUS · 9,99 €/MOIS », une pastille « EXTRA
+  19,99 € ». C'était une promesse que l'app ne tenait pas ; elle la tient, voir « Les livres
+  réservés » plus bas. Reste une limite à connaître : **le prix est dans le JPEG**, donc un
+  changement de tarif obligerait à refaire ces images. Les prix du reste de l'app viennent
+  tous de `plans.ts`.
+
+  **Auditer chaque couverture importée, en haut et en bas.** La mention se place où le
+  graphiste a voulu : bandeau supérieur, bandeau vertical à gauche, pastille au pied.
+  Trente-huit livres importés les 21 et 23 septembre 2026 en portaient une sans que le champ
+  `plan` soit posé. **Il a fallu trois passes pour toutes les trouver** : le bandeau
+  supérieur, puis le pied — six ne s'y voyaient que là, dont al-Ghazali, Ibn Tufayl et « L'art
+  de dire non » —, puis la couverture entière, parce que « Commencer avant d'être prêt » porte
+  sa pastille en plein milieu. Ne pas se limiter à un bord.
+
+  Deux garde-fous valent mieux qu'un œil attentif : un **contrôle croisé** qui vérifie que
+  chaque livre importé est classé exactement une fois, avec mention ou sans — il a rattrapé
+  « Sénèque », oublié malgré une mention bien visible — et `npm run verifier`, qui éprouve
+  ensuite chaque livre réservé sur les quatre formules.
+
+  Les 99 livres antérieurs ont été réaudités de la même manière : aucun autre n'est
+  concerné. La mention n'apparaît que dans les exports récents.
+
+  **Une couverture peut se contredire.** Celle de « Où vont nos eaux usées ? » annonce
+  « LUMIA EXTRA » et « 15,99 € », alors qu'Extra est à 19,99 € et que 15,99 € est le prix de
+  Premium. Le livre est verrouillé sur **la formule nommée**, la plus protectrice pour le
+  lecteur ; l'image, elle, reste à refaire. Signalé au propriétaire du projet.
 
 **Éditorial — la responsabilité de qui écrit les livres.** Tout le reste du tableau porte sur le
 *texte* des livres : aucune vérification automatique n'est possible. Chaque livre ajouté à
@@ -125,7 +147,15 @@ ne doit **jamais** proposer : acheter un livre réservé, l'offrir en cadeau, pr
 La liste des livres réservés n'est pas recopiée dans le script : il la **lit dans
 `src/data/books.ts`**. Ajouter un livre réservé sans le tester serait autrement trop
 facile — il entre dans la batterie tout seul, et les quatre formules sont éprouvées sur
-lui à la ligne suivante.
+lui à la ligne suivante. Avec 48 livres réservés, la revue complète demande une vingtaine
+de minutes : c'est le prix de ne rien échantillonner.
+
+**Une seule revue à la fois.** Le serveur prend désormais un port libre au lieu du 8110
+fixe, mais cela ne suffit pas : chaque exécution lance `expo export --clear`, qui efface
+`dist/`. Deux revues simultanées se retirent donc le tapis l'une à l'autre, et celle qui
+survit signale de **faux échecs** — six, la première fois, sur des livres parfaitement
+corrects. Un échec de revue lancée en parallèle d'une autre ne prouve rien ; relancer seul
+avant de conclure.
 
 **Pour produire les vraies applications** (fichiers `.ipa` / `.aab` à envoyer aux stores), il
 faut EAS Build, qui compile dans le cloud — y compris la version iOS, sans posséder de Mac.
@@ -227,6 +257,8 @@ src/
   theme.ts                  # couleurs, typographie, espacements, cible tactile
   components/
     BookCover.tsx           # couverture du livre : image fournie, ou composée en repli
+                            # ⚠ sa prop `label` n'est dessinée que sur la couverture
+                            #   composée ; avec une image, elle est ignorée (voir plus bas)
     Ornament.tsx            # motifs géométriques (étoile à 8 branches, filets, trame)
     LegalDocument.tsx       # la coquille commune aux deux textes juridiques
     ui.tsx                  # étiquettes, en-têtes, barre de progression, boutons
@@ -255,7 +287,7 @@ boutique/
   captures/                 # les images à téléverser (générées)
   pages/                    # les pages légales du site (générées depuis l'app)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 139 couvertures, 720 px de large, ~25 Mo
+assets/couvertures/         # les 161 couvertures, 720 px de large, ~29 Mo
 ```
 
 ## Ajouter des livres
@@ -335,8 +367,35 @@ livres. Les titres restent ceux du propriétaire du projet — inventer un titre
 acte éditorial qui ne revient pas au code — et c'est le **sous-titre** qui les distingue.
 
 Un livre déjà au catalogue peut aussi être renvoyé : c'est arrivé pour « Le premier
-passeport » et « Guglielmo Marconi », réimportés à l'identique, au chapitre près. Comparer
-le slug et le nombre de chapitres avant d'insérer, et écarter le renvoi.
+passeport », « Guglielmo Marconi » et « Ératosthène », réimportés à l'identique, au chapitre
+près. Comparer le slug et le nombre de chapitres avant d'insérer, et écarter le renvoi.
+
+**Mais un même nom peut cacher un second tome.** « Al-Farabi » et « Rousseau » sont arrivés
+une deuxième fois avec un sommaire presque entièrement différent — 3 et 4 titres de chapitre
+communs seulement. Ce ne sont ni des renvois ni des réécritures : **les livres le disent
+eux-mêmes**. « Rousseau » écrit qu'« un autre volume de cette collection porte déjà sur
+Rousseau » et décrit son contenu ; le nouvel « Al-Farabi » écrit que « cette collection
+compte déjà un volume consacré à al-Farabi » et que « les deux se complètent sans se
+répéter ». Chercher ces phrases avant de conclure.
+
+Ces paires passent par le champ **`series`**. Les deux membres le portent, sinon un seul
+s'annonce comme un tome, ce qui ressemble à un défaut. Le slug du second doit **différer** —
+`al-farabi-la-cite-vertueuse` à côté d'`al-farabi` — parce qu'un slug déjà publié ne se
+réaffecte pas sans déplacer la progression des lecteurs vers un autre livre.
+
+**Où le tome se voit, et où il ne se voit pas.** `BookCover` reçoit bien un `label`
+« Tome N » depuis l'accueil, l'explorateur et la fiche livre, mais **il le jette dès qu'une
+image de couverture existe** : la branche `if (artwork)` retourne avant de le dessiner. Comme
+les 161 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
+rendu ailleurs : en texte dans l'onglet « Bibliothèque », et en étiquette dans la rangée de
+tags de la fiche livre, qui est l'écran où l'on choisit quel volume ouvrir. Incruster le
+label par-dessus l'image reste possible, mais c'est une décision de mise en page qui revient
+au propriétaire du projet — ses couvertures portent déjà leurs propres mentions dans les
+coins.
+
+À ne pas confondre avec « Nietzsche » et « Friedrich Nietzsche », qui sont deux livres
+distincts sur un même personnage et ne se déclarent pas comme tomes : eux se distinguent
+par leur sous-titre, pas par `series`.
 
 **Conventions du corps de texte** (interprétées par le lecteur) :
 - une ligne vide sépare deux blocs ;
@@ -345,9 +404,9 @@ le slug et le nombre de chapitres avant d'insérer, et écarter le renvoi.
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **139 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **161 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture, grands
-personnages et philosophie, soit environ 1 200 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages et philosophie, soit environ 1 430 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois
@@ -375,10 +434,9 @@ la limite après coup est la pratique trompeuse que la charte interdit.
 
 ### Les livres réservés à une formule
 
-Dix couvertures annoncent une exclusivité d'abonnement — « EXCLUSIVITÉ PREMIUM · 15,99 €/MOIS »
-sur « James Cook » et « Ptolémée Ier », « EXCLUSIVITÉ EXTRA · 19,99 €/MOIS » sur « Épictète »,
-« Guglielmo Marconi » et « Le premier passeport », « INCLUS AVEC PLUS · 9,99 €/MOIS » sur
-« Spartacus », « Linus Torvalds » et les trois livres de sciences naturelles.
+**Quarante-huit couvertures** annoncent une exclusivité d'abonnement : 24 pour Extra, 13 pour
+Premium, 11 pour Plus. Le nombre n'est pas à recopier de tête — il se compte dans le
+catalogue, et la revue le rappelle à chaque exécution.
 
 Le champ **`plan`** de `Book` est ce qui rend cette mention vraie. Sans lui, l'image
 promettrait une exclusivité que le code n'appliquerait pas, ce qui est exactement la pratique

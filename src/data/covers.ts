@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 24,4 Mo pour 139 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 28,4 Mo pour 161 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -152,6 +152,28 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "sundiata-keita": require("../../assets/couvertures/sundiata-keita.jpg"),
   "trajan": require("../../assets/couvertures/trajan.jpg"),
   "zhang-heng": require("../../assets/couvertures/zhang-heng.jpg"),
+  "al-farabi-la-cite-vertueuse": require("../../assets/couvertures/al-farabi-la-cite-vertueuse.jpg"),
+  "arreter-de-se-comparer": require("../../assets/couvertures/arreter-de-se-comparer.jpg"),
+  "commencer-avant-d-etre-pret": require("../../assets/couvertures/commencer-avant-d-etre-pret.jpg"),
+  "comment-nait-une-montagne": require("../../assets/couvertures/comment-nait-une-montagne.jpg"),
+  "comment-un-arbre-peut-il-vivre-des-milliers-d-annees": require("../../assets/couvertures/comment-un-arbre-peut-il-vivre-des-milliers-d-annees.jpg"),
+  "comment-un-panneau-solaire-cree-t-il-de-l-electricite": require("../../assets/couvertures/comment-un-panneau-solaire-cree-t-il-de-l-electricite.jpg"),
+  "du-cheval-a-1-000-km-h": require("../../assets/couvertures/du-cheval-a-1-000-km-h.jpg"),
+  "ibn-miskawayh": require("../../assets/couvertures/ibn-miskawayh.jpg"),
+  "jean-jacques-rousseau": require("../../assets/couvertures/jean-jacques-rousseau.jpg"),
+  "jeremy-bentham": require("../../assets/couvertures/jeremy-bentham.jpg"),
+  "l-airbag": require("../../assets/couvertures/l-airbag.jpg"),
+  "l-art-de-dire-non": require("../../assets/couvertures/l-art-de-dire-non.jpg"),
+  "l-invention-de-la-decimale": require("../../assets/couvertures/l-invention-de-la-decimale.jpg"),
+  "le-hindenburg": require("../../assets/couvertures/le-hindenburg.jpg"),
+  "le-post-it": require("../../assets/couvertures/le-post-it.jpg"),
+  "le-premier-e-mail": require("../../assets/couvertures/le-premier-e-mail.jpg"),
+  "le-premier-pas-vers-la-mondialisation": require("../../assets/couvertures/le-premier-pas-vers-la-mondialisation.jpg"),
+  "ou-vont-nos-eaux-usees": require("../../assets/couvertures/ou-vont-nos-eaux-usees.jpg"),
+  "pourquoi-le-feu-est-il-chaud": require("../../assets/couvertures/pourquoi-le-feu-est-il-chaud.jpg"),
+  "reprendre-apres-avoir-abandonne": require("../../assets/couvertures/reprendre-apres-avoir-abandonne.jpg"),
+  "thomas-nagel": require("../../assets/couvertures/thomas-nagel.jpg"),
+  "voltaire": require("../../assets/couvertures/voltaire.jpg"),
 };
 
 /**
