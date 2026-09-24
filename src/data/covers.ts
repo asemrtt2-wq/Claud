@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 29,6 Mo pour 169 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 31,1 Mo pour 180 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -182,6 +182,17 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "le-pouvoir-des-petites-habitudes": require("../../assets/couvertures/le-pouvoir-des-petites-habitudes.jpg"),
   "schopenhauer": require("../../assets/couvertures/schopenhauer.jpg"),
   "tolstoi": require("../../assets/couvertures/tolstoi.jpg"),
+  "7-jours-sans-scroll": require("../../assets/couvertures/7-jours-sans-scroll.jpg"),
+  "apprendre-a-s-ennuyer": require("../../assets/couvertures/apprendre-a-s-ennuyer.jpg"),
+  "comment-un-barrage-produit-il-de-l-electricite": require("../../assets/couvertures/comment-un-barrage-produit-il-de-l-electricite.jpg"),
+  "epicure": require("../../assets/couvertures/epicure.jpg"),
+  "la-discipline-avant-la-motivation": require("../../assets/couvertures/la-discipline-avant-la-motivation.jpg"),
+  "le-metro": require("../../assets/couvertures/le-metro.jpg"),
+  "le-pouvoir-de-la-patience": require("../../assets/couvertures/le-pouvoir-de-la-patience.jpg"),
+  "peur-d-echouer": require("../../assets/couvertures/peur-d-echouer.jpg"),
+  "peur-de-reussir": require("../../assets/couvertures/peur-de-reussir.jpg"),
+  "pourquoi-une-flamme-change-t-elle-de-couleur": require("../../assets/couvertures/pourquoi-une-flamme-change-t-elle-de-couleur.jpg"),
+  "reprendre-le-controle-de-son-attention": require("../../assets/couvertures/reprendre-le-controle-de-son-attention.jpg"),
 };
 
 /**
