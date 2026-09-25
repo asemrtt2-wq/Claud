@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 31,1 Mo pour 180 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 33,3 Mo pour 194 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -193,6 +193,20 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "peur-de-reussir": require("../../assets/couvertures/peur-de-reussir.jpg"),
   "pourquoi-une-flamme-change-t-elle-de-couleur": require("../../assets/couvertures/pourquoi-une-flamme-change-t-elle-de-couleur.jpg"),
   "reprendre-le-controle-de-son-attention": require("../../assets/couvertures/reprendre-le-controle-de-son-attention.jpg"),
+  "accepter-ce-qu-on-ne-controle-pas": require("../../assets/couvertures/accepter-ce-qu-on-ne-controle-pas.jpg"),
+  "apprendre-a-recevoir-une-critique": require("../../assets/couvertures/apprendre-a-recevoir-une-critique.jpg"),
+  "dostoievski-la-philosophie-d-etre-seul": require("../../assets/couvertures/dostoievski-la-philosophie-d-etre-seul.jpg"),
+  "finir-ce-que-l-on-commence": require("../../assets/couvertures/finir-ce-que-l-on-commence.jpg"),
+  "francis-bacon": require("../../assets/couvertures/francis-bacon.jpg"),
+  "ibn-khaldun": require("../../assets/couvertures/ibn-khaldun.jpg"),
+  "ibn-rushd": require("../../assets/couvertures/ibn-rushd.jpg"),
+  "jan-zizka": require("../../assets/couvertures/jan-zizka.jpg"),
+  "la-photocopieuse": require("../../assets/couvertures/la-photocopieuse.jpg"),
+  "les-cables-sous-marins": require("../../assets/couvertures/les-cables-sous-marins.jpg"),
+  "montesquieu": require("../../assets/couvertures/montesquieu.jpg"),
+  "tenzing-norgay": require("../../assets/couvertures/tenzing-norgay.jpg"),
+  "travailler-sans-motivation": require("../../assets/couvertures/travailler-sans-motivation.jpg"),
+  "une-chose-a-la-fois": require("../../assets/couvertures/une-chose-a-la-fois.jpg"),
 };
 
 /**
