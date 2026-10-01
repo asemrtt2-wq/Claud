@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 33,3 Mo pour 194 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 38,3 Mo pour 217 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -207,6 +207,29 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "tenzing-norgay": require("../../assets/couvertures/tenzing-norgay.jpg"),
   "travailler-sans-motivation": require("../../assets/couvertures/travailler-sans-motivation.jpg"),
   "une-chose-a-la-fois": require("../../assets/couvertures/une-chose-a-la-fois.jpg"),
+  "albert-bandura": require("../../assets/couvertures/albert-bandura.jpg"),
+  "barry-schwartz": require("../../assets/couvertures/barry-schwartz.jpg"),
+  "comment-nait-une-grotte": require("../../assets/couvertures/comment-nait-une-grotte.jpg"),
+  "comment-un-ascenseur-ne-tombe-t-il-pas": require("../../assets/couvertures/comment-un-ascenseur-ne-tombe-t-il-pas.jpg"),
+  "comment-un-navire-geant-peut-il-flotter": require("../../assets/couvertures/comment-un-navire-geant-peut-il-flotter.jpg"),
+  "comment-un-sous-marin-plonge-et-remonte": require("../../assets/couvertures/comment-un-sous-marin-plonge-et-remonte.jpg"),
+  "comment-une-centrale-nucleaire-produit-elle-de-l-electricite": require("../../assets/couvertures/comment-une-centrale-nucleaire-produit-elle-de-l-electricite.jpg"),
+  "heinrich-hertz": require("../../assets/couvertures/heinrich-hertz.jpg"),
+  "ignaz-semmelweis": require("../../assets/couvertures/ignaz-semmelweis.jpg"),
+  "jacques-ellul": require("../../assets/couvertures/jacques-ellul.jpg"),
+  "le-beton-romain": require("../../assets/couvertures/le-beton-romain.jpg"),
+  "le-conteneur-maritime": require("../../assets/couvertures/le-conteneur-maritime.jpg"),
+  "le-courrier-pneumatique": require("../../assets/couvertures/le-courrier-pneumatique.jpg"),
+  "le-premier-contrat-ecrit": require("../../assets/couvertures/le-premier-contrat-ecrit.jpg"),
+  "max-stirner": require("../../assets/couvertures/max-stirner.jpg"),
+  "mihaly-csikszentmihalyi": require("../../assets/couvertures/mihaly-csikszentmihalyi.jpg"),
+  "nassim-nicholas-taleb": require("../../assets/couvertures/nassim-nicholas-taleb.jpg"),
+  "philippa-foot": require("../../assets/couvertures/philippa-foot.jpg"),
+  "pourquoi-le-coucher-de-soleil-est-rouge": require("../../assets/couvertures/pourquoi-le-coucher-de-soleil-est-rouge.jpg"),
+  "pourquoi-les-rivieres-serpentent": require("../../assets/couvertures/pourquoi-les-rivieres-serpentent.jpg"),
+  "robert-nozick": require("../../assets/couvertures/robert-nozick.jpg"),
+  "sebastien-de-vauban": require("../../assets/couvertures/sebastien-de-vauban.jpg"),
+  "thorstein-veblen": require("../../assets/couvertures/thorstein-veblen.jpg"),
 };
 
 /**

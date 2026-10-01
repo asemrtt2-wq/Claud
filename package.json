@@ -14,6 +14,8 @@
     "catalog:index": "node scripts/generate-catalog-index.mjs",
     "covers:import": "node scripts/import-covers.mjs",
     "covers:index": "node scripts/generate-covers.mjs",
+    "import:auditer": "node scripts/auditer-import.mjs",
+    "import:planche": "node scripts/planche-couvertures.mjs",
     "boutique:captures": "node scripts/captures-boutique.mjs",
     "boutique:pages": "node scripts/pages-legales.mjs",
     "verifier": "node scripts/verifier-app.mjs"

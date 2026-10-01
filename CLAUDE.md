@@ -61,7 +61,7 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Les 194 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+- **Les 217 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
   chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
   sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
   lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
@@ -69,7 +69,7 @@ Ce que cela change, et ce que cela ne change pas :
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
   animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
   Marc Aurèle) sur les couvertures : ceux-là restent exclus.
-- **Soixante-douze couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ
+- **Quatre-vingt-huit couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ
   PREMIUM · 15,99 €/MOIS », « INCLUS AVEC PLUS · 9,99 €/MOIS », une pastille « EXTRA
   19,99 € ». C'était une promesse que l'app ne tenait pas ; elle la tient, voir « Les livres
   réservés » plus bas. Reste une limite à connaître : **le prix est dans le JPEG**, donc un
@@ -150,7 +150,7 @@ ne doit **jamais** proposer : acheter un livre réservé, l'offrir en cadeau, pr
 La liste des livres réservés n'est pas recopiée dans le script : il la **lit dans
 `src/data/books.ts`**. Ajouter un livre réservé sans le tester serait autrement trop
 facile — il entre dans la batterie tout seul, et les quatre formules sont éprouvées sur
-lui à la ligne suivante. Avec 72 livres réservés, la revue complète demande une petite demi-heure : c'est le prix de ne rien échantillonner.
+lui à la ligne suivante. Avec 88 livres réservés, la revue complète demande une bonne demi-heure : c'est le prix de ne rien échantillonner.
 
 **Une seule revue à la fois.** Le serveur prend désormais un port libre au lieu du 8110
 fixe, mais cela ne suffit pas : chaque exécution lance `expo export --clear`, qui efface
@@ -281,6 +281,8 @@ scripts/
   generate-catalog-index.mjs # écrit src/data/catalog.ts
   import-covers.mjs         # embarque des couvertures, ramenées à 720 px
   generate-covers.mjs       # écrit src/data/covers.ts
+  auditer-import.mjs        # relève accents, charte, renvois et collisions d'un lot importé
+  planche-couvertures.mjs   # planche-contact des couvertures entières, pour y lire les formules
   captures-boutique.mjs     # les captures d'écran aux dimensions des boutiques
   pages-legales.mjs         # les pages légales du site, extraites de l'app
   verifier-app.mjs          # la revue écran par écran, et la porte du catalogue
@@ -289,7 +291,7 @@ boutique/
   captures/                 # les images à téléverser (générées)
   pages/                    # les pages légales du site (générées depuis l'app)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 194 couvertures, 720 px de large, ~34 Mo
+assets/couvertures/         # les 217 couvertures, 720 px de large, ~39 Mo
 ```
 
 ## Ajouter des livres
@@ -322,6 +324,24 @@ Deux façons :
    npm run covers:import -- ./mes-livres-html/couvertures   # redimensionne vers assets/
    npm run covers:index                                     # écrit src/data/covers.ts
    ```
+
+   **Deux outils pour relire un lot avant de l'insérer** — ils ne modifient rien :
+
+   ```bash
+   npm run import:planche -- ./mes-livres-html/couvertures 0   # planche-contact, 12 par page
+   npm run import:auditer  -- ./mes-livres-html collisions     # slugs déjà au catalogue
+   npm run import:auditer  -- ./mes-livres-html table          # chapitres, mots, densité d'accents
+   npm run import:auditer  -- ./mes-livres-html charte         # motifs de la charte, par mot
+   npm run import:auditer  -- ./mes-livres-html contexte "\balcool\w*\b"
+   npm run import:auditer  -- ./mes-livres-html volumes        # renvois à un autre livre
+   npm run import:auditer  -- ./mes-livres-html sommaires 0 12
+   ```
+
+   Ils vivent dans le dépôt pour une raison concrète : réécrits de mémoire à chaque import,
+   ils dérivaient — un scan de charte recopié avait perdu ses frontières de mot et signalait
+   « ivre » dans « livre ». `charte` ventile désormais ses alertes **par mot**, ce qui montre
+   d'un coup d'œil que les douze « jeux d'argent » d'un livre sur le métro sont douze
+   « Paris ».
 
    Les onze livres du 14 septembre 2026 ont d'abord été importés sans leur image, parce que
    personne n'avait pensé à regarder dans le HTML. Ne pas refaire le trajet : la couverture
@@ -369,7 +389,8 @@ livres. Les titres restent ceux du propriétaire du projet — inventer un titre
 acte éditorial qui ne revient pas au code — et c'est le **sous-titre** qui les distingue.
 
 Un livre déjà au catalogue peut aussi être renvoyé : c'est arrivé pour « Le premier
-passeport », « Guglielmo Marconi », « Ératosthène » et « Al-Ghazali : doute et certitude »,
+passeport », « Guglielmo Marconi », « Ératosthène », « Al-Ghazali : doute et certitude » et
+« Schopenhauer »,
 réimportés à l'identique, au chapitre près. Comparer le slug et le nombre de chapitres avant
 d'insérer, et écarter le renvoi — en pensant aussi à retirer la couverture extraite, sinon
 elle reste orpheline dans `assets/couvertures/`.
@@ -390,7 +411,7 @@ réaffecte pas sans déplacer la progression des lecteurs vers un autre livre.
 **Où le tome se voit, et où il ne se voit pas.** `BookCover` reçoit bien un `label`
 « Tome N » depuis l'accueil, l'explorateur et la fiche livre, mais **il le jette dès qu'une
 image de couverture existe** : la branche `if (artwork)` retourne avant de le dessiner. Comme
-les 194 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
+les 217 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
 rendu ailleurs : en texte dans l'onglet « Bibliothèque », et en étiquette dans la rangée de
 tags de la fiche livre, qui est l'écran où l'on choisit quel volume ouvrir. Incruster le
 label par-dessus l'image reste possible, mais c'est une décision de mise en page qui revient
@@ -428,9 +449,9 @@ annonce, et le sous-titre fait le reste.
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **194 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **217 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture, grands
-personnages et philosophie, soit environ 1 670 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages et philosophie, soit environ 1 890 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois
@@ -458,8 +479,8 @@ la limite après coup est la pratique trompeuse que la charte interdit.
 
 ### Les livres réservés à une formule
 
-**Soixante-douze couvertures** annoncent une exclusivité d'abonnement : 38 pour Extra, 18 pour
-Premium, 16 pour Plus. Le nombre n'est pas à recopier de tête — il se compte dans le
+**Quatre-vingt-huit couvertures** annoncent une exclusivité d'abonnement : 42 pour Extra, 24 pour
+Premium, 22 pour Plus. Le nombre n'est pas à recopier de tête — il se compte dans le
 catalogue, et la revue le rappelle à chaque exécution.
 
 Le champ **`plan`** de `Book` est ce qui rend cette mention vraie. Sans lui, l'image
