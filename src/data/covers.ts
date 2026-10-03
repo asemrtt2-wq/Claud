@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 39,5 Mo pour 224 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 42,0 Mo pour 236 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -237,6 +237,18 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "pourquoi-les-routes-ont-des-lignes": require("../../assets/couvertures/pourquoi-les-routes-ont-des-lignes.jpg"),
   "pourquoi-une-journee-fait-24-heures": require("../../assets/couvertures/pourquoi-une-journee-fait-24-heures.jpg"),
   "thomas-kuhn": require("../../assets/couvertures/thomas-kuhn.jpg"),
+  "al-biruni": require("../../assets/couvertures/al-biruni.jpg"),
+  "al-khwarizmi": require("../../assets/couvertures/al-khwarizmi.jpg"),
+  "al-zahrawi": require("../../assets/couvertures/al-zahrawi.jpg"),
+  "askia-mohammed-ier": require("../../assets/couvertures/askia-mohammed-ier.jpg"),
+  "david-iv-de-georgie": require("../../assets/couvertures/david-iv-de-georgie.jpg"),
+  "l-impression-3d": require("../../assets/couvertures/l-impression-3d.jpg"),
+  "le-biais-du-statu-quo": require("../../assets/couvertures/le-biais-du-statu-quo.jpg"),
+  "les-citernes-souterraines": require("../../assets/couvertures/les-citernes-souterraines.jpg"),
+  "liu-hui": require("../../assets/couvertures/liu-hui.jpg"),
+  "nasir-al-din-al-tusi": require("../../assets/couvertures/nasir-al-din-al-tusi.jpg"),
+  "pourquoi-la-glace-craque-t-elle": require("../../assets/couvertures/pourquoi-la-glace-craque-t-elle.jpg"),
+  "robert-cialdini": require("../../assets/couvertures/robert-cialdini.jpg"),
 };
 
 /**
