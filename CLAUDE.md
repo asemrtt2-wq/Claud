@@ -91,8 +91,8 @@ Ce que cela change, et ce que cela ne change pas :
 
   Les 99 livres antérieurs ont été réaudités de la même manière : aucun autre n'est
   concerné. La mention n'apparaît que dans les exports récents — et elle y est désormais
-  fréquente : six des huit livres du 24 septembre en portaient une, **onze des douze du
-  4 octobre**. C'est désormais le cas ordinaire, pas l'exception : partir du principe qu'un
+  fréquente : six des huit livres du 24 septembre en portaient une, **onze des douze du second lot
+  du 3 octobre**. C'est désormais le cas ordinaire, pas l'exception : partir du principe qu'un
   livre importé est réservé jusqu'à ce que sa couverture entière prouve le contraire.
   **Auditer les couvertures avant d'écrire les fiches**, et non après, évite d'avoir à
   repasser sur le catalogue une fois les entrées posées.
@@ -444,7 +444,7 @@ renvoi dedans. Deux manquent, relevés le 3 octobre 2026 : « Comment un avion t
 son chemin la nuit ? », cité par « Pourquoi les routes ont des lignes ? » pour son chapitre
 sur le balisage d'aéroport, et « Comment le GPS mesure-t-il une position ? », cité par
 « Pourquoi une journée fait 24 heures ? ». Signalés, pas comblés. Le même contrôle passé sur
-les douze livres du 4 octobre n'a rien trouvé : les quinze titres qu'ils citent sont tous au
+les douze livres du second lot du même jour n'a rien trouvé : les quinze titres qu'ils citent sont tous au
 catalogue. Le contrôle vaut donc d'être refait à chaque lot, et pas seulement quand un livre
 a l'air de renvoyer dans le vide.
 
