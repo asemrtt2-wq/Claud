@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 38,3 Mo pour 217 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 39,5 Mo pour 224 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -230,6 +230,13 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "robert-nozick": require("../../assets/couvertures/robert-nozick.jpg"),
   "sebastien-de-vauban": require("../../assets/couvertures/sebastien-de-vauban.jpg"),
   "thorstein-veblen": require("../../assets/couvertures/thorstein-veblen.jpg"),
+  "comment-un-aimant-attire-t-il-du-metal": require("../../assets/couvertures/comment-un-aimant-attire-t-il-du-metal.jpg"),
+  "comment-une-eolienne-transforme-t-elle-le-vent-en-electricite": require("../../assets/couvertures/comment-une-eolienne-transforme-t-elle-le-vent-en-electricite.jpg"),
+  "edward-de-bono": require("../../assets/couvertures/edward-de-bono.jpg"),
+  "l-effet-d-ancrage": require("../../assets/couvertures/l-effet-d-ancrage.jpg"),
+  "pourquoi-les-routes-ont-des-lignes": require("../../assets/couvertures/pourquoi-les-routes-ont-des-lignes.jpg"),
+  "pourquoi-une-journee-fait-24-heures": require("../../assets/couvertures/pourquoi-une-journee-fait-24-heures.jpg"),
+  "thomas-kuhn": require("../../assets/couvertures/thomas-kuhn.jpg"),
 };
 
 /**
