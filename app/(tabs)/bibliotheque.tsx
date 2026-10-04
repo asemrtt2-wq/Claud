@@ -100,7 +100,11 @@ export default function LibraryScreen() {
                     </Text>
                     {p && (
                       <View style={styles.itemProgress}>
-                        <ProgressBar value={percent} />
+                        {/* Même raison que sur l'accueil : sans cette enveloppe, la barre
+                            prend toute la rangée et le pourcentage passe à la ligne. */}
+                        <View style={styles.itemBar}>
+                          <ProgressBar value={percent} />
+                        </View>
                         <Text style={styles.itemPercent}>
                           {p.finished ? "Terminé" : `${Math.round(percent * 100)} %`}
                         </Text>
@@ -147,5 +151,6 @@ const styles = StyleSheet.create({
   itemTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.text, lineHeight: 21 },
   itemMeta: { ...type.caption },
   itemProgress: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginTop: 4 },
-  itemPercent: { ...type.caption, color: colors.gold, width: 54 },
+  itemBar: { flex: 1 },
+  itemPercent: { ...type.caption, color: colors.gold, width: 54, flexShrink: 0, textAlign: "right" },
 });

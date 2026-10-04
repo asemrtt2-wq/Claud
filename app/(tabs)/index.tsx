@@ -176,7 +176,12 @@ export default function HomeScreen() {
                       label={book.series ? `Tome ${book.series.volume}` : null}
                     />
                     <View style={styles.continueFooter}>
-                      <ProgressBar value={percent} />
+                      {/* La barre est enveloppée : son fond fait `width: "100%"`, et comme
+                          `flexShrink` vaut 0 par défaut en React Native, elle prenait toute
+                          la largeur de la rangée et coupait « 6 % » en deux lignes. */}
+                      <View style={styles.continueBar}>
+                        <ProgressBar value={percent} />
+                      </View>
                       <Text style={styles.continuePercent}>{Math.round(percent * 100)} %</Text>
                     </View>
                   </Pressable>
@@ -308,5 +313,6 @@ const styles = StyleSheet.create({
   rowContent: { gap: spacing.md, paddingRight: spacing.lg },
   continueCard: { width: 104, gap: spacing.sm },
   continueFooter: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  continuePercent: { ...type.caption, fontSize: 10, color: colors.textMuted },
+  continueBar: { flex: 1 },
+  continuePercent: { ...type.caption, fontSize: 10, color: colors.textMuted, flexShrink: 0 },
 });
