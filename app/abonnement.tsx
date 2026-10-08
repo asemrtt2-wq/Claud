@@ -42,7 +42,7 @@ const TAGLINES: Record<PlanId, { subtitle: string; foot: string }> = {
   },
   extra: {
     subtitle: "Sans limites",
-    foot: "Pour lire sans frontière de langue",
+    foot: "Pour ouvrir tous les livres, sans exception",
   },
 };
 
@@ -339,12 +339,8 @@ function PlanCard({
           ne fonctionnent pas encore.
         </Text>
       )}
-      {id === "extra" && (
-        <Text style={styles.pending}>
-          Les traductions arrivent langue par langue, par mise à jour de l'app. Le catalogue
-          n'existe pour l'instant qu'en français.
-        </Text>
-      )}
+      {/* Extra n'a plus de mise en garde : elle ne promet plus les langues, et tout ce
+          qu'elle annonce — le catalogue entier — fonctionne dès aujourd'hui. */}
 
       <View style={styles.cardFoot}>
         <Ionicons name="ellipse-outline" size={13} color={colors.textFaint} />

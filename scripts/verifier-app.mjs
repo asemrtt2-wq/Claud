@@ -237,6 +237,9 @@ for (const reserve of ["James Cook", "Épictète", "Spartacus"]) {
 }
 
 const abo = await open("/abonnement");
+/* Cette formule exacte était celle de Lumia Plus, qui ne donne pas tout : elle reste
+   bannie de l'écran. Extra, qui ouvre réellement les 236 livres, le dit autrement —
+   « le catalogue entier » —, ce qui est vrai et ne ressemble pas à l'ancienne promesse. */
 check("l'écran d'abonnement ne promet plus « le catalogue complet »",
   !abo.text.includes("catalogue complet"));
 check("l'écran d'abonnement dit qu'aucun paiement n'est actif",

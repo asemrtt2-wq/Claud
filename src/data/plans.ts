@@ -85,11 +85,14 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Lumia Extra",
     price: "19,99 €",
     period: "par mois",
+    // Les langues ne sont plus vendues ici : aucune traduction n'est embarquée, et une
+    // formule dont l'argument principal n'existe pas ne se défend pas. Le code des langues
+    // reste en place et reste réservé à Extra (`LANGUAGES_PLAN`) — le jour où une
+    // traduction arrive, la ligne se rajoute. En attendant, Extra se vend sur ce qu'elle
+    // donne vraiment, et qui est vérifiable : aucun livre verrouillé.
     adds: [
       "Les livres réservés à Lumia Extra",
-      "Toutes les langues du catalogue",
-      "Changer de langue en cours de lecture",
-      "Le mode bilingue, les deux langues côte à côte",
+      "Le catalogue entier : plus aucun livre verrouillé",
     ],
   },
 };

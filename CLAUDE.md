@@ -123,10 +123,17 @@ l'aune de ce tableau avant d'être publié.
 - **La demande de livre et le vote** de la formule Premium n'existent pas dans l'app. Ils
   demandent un serveur ; l'ancienne plateforme web en avait une version, supprimée avec elle.
 - **Aucune traduction n'est encore embarquée.** Le pipeline est prêt, le catalogue n'a qu'une
-  langue : le français. Conséquence à ne pas perdre de vue — **la formule Extra vend
-  surtout les langues**, et elle ne donne donc aujourd'hui que ses livres réservés. Le
-  coût d'une langue se mesure avant de décider : `npm run books:translate -- en --dry-run`
-  annonce 7 403 chapitres et environ 2 853 000 tokens en entrée, autant en sortie.
+  langue : le français. **La formule Extra ne les vend donc plus** — décision du
+  propriétaire du projet, prise le 8 octobre 2026. Elle se vend sur ce qu'elle donne
+  réellement : le catalogue entier, plus aucun livre verrouillé. Le code des langues reste
+  en place et reste réservé à Extra (`LANGUAGES_PLAN`) ; la ligne se rajoutera à
+  `plans.ts` le jour où une traduction existera, et c'est tout.
+
+  Le coût d'une langue, mesuré, pour quand la question se reposera :
+  `npm run books:translate -- en --dry-run` annonce 7 403 chapitres et environ
+  2 853 000 tokens en entrée, autant en sortie — soit une trentaine de dollars avec un
+  modèle de milieu de gamme, payés **une fois** puisque la traduction est embarquée. Ce
+  n'était donc pas le coût qui bloquait.
 - **Pas de surlignage ni de note dans le lecteur.** Le signet existe (voir plus bas), le
   reste non : surligner suppose de repérer une position stable dans un texte dont la
   taille, l'ambiance et la langue changent, ce que le signet évite en se posant sur le
@@ -274,7 +281,8 @@ app/                        # les écrans (routage par fichiers, expo-router)
                             #   sommaire cherchable (titres et corps)
   cadeau.tsx                # le livre offert : les 5 proposés, un seul à garder
   abonnement.tsx            # les trois formules : prix, contenu, résiliation
-  langue.tsx                # langue de lecture et mode bilingue (formule Extra)
+  langue.tsx                # langue de lecture et mode bilingue — toujours réservés à
+                            #   Extra, mais plus annoncés sur sa carte (voir plus bas)
   conditions.tsx            # conditions d'utilisation (exigées par les boutiques)
   confidentialite.tsx       # politique de confidentialité
 src/
@@ -504,7 +512,7 @@ Les prix et le contenu de chaque formule sont décrits **une seule fois**, dans
 | À l'unité | 4,99 € par livre | Le livre acheté, gardé définitivement — sauf les livres réservés, qui ne se vendent pas |
 | Lumia Plus | 9,99 €/mois | Le catalogue en français, hors les livres réservés à Premium et à Extra |
 | Lumia Premium | 15,99 €/mois | Une demande de livre par mois et un vote ; les nouveautés en avance |
-| Lumia Extra | 19,99 €/mois | Toutes les langues, le changement de langue en cours de lecture, le mode bilingue |
+| Lumia Extra | 19,99 €/mois | **Le catalogue entier** : plus aucun livre verrouillé |
 
 `canRead(slug)` est la seule porte du catalogue : abonné, livre offert, ou livre acheté. Le
 livre offert est **définitif** et l'app le dit avant de valider — un cadeau dont on découvre

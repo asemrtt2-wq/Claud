@@ -70,10 +70,10 @@ sans abonnement et sans rien payer. Le choix est définitif, et l'application le
 que vous validiez.
 
 ENSUITE, COMME VOUS VOULEZ
-Un livre seul s'achète 4,99 € et vous reste acquis. Ou bien un abonnement mensuel ouvre
-tout le catalogue : Lumia Plus à 9,99 €, Lumia Premium à 15,99 €, Lumia Extra à 19,99 €.
-Chaque formule se résilie à tout moment, dans les réglages de votre téléphone, sans frais
-et sans durée minimale.
+Un livre seul s'achète 4,99 € et vous reste acquis. Ou bien un abonnement mensuel :
+Lumia Plus à 9,99 €, Lumia Premium à 15,99 €, Lumia Extra à 19,99 € — et Extra seule
+ouvre le catalogue entier, sans aucun livre verrouillé. Chaque formule se résilie à tout
+moment, dans les réglages de votre téléphone, sans frais et sans durée minimale.
 
 Lire. Comprendre. Évoluer.
 ```
