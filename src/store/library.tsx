@@ -46,6 +46,16 @@ type LibraryState = {
   freeBooks: string[];
   /** Les livres achetés à l'unité. Gardés eux aussi, abonnement ou pas. */
   purchased: string[];
+  /**
+   * Les chapitres mis de côté, par livre : slug → index de chapitre, triés.
+   *
+   * Le signet porte sur le chapitre et non sur une position exacte dans la page. Un
+   * décalage en pixels ne survit ni à un changement de taille de police, ni à une
+   * traduction, ni à un réglage d'ambiance — il pointerait vers autre chose que ce que le
+   * lecteur avait marqué. Le chapitre, lui, reste le même dans toutes les langues,
+   * puisque la traduction en conserve la structure.
+   */
+  bookmarks: Record<string, number[]>;
 };
 
 const EMPTY: LibraryState = {
@@ -57,6 +67,7 @@ const EMPTY: LibraryState = {
   bilingual: false,
   freeBooks: [],
   purchased: [],
+  bookmarks: {},
 };
 
 /**
@@ -68,6 +79,9 @@ function migrate(stored: Record<string, unknown>): LibraryState {
   const state = { ...EMPTY, ...(stored as Partial<LibraryState>) };
   if (state.plan == null && stored.premium === true) state.plan = "extra";
   if (!(state.locale in LOCALES)) state.locale = SOURCE_LOCALE;
+  // Les versions antérieures aux signets n'ont pas ce champ : l'étalement laisserait
+  // `undefined` si la clé existait à vide, et tout l'écran du sommaire planterait dessus.
+  if (!state.bookmarks || typeof state.bookmarks !== "object") state.bookmarks = {};
   return state;
 }
 
@@ -76,6 +90,12 @@ type LibraryContextValue = LibraryState & {
   saveProgress: (slug: string, chapter: number, offset: number, finished?: boolean) => void;
   toggleFavorite: (slug: string) => void;
   isFavorite: (slug: string) => boolean;
+  /** Pose ou retire un signet sur ce chapitre. */
+  toggleBookmark: (slug: string, chapter: number) => void;
+  /** Vrai si ce chapitre précis porte un signet. */
+  isBookmarked: (slug: string, chapter: number) => boolean;
+  /** Les chapitres marqués de ce livre, en ordre de lecture. */
+  bookmarksOf: (slug: string) => number[];
   addMinutes: (minutes: number) => void;
   setPlan: (plan: PlanId | null) => void;
   setLocale: (locale: LocaleCode) => void;
@@ -152,6 +172,21 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  /* Le dernier signet d'un livre retiré efface son entrée : un objet qui garderait des
+     tableaux vides grossirait sans fin dans le stockage de l'appareil. */
+  const toggleBookmark = useCallback((slug: string, chapter: number) => {
+    setState((prev) => {
+      const actuels = prev.bookmarks[slug] ?? [];
+      const suivants = actuels.includes(chapter)
+        ? actuels.filter((c) => c !== chapter)
+        : [...actuels, chapter].sort((a, b) => a - b);
+      const bookmarks = { ...prev.bookmarks };
+      if (suivants.length) bookmarks[slug] = suivants;
+      else delete bookmarks[slug];
+      return { ...prev, bookmarks };
+    });
+  }, []);
+
   const addMinutes = useCallback((minutes: number) => {
     setState((prev) => ({ ...prev, minutesRead: prev.minutesRead + minutes }));
   }, []);
@@ -203,6 +238,10 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       saveProgress,
       toggleFavorite,
       isFavorite: (slug: string) => state.favorites.includes(slug),
+      toggleBookmark,
+      isBookmarked: (slug: string, chapter: number) =>
+        (state.bookmarks[slug] ?? []).includes(chapter),
+      bookmarksOf: (slug: string) => state.bookmarks[slug] ?? [],
       addMinutes,
       setPlan,
       setLocale,
@@ -242,6 +281,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       ready,
       saveProgress,
       toggleFavorite,
+      toggleBookmark,
       addMinutes,
       setPlan,
       setLocale,

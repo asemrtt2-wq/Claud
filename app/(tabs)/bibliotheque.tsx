@@ -9,14 +9,14 @@ import { useCatalog } from "@/store/catalog";
 import { useLibrary } from "@/store/library";
 import type { Book } from "@/data/types";
 
-const FILTERS = ["En cours", "Favoris", "Terminés", "Tout"] as const;
+const FILTERS = ["En cours", "Favoris", "Signets", "Terminés", "Tout"] as const;
 type Filter = (typeof FILTERS)[number];
 
 /** « Bibliothèque » : ce que le lecteur a commencé, aimé ou terminé. */
 export default function LibraryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { progress, favorites } = useLibrary();
+  const { progress, favorites, bookmarks, bookmarksOf } = useLibrary();
   const { books: catalog, getBook } = useCatalog();
   const [filter, setFilter] = useState<Filter>("En cours");
 
@@ -25,16 +25,19 @@ export default function LibraryScreen() {
     if (filter === "Favoris") {
       return favorites.map((slug) => getBook(slug)).filter((b): b is Book => Boolean(b));
     }
+    // L'ordre du catalogue plutôt que l'ordre de pose : on cherche un livre, pas un geste.
+    if (filter === "Signets") return catalog.filter((book) => bookmarksOf(book.slug).length > 0);
     const wantFinished = filter === "Terminés";
     return catalog.filter((book) => {
       const p = progress[book.slug];
       return p ? p.finished === wantFinished : false;
     });
-  }, [filter, progress, favorites, catalog, getBook]);
+  }, [filter, progress, favorites, catalog, getBook, bookmarks, bookmarksOf]);
 
   const emptyHint: Record<Filter, string> = {
     "En cours": "Ouvre un livre depuis l'accueil : il apparaîtra ici avec ta progression.",
     Favoris: "Touche le cœur sur la fiche d'un livre pour le retrouver ici.",
+    Signets: "Dans le lecteur, touche le signet en haut pour marquer un chapitre.",
     Terminés: "Les livres que tu auras lus jusqu'au bout se rangeront ici.",
     Tout: "Ajoute un livre dans src/data/books.ts pour remplir le catalogue.",
   };
@@ -76,6 +79,7 @@ export default function LibraryScreen() {
             {books.map((book) => {
               const p = progress[book.slug];
               const percent = p ? (p.chapter + p.offset) / book.chapters.length : 0;
+              const signets = bookmarksOf(book.slug).length;
               return (
                 <Pressable
                   key={book.slug}
@@ -97,6 +101,7 @@ export default function LibraryScreen() {
                     <Text numberOfLines={1} style={styles.itemMeta}>
                       {book.category}
                       {book.series ? ` · Tome ${book.series.volume}` : ""}
+                      {signets > 0 ? ` · ${signets} signet${signets > 1 ? "s" : ""}` : ""}
                     </Text>
                     {p && (
                       <View style={styles.itemProgress}>

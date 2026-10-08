@@ -6,6 +6,7 @@ import {
   ScrollView,
   Pressable,
   Modal,
+  TextInput,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
@@ -54,6 +55,9 @@ export default function ReaderScreen() {
     setBilingual,
     canChangeLanguage,
     canRead,
+    toggleBookmark,
+    isBookmarked,
+    bookmarksOf,
   } = useLibrary();
   const { getBook, getSource } = useCatalog();
 
@@ -70,6 +74,10 @@ export default function ReaderScreen() {
   const [theme, setTheme] = useState<ReaderTheme>("nuit");
   const [menuOpen, setMenuOpen] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
+  /** Le texte cherché dans le sommaire. Vide, le sommaire reste le sommaire. */
+  const [query, setQuery] = useState("");
+  /** Replie le sommaire sur les seuls chapitres marqués. */
+  const [signetsSeuls, setSignetsSeuls] = useState(false);
   const [offset, setOffset] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
@@ -102,6 +110,36 @@ export default function ReaderScreen() {
     const parts = source.chapters[chapter]?.body.split(/\n\n+/).filter(Boolean) ?? [];
     return parts.length === blocks.length ? parts : null;
   }, [bilingual, locale, source, chapter, blocks.length]);
+
+  /* Les chapitres montrés par le sommaire : tous, ceux qui portent un signet, ou ceux où
+     la recherche tombe. La recherche porte sur le titre ET sur le corps — chercher un mot
+     qu'on a lu sans se rappeler sous quel intertitre est le cas courant. L'accent ne doit
+     pas faire échouer la recherche : « eratosthene » doit trouver « Ératosthène ». */
+  const sansAccent = (s: string) =>
+    s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+  const resultats = useMemo(() => {
+    if (!book) return [];
+    const marques = bookmarksOf(book.slug);
+    const q = sansAccent(query.trim());
+    return book.chapters
+      .map((c, i) => ({ c, i }))
+      .filter(({ i }) => !signetsSeuls || marques.includes(i))
+      .map(({ c, i }) => {
+        if (!q) return { titre: c.title, index: i, extrait: null as string | null };
+        if (sansAccent(c.title).includes(q)) return { titre: c.title, index: i, extrait: null };
+        const corps = c.body.replace(/\n+/g, " ");
+        const at = sansAccent(corps).indexOf(q);
+        if (at < 0) return null;
+        const debut = Math.max(0, at - 40);
+        return {
+          titre: c.title,
+          index: i,
+          extrait: `${debut > 0 ? "…" : ""}${corps.slice(debut, at + q.length + 80).trim()}…`,
+        };
+      })
+      .filter((r): r is { titre: string; index: number; extrait: string | null } => r !== null);
+  }, [book, query, signetsSeuls, bookmarksOf]);
 
   if (!book) {
     return (
@@ -250,6 +288,23 @@ export default function ReaderScreen() {
         </Pressable>
         <Text style={[styles.topBarTitle, { color: palette.muted }]}>Lecture</Text>
         <View style={[styles.topBarSide, styles.topBarActions]}>
+          <Pressable
+            onPress={() => toggleBookmark(book.slug, chapter)}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isBookmarked(book.slug, chapter) }}
+            accessibilityLabel={
+              isBookmarked(book.slug, chapter)
+                ? "Retirer le signet de ce chapitre"
+                : "Marquer ce chapitre d'un signet"
+            }
+          >
+            <Ionicons
+              name={isBookmarked(book.slug, chapter) ? "bookmark" : "bookmark-outline"}
+              size={20}
+              color={isBookmarked(book.slug, chapter) ? palette.accent : palette.text}
+            />
+          </Pressable>
           <Pressable
             onPress={() => setMenuOpen(true)}
             hitSlop={10}
@@ -413,27 +468,65 @@ export default function ReaderScreen() {
         )}
       </Sheet>
 
-      {/* Sommaire */}
+      {/* Sommaire, recherche et signets : le même panneau, parce qu'on y vient pour la
+          même raison — retrouver un endroit précis du livre. */}
       <Sheet visible={tocOpen} onClose={() => setTocOpen(false)} title="Sommaire">
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Chercher dans ce livre…"
+          placeholderTextColor={colors.textMuted}
+          style={styles.tocSearch}
+          accessibilityLabel="Chercher un mot dans ce livre"
+          returnKeyType="search"
+        />
+        {bookmarksOf(book.slug).length > 0 && (
+          <Pressable
+            onPress={() => setSignetsSeuls(!signetsSeuls)}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: signetsSeuls }}
+            style={[styles.chip, styles.chipWide, signetsSeuls && styles.chipActive]}
+          >
+            <Text style={styles.chipText}>
+              {`Mes signets (${bookmarksOf(book.slug).length})`}
+            </Text>
+          </Pressable>
+        )}
         <ScrollView style={styles.toc}>
-          {book.chapters.map((c, i) => (
-            <Pressable
-              key={c.title}
-              onPress={() => {
-                goTo(i);
-                setTocOpen(false);
-              }}
-              style={styles.tocRow}
-            >
-              <Text style={styles.tocNumber}>{String(i + 1).padStart(2, "0")}</Text>
-              <Text
-                numberOfLines={2}
-                style={[styles.tocTitle, i === chapter && styles.tocTitleActive]}
+          {resultats.length === 0 ? (
+            <Text style={styles.tocVide}>
+              {signetsSeuls ? "Aucun signet dans ce livre." : "Aucun chapitre ne contient ce mot."}
+            </Text>
+          ) : (
+            resultats.map((r) => (
+              <Pressable
+                key={r.index}
+                onPress={() => {
+                  goTo(r.index);
+                  setTocOpen(false);
+                }}
+                style={styles.tocRow}
               >
-                {c.title}
-              </Text>
-            </Pressable>
-          ))}
+                <Text style={styles.tocNumber}>{String(r.index + 1).padStart(2, "0")}</Text>
+                <View style={styles.tocTexte}>
+                  <Text
+                    numberOfLines={2}
+                    style={[styles.tocTitle, r.index === chapter && styles.tocTitleActive]}
+                  >
+                    {r.titre}
+                  </Text>
+                  {r.extrait ? (
+                    <Text numberOfLines={2} style={styles.tocExtrait}>
+                      {r.extrait}
+                    </Text>
+                  ) : null}
+                </View>
+                {isBookmarked(book.slug, r.index) ? (
+                  <Ionicons name="bookmark" size={14} color={colors.goldDeep} />
+                ) : null}
+              </Pressable>
+            ))
+          )}
         </ScrollView>
       </Sheet>
     </View>
@@ -566,8 +659,21 @@ const styles = StyleSheet.create({
   chipWide: { flex: 0, paddingHorizontal: spacing.lg, marginTop: spacing.sm },
   chipText: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
   toc: { maxHeight: 380 },
+  tocSearch: {
+    ...type.body,
+    color: colors.text,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    // La hauteur minimale est la cible tactile commune aux deux plateformes.
+    minHeight: 48,
+    marginBottom: spacing.md,
+  },
+  tocVide: { ...type.caption, color: colors.textMuted, paddingVertical: spacing.lg },
   tocRow: { flexDirection: "row", gap: spacing.lg, paddingVertical: spacing.md, alignItems: "center" },
   tocNumber: { fontFamily: fonts.display, fontSize: 14, color: colors.goldDeep, width: 24 },
-  tocTitle: { flex: 1, fontFamily: fonts.display, fontSize: 15, color: colors.textMuted, lineHeight: 20 },
+  tocTexte: { flex: 1, gap: 2 },
+  tocExtrait: { ...type.caption, fontSize: 11, color: colors.textMuted, lineHeight: 15 },
+  tocTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.textMuted, lineHeight: 20 },
   tocTitleActive: { color: colors.goldLight },
 });

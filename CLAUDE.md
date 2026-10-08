@@ -123,7 +123,26 @@ l'aune de ce tableau avant d'être publié.
 - **La demande de livre et le vote** de la formule Premium n'existent pas dans l'app. Ils
   demandent un serveur ; l'ancienne plateforme web en avait une version, supprimée avec elle.
 - **Aucune traduction n'est encore embarquée.** Le pipeline est prêt, le catalogue n'a qu'une
-  langue : le français.
+  langue : le français. Conséquence à ne pas perdre de vue — **la formule Extra vend
+  surtout les langues**, et elle ne donne donc aujourd'hui que ses livres réservés. Le
+  coût d'une langue se mesure avant de décider : `npm run books:translate -- en --dry-run`
+  annonce 7 403 chapitres et environ 2 853 000 tokens en entrée, autant en sortie.
+- **Pas de surlignage ni de note dans le lecteur.** Le signet existe (voir plus bas), le
+  reste non : surligner suppose de repérer une position stable dans un texte dont la
+  taille, l'ambiance et la langue changent, ce que le signet évite en se posant sur le
+  chapitre entier.
+
+**Construit depuis**, et qu'il ne faut donc plus annoncer comme manquant :
+- **Les signets.** Un bouton dans la barre du lecteur marque le chapitre en cours ; le
+  sommaire les signale et sait s'y replier ; l'onglet « Bibliothèque » a un filtre
+  « Signets », et chaque rangée affiche son compte. Le signet porte sur **le chapitre**,
+  pas sur une position en pixels : un décalage ne survivrait ni à un changement de taille
+  de texte, ni à une traduction. Le champ est `bookmarks` dans `src/store/library.tsx`,
+  avec `toggleBookmark`, `isBookmarked` et `bookmarksOf` — la règle vit dans le contexte,
+  comme `canRead`.
+- **La recherche à l'intérieur d'un livre.** Le champ en haut du sommaire cherche dans les
+  titres **et dans le corps** des chapitres, et montre un extrait autour du mot trouvé.
+  Elle ignore les accents : « eratosthene » trouve « Ératosthène ».
 
 Toute nouvelle fonctionnalité qui introduirait une image de personne ou d'animal, ou un contenu
 tombant dans une case « interdit » du tableau, est à refuser ou à remplacer.
@@ -248,10 +267,11 @@ app/                        # les écrans (routage par fichiers, expo-router)
     _layout.tsx             # barre d'onglets : Accueil, Explorer, Bibliothèque, Profil
     index.tsx               # Accueil : carrousel + « Reprendre la lecture »
     explorer.tsx            # recherche, catégories, Nouveautés, Populaires
-    bibliotheque.tsx        # En cours / Favoris / Terminés / Tout
+    bibliotheque.tsx        # En cours / Favoris / Signets / Terminés / Tout
     profil.tsx              # « Mon espace » : statistiques réelles, Pass Lumia
   livre/[slug].tsx          # fiche livre : À propos / Chapitres / Avis
-  lecture/[slug].tsx        # lecteur : chapitre par chapitre, réglages, langue, sommaire
+  lecture/[slug].tsx        # lecteur : chapitres, réglages, langue, signet,
+                            #   sommaire cherchable (titres et corps)
   cadeau.tsx                # le livre offert : les 5 proposés, un seul à garder
   abonnement.tsx            # les trois formules : prix, contenu, résiliation
   langue.tsx                # langue de lecture et mode bilingue (formule Extra)
@@ -275,7 +295,7 @@ src/
     covers.ts               # slug → couverture embarquée (fichier généré)
     plans.ts                # les trois abonnements : prix et contenu
   store/
-    library.tsx             # progression, favoris, temps, formule, langue (AsyncStorage)
+    library.tsx             # progression, favoris, signets, temps, formule, langue
     catalog.tsx             # le catalogue dans la langue choisie
 scripts/
   import-books.mjs          # convertit des exports HTML en entrées de catalogue
@@ -509,6 +529,22 @@ Ce qu'il change, décidé par le propriétaire du projet :
   C'est `hasPlan`, qui servait déjà aux langues ;
 - un livre **sans** `plan` garde la règle ordinaire : n'importe quel abonnement, le livre
   offert, ou 4,99 € à l'unité.
+
+La table complète, telle que `canRead` la produit sur le catalogue au 8 octobre 2026 —
+elle se rejoue en quelques lignes plutôt que de se recopier de tête :
+
+| | sans abonnement | Plus | Premium | Extra |
+| --- | --- | --- | --- | --- |
+| livre ordinaire | fermé | **ouvert** | **ouvert** | **ouvert** |
+| réservé Plus | fermé | **ouvert** | **ouvert** | **ouvert** |
+| réservé Premium | fermé | fermé | **ouvert** | **ouvert** |
+| réservé Extra | fermé | fermé | fermé | **ouvert** |
+| **livres ouverts** | 0 | 160 | 187 | 236 |
+
+Le « fermé » de la première colonne ne vaut que pour l'abonnement : le livre offert et les
+livres achetés s'ouvrent sans rien, et c'est ce que les deux autres branches de `canRead`
+expriment. Les trois chiffres du bas sont ceux du catalogue actuel et bougent à chaque
+import.
 
 `requiredPlan(slug)` (`src/data/books.ts`) est la table de ces exigences, construite sur le
 catalogue **français** : l'accès ne dépend pas de la langue de lecture. Les écrans s'en

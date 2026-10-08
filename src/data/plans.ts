@@ -143,9 +143,15 @@ export const SUBSCRIPTION_PRODUCTS: Record<PlanId, string> = {
  * Achat définitif d'un livre seul — un produit non consommable par livre.
  *
  * ⚠️ Conséquence à connaître avant de s'engager : vendre les livres à l'unité oblige à
- * créer **un produit par livre dans chacune des deux boutiques**, soit cent douze fiches
- * pour le catalogue actuel, et deux de plus à chaque nouveau livre. C'est du travail
- * administratif récurrent, pas du code. Un abonnement seul l'éviterait entièrement.
+ * créer **un produit par livre vendable dans chacune des deux boutiques**, et deux fiches
+ * de plus à chaque livre ajouté. C'est du travail administratif récurrent, pas du code.
+ * Un abonnement seul l'éviterait entièrement.
+ *
+ * Le compte se fait ainsi, et non de tête : **les livres réservés à une formule ne se
+ * vendent pas à l'unité** et n'ont donc pas de fiche. Au 8 octobre 2026, le catalogue
+ * compte 236 livres dont 104 réservés, soit 132 livres vendables → **264 fiches**, plus
+ * six pour les trois abonnements. Ce commentaire a longtemps annoncé « cent douze », un
+ * chiffre hérité d'un catalogue de 56 livres : le recompter avant de s'en servir.
  */
 export function bookProductId(slug: string): string {
   return `${BUNDLE}.book.${slug.replace(/-/g, "_")}`;
