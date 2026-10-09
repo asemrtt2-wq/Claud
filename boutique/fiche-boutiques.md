@@ -6,8 +6,8 @@ boutiques disent la même chose.
 
 **Règle qui s'applique à ce fichier comme au reste du projet** : aucun chiffre qui n'a pas
 été mesuré. Pas de « des milliers de lecteurs », pas de note, pas de « des centaines de
-livres ». Les nombres ci-dessous viennent du catalogue : **99 livres, 2 878 chapitres, plus
-de 775 000 mots**. Ils changent quand le catalogue change.
+livres ». Les nombres ci-dessous viennent du catalogue : **236 livres, 7 403 chapitres, près
+de 2 000 000 de mots** (comptés le 9 octobre 2026). Ils changent quand le catalogue change.
 
 ---
 
@@ -17,7 +17,7 @@ de 775 000 mots**. Ils changent quand le catalogue change.
 | --- | --- |
 | Nom de l'app | `Lumia` |
 | Sous-titre App Store (30 car. max) | `Des livres qui éclairent` |
-| Brève description Play (80 car. max) | `99 livres courts à lire hors ligne. Sans compte, sans publicité, sans traqueur.` |
+| Brève description Play (80 car. max) | `236 livres courts à lire hors ligne. Sans compte, sans publicité, sans traqueur.` |
 | Identifiant iOS | `com.lumia.app` |
 | Nom de package Android | `com.lumia.app` |
 | Catégorie principale | Livres |
@@ -40,7 +40,7 @@ qui est une marque d'Apple.
 ```
 Lumia est une bibliothèque de livres courts, à lire tranquillement, sans être interrompu.
 
-99 livres, de douze à soixante pages, sur l'histoire, les sciences, la philosophie, la culture,
+236 livres, de douze à soixante pages, sur l'histoire, les sciences, la philosophie, la culture,
 les grandes figures et ce qu'il est utile de comprendre du monde. Un livre se lit en une soirée.
 
 TOUT FONCTIONNE HORS LIGNE
@@ -81,7 +81,7 @@ Lire. Comprendre. Évoluer.
 ## Nouveautés de cette version (première publication)
 
 ```
-Première version de Lumia : 99 livres, un lecteur soigné, et tout qui fonctionne hors ligne.
+Première version de Lumia : 236 livres, un lecteur soigné, et tout qui fonctionne hors ligne.
 ```
 
 ## Classification d'âge
