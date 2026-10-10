@@ -22,3 +22,4 @@ expo-env.d.ts
 npm-debug.log*
 *.tsbuildinfo
 .cache-traductions/
+__pycache__/

@@ -320,6 +320,13 @@ boutique/
   fiche-boutiques.md        # description, mots-clés, âge, confidentialité : le texte des fiches
   captures/                 # les images à téléverser (générées)
   pages/                    # les pages légales du site (générées depuis l'app)
+video/choc-thermique/       # la vidéo verticale « pourquoi un verre chaud casse »
+  README.md                 # ce qui est rendu, ce qui reste à générer, comment assembler
+  prompts-scenes.md         # les invites des 7 plans photoréalistes à générer
+  voix-off.md               # le texte exact de la voix, son minutage, les bruitages
+  montage.md                # la conduite des 12 s, les zones sûres, l'export
+  rendu.py                  # rend la scène 3 et l'animatique ; `python3 … rendu.py`
+  rendu/                    # les MP4 et le gabarit (générés)
 eas.json                    # les trois profils de build EAS
 assets/couvertures/         # les 236 couvertures, 720 px de large, ~42 Mo
 ```
