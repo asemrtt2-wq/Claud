@@ -311,7 +311,7 @@ scripts/
   generate-catalog-index.mjs # écrit src/data/catalog.ts
   import-covers.mjs         # embarque des couvertures, ramenées à 720 px
   generate-covers.mjs       # écrit src/data/covers.ts
-  auditer-import.mjs        # relève accents, charte, renvois et collisions d'un lot importé
+  auditer-import.mjs        # accents, charte, renvois, collisions et durées d'un lot importé
   planche-couvertures.mjs   # planche-contact des couvertures entières, pour y lire les formules
   captures-boutique.mjs     # les captures d'écran aux dimensions des boutiques
   pages-legales.mjs         # les pages légales du site, extraites de l'app
@@ -364,6 +364,7 @@ Deux façons :
    npm run import:auditer  -- ./mes-livres-html charte         # motifs de la charte, par mot
    npm run import:auditer  -- ./mes-livres-html contexte "\balcool\w*\b"
    npm run import:auditer  -- ./mes-livres-html volumes        # renvois à un autre livre
+   npm run import:auditer  -- ./mes-livres-html durees         # durée de lecture, hors-format
    npm run import:auditer  -- ./mes-livres-html sommaires 0 12
    ```
 
@@ -500,6 +501,27 @@ captures d'écran de l'app montrant les livres — pas un aperçu web à ouvrir.
 existé : le bundle web empaqueté en une page unique de plusieurs méga-octets. Il n'a jamais
 réussi à s'ouvrir sur son téléphone, et il coûte du temps et de la place à chaque mise à
 jour. Des captures suffisent, et elles se regardent tout de suite.
+
+**La longueur des livres est à signaler à chaque lot** — demande expresse du propriétaire du
+projet, le 10 octobre 2026. `npm run import:auditer -- <dossier> durees` le dit tout seul ;
+la commande fait partie de la routine d'import, et son verdict se rapporte dans le compte
+rendu, qu'il alerte ou non.
+
+Ce qu'elle surveille, et pourquoi ces deux bornes :
+
+- **80 minutes, le plafond.** Aucun livre publié ne va plus loin. Au-delà, la promesse « un
+  livre se lit en une soirée » se fissure, et c'est elle qui vend l'app.
+- **30 minutes, le plancher.** Les 31 livres qui passent dessous sont les portes d'entrée du
+  catalogue — un orage, un volcan, un tsunami, une flamme qui change de couleur — ceux qu'on
+  ouvre sans décider de s'asseoir.
+
+Le relevé du 10 octobre 2026, qui a motivé la demande : le catalogue tient de 12 à 80
+minutes, médiane 44, et **aucun livre ne dépasse 1 h 20**. Mais les 31 livres courts sont
+**tous antérieurs au 1er octobre** — les lots du 1er et du 3 octobre partent de 32 et 36
+minutes, et leur médiane est à 50. Le catalogue ne s'allonge donc pas par le haut (les deux
+plus longs, 79 et 80 min, datent des 21 et 23 septembre) : **il se vide par le bas**, ce qui
+ne se voit pas sans compter. C'est un choix d'écriture, pas un défaut d'import, et il
+revient au propriétaire du projet — le rôle du code s'arrête à le lui dire.
 
 ## Abonnements et langues
 

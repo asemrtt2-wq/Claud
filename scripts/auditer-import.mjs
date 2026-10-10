@@ -10,6 +10,7 @@
  *   node outils.mjs <dossier> sommaires [début] [fin]
  *   node outils.mjs <dossier> collisions         slugs déjà au catalogue
  *   node outils.mjs <dossier> volumes            renvois à un autre livre de la collection
+ *   node outils.mjs <dossier> durees             durée de lecture, et alerte hors format
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -126,6 +127,54 @@ if (ACTION === "table") {
       const i = l.corps.indexOf(m);
       if (i >= 0) console.log(`\n[${l.slug}] « ${m} »\n   …${l.corps.slice(Math.max(0, i - 220), i + 320).replace(/\n+/g, " ")}…`);
     }
+  }
+} else if (ACTION === "durees") {
+  /*
+   * La durée de lecture du lot, comparée à ce que le catalogue tient déjà.
+   *
+   * Le propriétaire du projet a demandé à être prévenu quand un lot sort du format.
+   * Deux bornes, mesurées sur le catalogue et non choisies :
+   *
+   *  - **le plafond**. Aucun livre publié ne dépasse 80 minutes. Au-delà, la promesse
+   *    « un livre se lit en une soirée » se fissure, et c'est la promesse qui vend.
+   *  - **le plancher**. Les livres de moins de 30 minutes sont les portes d'entrée du
+   *    catalogue — un orage, un volcan, une flamme — ceux qu'on ouvre sans décider de
+   *    s'asseoir. Ils sont tous antérieurs au 1er octobre 2026 : depuis, le plus court
+   *    des lots fait 32 puis 36 minutes. Le catalogue ne s'allonge pas par le haut, il
+   *    se vide par le bas, et cela se voit mal sans compter.
+   *
+   * La formule est celle de l'app (`estimateMinutes`, 200 mots/minute) pour que ce qui
+   * est annoncé ici soit ce que le lecteur lira sur la fiche.
+   */
+  const PLAFOND = 80;
+  const PLANCHER = 30;
+  const minutes = (l) => Math.max(1, Math.round(l.mots / 200));
+
+  const triés = [...livres].sort((a, b) => minutes(a) - minutes(b));
+  for (const l of triés) {
+    const m = minutes(l);
+    const alerte = m > PLAFOND ? "  ⚠ dépasse le plafond du catalogue" : "";
+    console.log(`${String(m).padStart(3)} min  ${String(l.chapitres.length).padStart(2)} ch  ${l.titre}${alerte}`);
+  }
+
+  const m = triés.map(minutes);
+  const médiane = m[Math.floor(m.length / 2)];
+  console.log(`\n${livres.length} livres · médiane ${médiane} min · de ${m[0]} à ${m[m.length - 1]} min`);
+
+  const courts = m.filter((x) => x < PLANCHER).length;
+  const longs = m.filter((x) => x > PLAFOND).length;
+  if (longs) {
+    console.log(`\n⚠ ${longs} livre(s) au-dessus de ${PLAFOND} min : aucun livre publié ne va si loin.`);
+  }
+  if (!courts) {
+    console.log(
+      `\n⚠ aucun livre de moins de ${PLANCHER} minutes dans ce lot.\n` +
+        `  Le catalogue en compte 31, tous antérieurs au 1er octobre 2026, et ce sont\n` +
+        `  ses portes d'entrée. À signaler au propriétaire du projet : c'est un choix\n` +
+        `  d'écriture, pas un défaut d'import, et il lui revient.`
+    );
+  } else {
+    console.log(`\n${courts} livre(s) de moins de ${PLANCHER} min — le format court est tenu.`);
   }
 } else {
   console.error(`action inconnue : ${ACTION}`);
