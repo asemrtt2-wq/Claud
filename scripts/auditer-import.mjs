@@ -164,7 +164,13 @@ if (ACTION === "table") {
   const courts = m.filter((x) => x < PLANCHER).length;
   const longs = m.filter((x) => x > PLAFOND).length;
   if (longs) {
-    console.log(`\n⚠ ${longs} livre(s) au-dessus de ${PLAFOND} min : aucun livre publié ne va si loin.`);
+    console.log(
+      `\n⚠ ${longs} livre(s) au-dessus de ${PLAFOND} min.\n` +
+        `  Ce seuil est la limite que le catalogue a tenue jusqu'au 12 octobre 2026 ;\n` +
+        `  trois livres l'ont franchie ce jour-là, avec l'accord du propriétaire du projet.\n` +
+        `  Il reste le bon signal d'alerte : au-delà, « un livre se lit en une soirée »\n` +
+        `  cesse d'être vrai pour tout le monde.`
+    );
   }
   if (!courts) {
     console.log(

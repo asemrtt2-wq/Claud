@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 42,0 Mo pour 236 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 44,9 Mo pour 248 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -249,6 +249,18 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "nasir-al-din-al-tusi": require("../../assets/couvertures/nasir-al-din-al-tusi.jpg"),
   "pourquoi-la-glace-craque-t-elle": require("../../assets/couvertures/pourquoi-la-glace-craque-t-elle.jpg"),
   "robert-cialdini": require("../../assets/couvertures/robert-cialdini.jpg"),
+  "comment-construit-on-un-tunnel-sous-la-mer": require("../../assets/couvertures/comment-construit-on-un-tunnel-sous-la-mer.jpg"),
+  "comment-construit-on-une-ile-artificielle": require("../../assets/couvertures/comment-construit-on-une-ile-artificielle.jpg"),
+  "comment-un-avion-trouve-t-il-son-chemin-la-nuit": require("../../assets/couvertures/comment-un-avion-trouve-t-il-son-chemin-la-nuit.jpg"),
+  "comment-un-brise-glace-casse-t-il-la-banquise": require("../../assets/couvertures/comment-un-brise-glace-casse-t-il-la-banquise.jpg"),
+  "al-jazari": require("../../assets/couvertures/al-jazari.jpg"),
+  "comment-fonctionne-une-adresse-postale": require("../../assets/couvertures/comment-fonctionne-une-adresse-postale.jpg"),
+  "comment-sait-on-a-qui-appartient-un-terrain": require("../../assets/couvertures/comment-sait-on-a-qui-appartient-un-terrain.jpg"),
+  "comment-sait-on-ce-qu-il-y-a-sous-la-terre": require("../../assets/couvertures/comment-sait-on-ce-qu-il-y-a-sous-la-terre.jpg"),
+  "comment-un-port-gere-t-il-des-milliers-de-conteneurs": require("../../assets/couvertures/comment-un-port-gere-t-il-des-milliers-de-conteneurs.jpg"),
+  "comment-un-satellite-prend-il-des-photos-de-la-terre": require("../../assets/couvertures/comment-un-satellite-prend-il-des-photos-de-la-terre.jpg"),
+  "comment-un-sous-marin-resiste-t-il-a-la-pression": require("../../assets/couvertures/comment-un-sous-marin-resiste-t-il-a-la-pression.jpg"),
+  "pourquoi-ressent-on-des-turbulences-en-avion": require("../../assets/couvertures/pourquoi-ressent-on-des-turbulences-en-avion.jpg"),
 };
 
 /**
