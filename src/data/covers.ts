@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 46,0 Mo pour 252 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 52,7 Mo pour 284 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -265,6 +265,38 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "comment-se-forme-le-charbon": require("../../assets/couvertures/comment-se-forme-le-charbon.jpg"),
   "d-ou-vient-le-petrole": require("../../assets/couvertures/d-ou-vient-le-petrole.jpg"),
   "georg-simmel": require("../../assets/couvertures/georg-simmel.jpg"),
+  "bernard-williams": require("../../assets/couvertures/bernard-williams.jpg"),
+  "comment-mesurait-on-une-montagne-avant-les-satellites": require("../../assets/couvertures/comment-mesurait-on-une-montagne-avant-les-satellites.jpg"),
+  "comment-savons-nous-que-les-continents-ont-bouge": require("../../assets/couvertures/comment-savons-nous-que-les-continents-ont-bouge.jpg"),
+  "comment-une-plante-sait-elle-ou-est-la-lumiere": require("../../assets/couvertures/comment-une-plante-sait-elle-ou-est-la-lumiere.jpg"),
+  "daniel-dennett": require("../../assets/couvertures/daniel-dennett.jpg"),
+  "derek-parfit": require("../../assets/couvertures/derek-parfit.jpg"),
+  "faut-il-toujours-dire-ce-que-l-on-pense": require("../../assets/couvertures/faut-il-toujours-dire-ce-que-l-on-pense.jpg"),
+  "ivan-illich": require("../../assets/couvertures/ivan-illich.jpg"),
+  "jacques-lacan": require("../../assets/couvertures/jacques-lacan.jpg"),
+  "l-environnement-te-controle-plus-que-tu-ne-le-penses": require("../../assets/couvertures/l-environnement-te-controle-plus-que-tu-ne-le-penses.jpg"),
+  "l-histoire-de-la-cle": require("../../assets/couvertures/l-histoire-de-la-cle.jpg"),
+  "l-histoire-des-encheres": require("../../assets/couvertures/l-histoire-des-encheres.jpg"),
+  "l-histoire-des-impots": require("../../assets/couvertures/l-histoire-des-impots.jpg"),
+  "l-histoire-des-lunettes": require("../../assets/couvertures/l-histoire-des-lunettes.jpg"),
+  "l-histoire-des-routes": require("../../assets/couvertures/l-histoire-des-routes.jpg"),
+  "l-histoire-du-beton": require("../../assets/couvertures/l-histoire-du-beton.jpg"),
+  "la-guerre-du-sel": require("../../assets/couvertures/la-guerre-du-sel.jpg"),
+  "la-naissance-des-frontieres": require("../../assets/couvertures/la-naissance-des-frontieres.jpg"),
+  "le-mode-silencieux": require("../../assets/couvertures/le-mode-silencieux.jpg"),
+  "nicolas-malebranche": require("../../assets/couvertures/nicolas-malebranche.jpg"),
+  "peut-on-etre-courageux-tout-en-ayant-peur": require("../../assets/couvertures/peut-on-etre-courageux-tout-en-ayant-peur.jpg"),
+  "peut-on-etre-libre-sans-avoir-le-choix": require("../../assets/couvertures/peut-on-etre-libre-sans-avoir-le-choix.jpg"),
+  "pourquoi-abandonnons-nous-juste-avant-de-progresser": require("../../assets/couvertures/pourquoi-abandonnons-nous-juste-avant-de-progresser.jpg"),
+  "pourquoi-certaines-idees-deviennent-elles-populaires": require("../../assets/couvertures/pourquoi-certaines-idees-deviennent-elles-populaires.jpg"),
+  "pourquoi-certaines-plages-ont-elles-du-sable-noir": require("../../assets/couvertures/pourquoi-certaines-plages-ont-elles-du-sable-noir.jpg"),
+  "pourquoi-certains-lacs-sont-ils-roses": require("../../assets/couvertures/pourquoi-certains-lacs-sont-ils-roses.jpg"),
+  "pourquoi-enleve-t-on-ses-chaussures-dans-certains-pays": require("../../assets/couvertures/pourquoi-enleve-t-on-ses-chaussures-dans-certains-pays.jpg"),
+  "pourquoi-l-air-est-il-invisible": require("../../assets/couvertures/pourquoi-l-air-est-il-invisible.jpg"),
+  "pourquoi-les-feuilles-changent-elles-de-couleur": require("../../assets/couvertures/pourquoi-les-feuilles-changent-elles-de-couleur.jpg"),
+  "pourquoi-les-plaques-d-egout-sont-souvent-rondes": require("../../assets/couvertures/pourquoi-les-plaques-d-egout-sont-souvent-rondes.jpg"),
+  "pourquoi-les-villes-ont-elles-des-centres": require("../../assets/couvertures/pourquoi-les-villes-ont-elles-des-centres.jpg"),
+  "viktor-shklovsky": require("../../assets/couvertures/viktor-shklovsky.jpg"),
 };
 
 /**

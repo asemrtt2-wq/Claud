@@ -61,7 +61,7 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Les 252 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+- **Les 284 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
   chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
   sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
   lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
@@ -69,7 +69,7 @@ Ce que cela change, et ce que cela ne change pas :
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
   animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
   Marc Aurèle) sur les couvertures : ceux-là restent exclus.
-- **Cent vingt couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ
+- **Cent cinquante-deux couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ
   PREMIUM · 15,99 €/MOIS », « INCLUS AVEC PLUS · 9,99 €/MOIS », une pastille « EXTRA
   19,99 € ». C'était une promesse que l'app ne tenait pas ; elle la tient, voir « Les livres
   réservés » plus bas. Reste une limite à connaître : **le prix est dans le JPEG**, donc un
@@ -96,6 +96,17 @@ Ce que cela change, et ce que cela ne change pas :
   livre importé est réservé jusqu'à ce que sa couverture entière prouve le contraire.
   **Auditer les couvertures avant d'écrire les fiches**, et non après, évite d'avoir à
   repasser sur le catalogue une fois les entrées posées.
+
+  **Les couvertures portent désormais leur catégorie imprimée** — « SCIENCES »,
+  « HISTOIRE », « PHILOSOPHIE », « CULTURE », « DÉVELOPPEMENT PERSONNEL », « GRANDS
+  PERSONNAGES ». Elle fait foi et prime sur toute convention déduite du titre : c'est le
+  choix du propriétaire du projet, écrit sur l'image.
+
+  Trois libellés nomment pourtant une catégorie qui **n'existe pas** dans `types.ts` :
+  « URBANISME » et « PSYCHOLOGIE & SOCIÉTÉ », rangés en « Savoirs essentiels », et
+  « HISTOIRE & INVENTIONS », rangé en « Histoire ». Signalé au propriétaire : soit les
+  couvertures s'alignent sur les sept catégories, soit les catégories s'étendent — mais
+  afficher sur l'image un classement que l'app ne connaît pas finira par se voir.
 
   **Une couverture peut se contredire.** Celle de « Où vont nos eaux usées ? » annonce
   « LUMIA EXTRA » et « 15,99 € », alors qu'Extra est à 19,99 € et que 15,99 € est le prix de
@@ -178,7 +189,7 @@ ne doit **jamais** proposer : acheter un livre réservé, l'offrir en cadeau, pr
 La liste des livres réservés n'est pas recopiée dans le script : il la **lit dans
 `src/data/books.ts`**. Ajouter un livre réservé sans le tester serait autrement trop
 facile — il entre dans la batterie tout seul, et les quatre formules sont éprouvées sur
-lui à la ligne suivante. Avec 120 livres réservés, la revue complète demande une bonne demi-heure : c'est le prix de ne rien échantillonner.
+lui à la ligne suivante. Avec 152 livres réservés, la revue complète demande une bonne demi-heure : c'est le prix de ne rien échantillonner.
 
 **Une seule revue à la fois.** Le serveur prend désormais un port libre au lieu du 8110
 fixe, mais cela ne suffit pas : chaque exécution lance `expo export --clear`, qui efface
@@ -321,7 +332,7 @@ boutique/
   captures/                 # les images à téléverser (générées)
   pages/                    # les pages légales du site (générées depuis l'app)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 252 couvertures, 720 px de large, ~46 Mo
+assets/couvertures/         # les 284 couvertures, 720 px de large, ~53 Mo
 ```
 
 ## Ajouter des livres
@@ -442,7 +453,7 @@ réaffecte pas sans déplacer la progression des lecteurs vers un autre livre.
 **Où le tome se voit, et où il ne se voit pas.** `BookCover` reçoit bien un `label`
 « Tome N » depuis l'accueil, l'explorateur et la fiche livre, mais **il le jette dès qu'une
 image de couverture existe** : la branche `if (artwork)` retourne avant de le dessiner. Comme
-les 252 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
+les 284 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
 rendu ailleurs : en texte dans l'onglet « Bibliothèque », et en étiquette dans la rangée de
 tags de la fiche livre, qui est l'écran où l'on choisit quel volume ouvrir. Incruster le
 label par-dessus l'image reste possible, mais c'est une décision de mise en page qui revient
@@ -493,9 +504,9 @@ annonce, et le sous-titre fait le reste.
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **252 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **284 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture, grands
-personnages et philosophie, soit environ 2 286 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages et philosophie, soit environ 2 704 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois
@@ -517,11 +528,10 @@ Ce qu'elle surveille, et pourquoi ces deux bornes :
   catalogue — un orage, un volcan, un tsunami, une flamme qui change de couleur — ceux qu'on
   ouvre sans décider de s'asseoir.
 
-**Le plafond a été franchi le 12 octobre 2026**, pour la première fois : « Comment un
-satellite prend-il des photos de la Terre ? » (86 min), « Comment sait-on ce qu'il y a sous
-la Terre ? » et « Pourquoi ressent-on des turbulences en avion ? » (85 min chacun). L'audit
-les a signalés avant insertion, le propriétaire du projet en a été averti, et ils ont été
-gardés. Le seuil de 80 minutes reste le bon signal — il ne décrit plus un maximum mais une
+**Le plafond a été franchi le 12 octobre 2026**, et largement. Treize livres dépassent
+désormais 80 minutes, le plus long — « L'histoire des impôts » — atteignant 1 h 29.
+L'audit les a tous signalés avant insertion, le propriétaire du projet en a été averti à
+chaque lot, et ils ont été gardés. Le seuil de 80 minutes reste le bon signal — il ne décrit plus un maximum mais une
 limite au-delà de laquelle la promesse cesse d'être vraie pour tout le monde.
 
 Le relevé du 10 octobre 2026, qui a motivé la demande : le catalogue tenait alors de 12 à 80
@@ -551,8 +561,8 @@ la limite après coup est la pratique trompeuse que la charte interdit.
 
 ### Les livres réservés à une formule
 
-**Cent vingt couvertures** annoncent une exclusivité d'abonnement : 55 pour Extra, 35 pour
-Premium, 30 pour Plus. Le nombre n'est pas à recopier de tête — il se compte dans le
+**Cent cinquante-deux couvertures** annoncent une exclusivité d'abonnement : 73 pour Extra,
+37 pour Premium, 42 pour Plus. Le nombre n'est pas à recopier de tête — il se compte dans le
 catalogue, et la revue le rappelle à chaque exécution.
 
 Le champ **`plan`** de `Book` est ce qui rend cette mention vraie. Sans lui, l'image
@@ -578,7 +588,7 @@ elle se rejoue en quelques lignes plutôt que de se recopier de tête :
 | réservé Plus | fermé | **ouvert** | **ouvert** | **ouvert** |
 | réservé Premium | fermé | fermé | **ouvert** | **ouvert** |
 | réservé Extra | fermé | fermé | fermé | **ouvert** |
-| **livres ouverts** | 0 | 162 | 197 | 252 |
+| **livres ouverts** | 0 | 174 | 211 | 284 |
 
 Le « fermé » de la première colonne ne vaut que pour l'abonnement : le livre offert et les
 livres achetés s'ouvrent sans rien, et c'est ce que les deux autres branches de `canRead`
