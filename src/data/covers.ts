@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 44,9 Mo pour 248 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 46,0 Mo pour 252 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -261,6 +261,10 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "comment-un-satellite-prend-il-des-photos-de-la-terre": require("../../assets/couvertures/comment-un-satellite-prend-il-des-photos-de-la-terre.jpg"),
   "comment-un-sous-marin-resiste-t-il-a-la-pression": require("../../assets/couvertures/comment-un-sous-marin-resiste-t-il-a-la-pression.jpg"),
   "pourquoi-ressent-on-des-turbulences-en-avion": require("../../assets/couvertures/pourquoi-ressent-on-des-turbulences-en-avion.jpg"),
+  "comment-se-forme-la-foudre": require("../../assets/couvertures/comment-se-forme-la-foudre.jpg"),
+  "comment-se-forme-le-charbon": require("../../assets/couvertures/comment-se-forme-le-charbon.jpg"),
+  "d-ou-vient-le-petrole": require("../../assets/couvertures/d-ou-vient-le-petrole.jpg"),
+  "georg-simmel": require("../../assets/couvertures/georg-simmel.jpg"),
 };
 
 /**

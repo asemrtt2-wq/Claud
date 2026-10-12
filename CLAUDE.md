@@ -61,7 +61,7 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Les 248 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+- **Les 252 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
   chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
   sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
   lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
@@ -69,7 +69,7 @@ Ce que cela change, et ce que cela ne change pas :
 - **La règle reste la règle pour tout le reste** : aucun portrait, aucune silhouette, aucun
   animal ailleurs dans l'app. La maquette d'origine posait des portraits (Saladin, Ibn Sina,
   Marc Aurèle) sur les couvertures : ceux-là restent exclus.
-- **Cent seize couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ
+- **Cent vingt couvertures portent leur formule incrustée dans l'image** — « EXCLUSIVITÉ
   PREMIUM · 15,99 €/MOIS », « INCLUS AVEC PLUS · 9,99 €/MOIS », une pastille « EXTRA
   19,99 € ». C'était une promesse que l'app ne tenait pas ; elle la tient, voir « Les livres
   réservés » plus bas. Reste une limite à connaître : **le prix est dans le JPEG**, donc un
@@ -178,7 +178,7 @@ ne doit **jamais** proposer : acheter un livre réservé, l'offrir en cadeau, pr
 La liste des livres réservés n'est pas recopiée dans le script : il la **lit dans
 `src/data/books.ts`**. Ajouter un livre réservé sans le tester serait autrement trop
 facile — il entre dans la batterie tout seul, et les quatre formules sont éprouvées sur
-lui à la ligne suivante. Avec 116 livres réservés, la revue complète demande une bonne demi-heure : c'est le prix de ne rien échantillonner.
+lui à la ligne suivante. Avec 120 livres réservés, la revue complète demande une bonne demi-heure : c'est le prix de ne rien échantillonner.
 
 **Une seule revue à la fois.** Le serveur prend désormais un port libre au lieu du 8110
 fixe, mais cela ne suffit pas : chaque exécution lance `expo export --clear`, qui efface
@@ -321,7 +321,7 @@ boutique/
   captures/                 # les images à téléverser (générées)
   pages/                    # les pages légales du site (générées depuis l'app)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 248 couvertures, 720 px de large, ~45 Mo
+assets/couvertures/         # les 252 couvertures, 720 px de large, ~46 Mo
 ```
 
 ## Ajouter des livres
@@ -442,7 +442,7 @@ réaffecte pas sans déplacer la progression des lecteurs vers un autre livre.
 **Où le tome se voit, et où il ne se voit pas.** `BookCover` reçoit bien un `label`
 « Tome N » depuis l'accueil, l'explorateur et la fiche livre, mais **il le jette dès qu'une
 image de couverture existe** : la branche `if (artwork)` retourne avant de le dessiner. Comme
-les 248 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
+les 252 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
 rendu ailleurs : en texte dans l'onglet « Bibliothèque », et en étiquette dans la rangée de
 tags de la fiche livre, qui est l'écran où l'on choisit quel volume ouvrir. Incruster le
 label par-dessus l'image reste possible, mais c'est une décision de mise en page qui revient
@@ -493,9 +493,9 @@ annonce, et le sous-titre fait le reste.
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **248 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **252 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture, grands
-personnages et philosophie, soit environ 2 234 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages et philosophie, soit environ 2 286 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois
@@ -551,7 +551,7 @@ la limite après coup est la pratique trompeuse que la charte interdit.
 
 ### Les livres réservés à une formule
 
-**Cent seize couvertures** annoncent une exclusivité d'abonnement : 53 pour Extra, 33 pour
+**Cent vingt couvertures** annoncent une exclusivité d'abonnement : 55 pour Extra, 35 pour
 Premium, 30 pour Plus. Le nombre n'est pas à recopier de tête — il se compte dans le
 catalogue, et la revue le rappelle à chaque exécution.
 
@@ -578,7 +578,7 @@ elle se rejoue en quelques lignes plutôt que de se recopier de tête :
 | réservé Plus | fermé | **ouvert** | **ouvert** | **ouvert** |
 | réservé Premium | fermé | fermé | **ouvert** | **ouvert** |
 | réservé Extra | fermé | fermé | fermé | **ouvert** |
-| **livres ouverts** | 0 | 162 | 195 | 248 |
+| **livres ouverts** | 0 | 162 | 197 | 252 |
 
 Le « fermé » de la première colonne ne vaut que pour l'abonnement : le livre offert et les
 livres achetés s'ouvrent sans rien, et c'est ce que les deux autres branches de `canRead`
