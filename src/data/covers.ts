@@ -7,7 +7,7 @@ import type { ImageSourcePropType } from "react-native";
  * qui a son image, dans l'ordre du catalogue. Metro exige un chemin littéral dans
  * `require` — d'où une table écrite en clair plutôt qu'un chemin construit à partir du slug.
  *
- * Les images sont ramenées à 720 px de large en JPEG, soit 52,7 Mo pour 284 couvertures :
+ * Les images sont ramenées à 720 px de large en JPEG, soit 56,4 Mo pour 299 couvertures :
  * une couverture ne dépasse jamais 200 pt à l'écran, même sur la fiche livre.
  *
  * Un livre sans entrée ici garde la couverture composée en code par `BookCover`.
@@ -297,6 +297,21 @@ export const COVERS: Record<string, ImageSourcePropType> = {
   "pourquoi-les-plaques-d-egout-sont-souvent-rondes": require("../../assets/couvertures/pourquoi-les-plaques-d-egout-sont-souvent-rondes.jpg"),
   "pourquoi-les-villes-ont-elles-des-centres": require("../../assets/couvertures/pourquoi-les-villes-ont-elles-des-centres.jpg"),
   "viktor-shklovsky": require("../../assets/couvertures/viktor-shklovsky.jpg"),
+  "l-histoire-de-l-algerie": require("../../assets/couvertures/l-histoire-de-l-algerie.jpg"),
+  "l-histoire-de-l-allemagne": require("../../assets/couvertures/l-histoire-de-l-allemagne.jpg"),
+  "l-histoire-de-l-angleterre": require("../../assets/couvertures/l-histoire-de-l-angleterre.jpg"),
+  "l-histoire-de-l-italie": require("../../assets/couvertures/l-histoire-de-l-italie.jpg"),
+  "l-histoire-de-l-acier": require("../../assets/couvertures/l-histoire-de-l-acier.jpg"),
+  "l-histoire-de-l-eclairage-public": require("../../assets/couvertures/l-histoire-de-l-eclairage-public.jpg"),
+  "l-histoire-de-la-tunisie": require("../../assets/couvertures/l-histoire-de-la-tunisie.jpg"),
+  "l-histoire-de-la-machine-a-laver": require("../../assets/couvertures/l-histoire-de-la-machine-a-laver.jpg"),
+  "l-histoire-des-aqueducs": require("../../assets/couvertures/l-histoire-des-aqueducs.jpg"),
+  "l-histoire-des-assurances": require("../../assets/couvertures/l-histoire-des-assurances.jpg"),
+  "l-histoire-des-feux-de-circulation": require("../../assets/couvertures/l-histoire-des-feux-de-circulation.jpg"),
+  "l-histoire-des-phares": require("../../assets/couvertures/l-histoire-des-phares.jpg"),
+  "l-histoire-du-chemin-de-fer": require("../../assets/couvertures/l-histoire-du-chemin-de-fer.jpg"),
+  "l-histoire-du-monde": require("../../assets/couvertures/l-histoire-du-monde.jpg"),
+  "l-histoire-du-refrigerateur": require("../../assets/couvertures/l-histoire-du-refrigerateur.jpg"),
 };
 
 /**

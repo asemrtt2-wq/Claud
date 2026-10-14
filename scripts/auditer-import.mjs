@@ -67,14 +67,21 @@ export const livres = decouper(readFileSync(join(DIR, "books-a-coller.ts"), "utf
 });
 
 /* Chaque motif vise une ligne de la charte. La ventilation par mot compte : « Paris » et
-   « mise » déclenchent « jeux d'argent », « usure » est le plus souvent de l'attrition. */
+   « mise » déclenchent « jeux d'argent », « usure » est le plus souvent de l'attrition.
+
+   `\b` n'est pas utilisable ici : JavaScript ne compte pas les lettres accentuées comme des
+   caractères de mot, donc `\bvoyance\b` trouve « prévoyance » — relevé le 14 octobre 2026 sur
+   « L'histoire des assurances », qui parle d'imprévoyance et jamais de voyance. Les deux
+   gardes ci-dessous ferment la frontière sur les accents aussi. */
+const A = "A-Za-zÀ-ÖØ-öø-ÿ0-9_";
+const mot = (corps) => new RegExp(`(?<![${A}])(?:${corps})(?![${A}])`, "gi");
 const MOTIFS = [
-  ["sexe/nudité", /\b(pornograph\w*|érotiq\w*|nudité|sensuel\w*)\b/gi],
-  ["alcool", /\b(alcool\w*|ivresse|ivre|vin|bière|whisky|cocktail)\b/gi],
-  ["jeux d'argent", /\b(casino|pari(s|er|e)?|loterie|jeu d.argent|mise[rz]?)\b/gi],
-  ["occultisme", /\b(magie|sorcellerie|sortilège\w*|occultisme|astrolog\w*|divination|voyance|talisman\w*)\b/gi],
-  ["riba/usure", /\b(usure|usurier\w*|riba|prêt à intérêt)\b/gi],
-  ["vulgarité", /\b(putain|merde|salope|connard|enculé)\b/gi],
+  ["sexe/nudité", mot("pornograph\\w*|érotiq\\w*|nudité|sensuel\\w*")],
+  ["alcool", mot("alcool\\w*|ivresse|ivre|vin|bière|whisky|cocktail")],
+  ["jeux d'argent", mot("casino|pari(?:s|er|e)?|loterie|jeu d.argent|mise[rz]?")],
+  ["occultisme", mot("magie|sorcellerie|sortilège\\w*|occultisme|astrolog\\w*|divination|voyance|talisman\\w*")],
+  ["riba/usure", mot("usure|usurier\\w*|riba|prêt à intérêt")],
+  ["vulgarité", mot("putain|merde|salope|connard|enculé")],
 ];
 
 if (ACTION === "table") {
@@ -164,12 +171,14 @@ if (ACTION === "table") {
   const courts = m.filter((x) => x < PLANCHER).length;
   const longs = m.filter((x) => x > PLAFOND).length;
   if (longs) {
+    const tout = longs === livres.length ? " — c'est-à-dire tout le lot" : "";
     console.log(
-      `\n⚠ ${longs} livre(s) au-dessus de ${PLAFOND} min.\n` +
+      `\n⚠ ${longs} livre(s) au-dessus de ${PLAFOND} min${tout}.\n` +
         `  Ce seuil est la limite que le catalogue a tenue jusqu'au 12 octobre 2026 ;\n` +
-        `  trois livres l'ont franchie ce jour-là, avec l'accord du propriétaire du projet.\n` +
-        `  Il reste le bon signal d'alerte : au-delà, « un livre se lit en une soirée »\n` +
-        `  cesse d'être vrai pour tout le monde.`
+        `  treize livres l'ont franchie ce jour-là, puis les quinze du 14 octobre, tous,\n` +
+        `  avec l'accord du propriétaire du projet. Il reste le bon signal d'alerte :\n` +
+        `  au-delà, « un livre se lit en une soirée » cesse d'être vrai pour tout le monde.\n` +
+        `  Un lot entier au-dessus n'est plus un dépassement, c'est un autre format.`
     );
   }
   if (!courts) {

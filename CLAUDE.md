@@ -61,7 +61,7 @@ Ce que cela change, et ce que cela ne change pas :
   drapeaux de « Napoléon » est un emblème héraldique.
 - La couverture composée en code **existe toujours** (`BookCover` sans `slug`, ou avec un slug
   absent de la table) : c'est le repli d'un livre qui n'a pas encore d'image.
-- **Les 284 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
+- **Les 299 livres du catalogue ont leur image.** Ce n'est pas un simple confort : le premier
   chapitre de chacun s'intitule « Ce que dit la couverture » et décrit une image précise — un
   sablier, une pomme entamée dans un miroir, une faille dans la banquise. Sans l'image, le
   lecteur lit la description de quelque chose qu'il ne voit pas. Un livre importé doit donc
@@ -189,7 +189,7 @@ ne doit **jamais** proposer : acheter un livre réservé, l'offrir en cadeau, pr
 La liste des livres réservés n'est pas recopiée dans le script : il la **lit dans
 `src/data/books.ts`**. Ajouter un livre réservé sans le tester serait autrement trop
 facile — il entre dans la batterie tout seul, et les quatre formules sont éprouvées sur
-lui à la ligne suivante. Avec 152 livres réservés, la revue complète demande une bonne demi-heure : c'est le prix de ne rien échantillonner.
+lui à la ligne suivante. Avec 167 livres réservés, la revue complète demande une bonne demi-heure : c'est le prix de ne rien échantillonner.
 
 **Une seule revue à la fois.** Le serveur prend désormais un port libre au lieu du 8110
 fixe, mais cela ne suffit pas : chaque exécution lance `expo export --clear`, qui efface
@@ -332,7 +332,7 @@ boutique/
   captures/                 # les images à téléverser (générées)
   pages/                    # les pages légales du site (générées depuis l'app)
 eas.json                    # les trois profils de build EAS
-assets/couvertures/         # les 284 couvertures, 720 px de large, ~53 Mo
+assets/couvertures/         # les 299 couvertures, 720 px de large, ~53 Mo
 ```
 
 ## Ajouter des livres
@@ -453,7 +453,7 @@ réaffecte pas sans déplacer la progression des lecteurs vers un autre livre.
 **Où le tome se voit, et où il ne se voit pas.** `BookCover` reçoit bien un `label`
 « Tome N » depuis l'accueil, l'explorateur et la fiche livre, mais **il le jette dès qu'une
 image de couverture existe** : la branche `if (artwork)` retourne avant de le dessiner. Comme
-les 284 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
+les 299 livres ont leur image, cette étiquette ne s'affiche nulle part. Le tome est donc
 rendu ailleurs : en texte dans l'onglet « Bibliothèque », et en étiquette dans la rangée de
 tags de la fiche livre, qui est l'écran où l'on choisit quel volume ouvrir. Incruster le
 label par-dessus l'image reste possible, mais c'est une décision de mise en page qui revient
@@ -504,9 +504,9 @@ annonce, et le sous-titre fait le reste.
 - des lignes commençant par `- ` deviennent une liste à puces ;
 - `! ` devient un encadré d'avertissement (mise en garde de santé, nuance à ne pas rater).
 
-Le catalogue contient **284 livres**, importés depuis les exports HTML du propriétaire du
+Le catalogue contient **299 livres**, importés depuis les exports HTML du propriétaire du
 projet : histoire, sciences, savoirs essentiels, développement personnel, culture, grands
-personnages et philosophie, soit environ 2 704 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
+personnages et philosophie, soit environ 2 992 000 mots. L'ordre du tableau `BOOKS` compte : il donne le
 carrousel de l'accueil et la rangée « Populaires ».
 
 **Comment rendre compte d'un import.** Le propriétaire du projet demande deux ou trois
@@ -522,20 +522,27 @@ rendu, qu'il alerte ou non.
 
 Ce qu'elle surveille, et pourquoi ces deux bornes :
 
-- **80 minutes, le plafond.** Aucun livre publié ne va plus loin. Au-delà, la promesse « un
-  livre se lit en une soirée » se fissure, et c'est elle qui vend l'app.
-- **30 minutes, le plancher.** Les 31 livres qui passent dessous sont les portes d'entrée du
+- **80 minutes, le plafond.** Au-delà, la promesse « un livre se lit en une soirée » se
+  fissure, et c'est elle qui vend l'app.
+- **30 minutes, le plancher.** Les 32 livres qui passent dessous sont les portes d'entrée du
   catalogue — un orage, un volcan, un tsunami, une flamme qui change de couleur — ceux qu'on
   ouvre sans décider de s'asseoir.
 
-**Le plafond a été franchi le 12 octobre 2026**, et largement. Treize livres dépassent
-désormais 80 minutes, le plus long — « L'histoire des impôts » — atteignant 1 h 29.
+**Le plafond a été franchi le 12 octobre 2026**, puis abandonné le 14. Ce jour-là, les
+**quinze** livres du lot — quinze « L'histoire de… », de l'acier à l'Angleterre — le
+dépassent tous, de 85 à 110 minutes, médiane 97 : le premier lot entier à sortir du format.
+Vingt-huit livres sont désormais au-dessus de 80 minutes, le plus long atteignant 1 h 50,
+et le catalogue s'étend de 12 à 110 minutes, médiane 48.
+
 L'audit les a tous signalés avant insertion, le propriétaire du projet en a été averti à
 chaque lot, et ils ont été gardés. Le seuil de 80 minutes reste le bon signal — il ne décrit plus un maximum mais une
-limite au-delà de laquelle la promesse cesse d'être vraie pour tout le monde.
+limite au-delà de laquelle la promesse cesse d'être vraie pour tout le monde. Mais quand un
+lot entier la franchit, ce n'est plus un dépassement, c'est un autre format : à ce rythme,
+la ligne « un livre se lit en une soirée » de la fiche des boutiques devra être réécrite, et
+c'est au propriétaire du projet d'en décider.
 
 Le relevé du 10 octobre 2026, qui a motivé la demande : le catalogue tenait alors de 12 à 80
-minutes, médiane 44, et **aucun livre ne dépassait 1 h 20**. Mais les 31 livres courts sont
+minutes, médiane 44, et **aucun livre ne dépassait 1 h 20**. Mais les 32 livres courts sont
 **tous antérieurs au 1er octobre** — les lots du 1er et du 3 octobre partent de 32 et 36
 minutes, et leur médiane est à 50. Le catalogue ne s'allonge donc pas par le haut (les deux
 plus longs, 79 et 80 min, datent des 21 et 23 septembre) : **il se vide par le bas**, ce qui
@@ -561,7 +568,7 @@ la limite après coup est la pratique trompeuse que la charte interdit.
 
 ### Les livres réservés à une formule
 
-**Cent cinquante-deux couvertures** annoncent une exclusivité d'abonnement : 73 pour Extra,
+**Cent soixante-sept couvertures** annoncent une exclusivité d'abonnement : 88 pour Extra,
 37 pour Premium, 42 pour Plus. Le nombre n'est pas à recopier de tête — il se compte dans le
 catalogue, et la revue le rappelle à chaque exécution.
 
@@ -588,7 +595,7 @@ elle se rejoue en quelques lignes plutôt que de se recopier de tête :
 | réservé Plus | fermé | **ouvert** | **ouvert** | **ouvert** |
 | réservé Premium | fermé | fermé | **ouvert** | **ouvert** |
 | réservé Extra | fermé | fermé | fermé | **ouvert** |
-| **livres ouverts** | 0 | 174 | 211 | 284 |
+| **livres ouverts** | 0 | 174 | 211 | 299 |
 
 Le « fermé » de la première colonne ne vaut que pour l'abonnement : le livre offert et les
 livres achetés s'ouvrent sans rien, et c'est ce que les deux autres branches de `canRead`
@@ -679,7 +686,9 @@ Ce qui manque, dans l'ordre :
 
 Deux choses à ne pas découvrir en route : les achats intégrés **ne se testent pas dans Expo
 Go** (il faut un build EAS signé, donc le compte Apple), et la vente à l'unité demande
-**112 fiches produit** à créer à la main, deux de plus par livre ajouté.
+**une fiche produit par livre vendable et par boutique** — les livres réservés ne se
+vendent pas à l'unité, donc 132 × 2, plus les six fiches d'abonnement. Le compte se
+recalcule à chaque import plutôt que de se recopier : il était déjà faux une fois ici.
 
 ### Ce que les boutiques exigent, et qui est déjà là
 
